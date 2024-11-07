@@ -15,6 +15,7 @@
     "TestEmailSubject": "Testovací e-mail {0}",
     "TestEmailBody": "Tu otestujte telo e-mailu",
     "SuccessfullySent": "Úspešne odoslané",
+    "MailSendingFailed": "Odoslanie emailu zlyhalo. Skontrolujte konfiguráciu emailu a skúste to znova.",
     "Send": "Odoslať",
     "Menu:Emailing": "Posielanie emailov",
     "Menu:TimeZone": "Časové Pásmo",
@@ -33,6 +34,7 @@
     "Feature:SettingManagementEnable": "Povoliť správu nastavení",
     "Feature:SettingManagementEnableDescription": "Povoliť systém správy nastavení v aplikácii.",
     "Feature:AllowChangingEmailSettings": "Povoliť zmenu nastavení e-mailu.",
-    "Feature:AllowChangingEmailSettingsDescription": "Povoliť zmenu nastavení e-mailu."
+    "Feature:AllowChangingEmailSettingsDescription": "Povoliť zmenu nastavení e-mailu.",
+    "SmtpPasswordPlaceholder": "Zadajte hodnotu pre aktualizáciu hesla"
   }
 }

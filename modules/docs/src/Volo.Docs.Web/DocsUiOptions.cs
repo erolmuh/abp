@@ -32,6 +32,12 @@ namespace Volo.Docs
         /// Default value: True;
         /// </summary>
         public bool SectionRendering = true;
+        
+        public bool MultiLanguageMode { get; set; } = true;
+        
+        public SingleProjectModeOptions SingleProjectMode { get; } = new ();
+        
+        public bool EnableEnlargeImage { get; set; } = true;
 
         private string GetFormattedRoutePrefix()
         {
@@ -42,5 +48,16 @@ namespace Volo.Docs
 
             return _routePrefix.EnsureEndsWith('/').EnsureStartsWith('/');
         }
+    }
+    
+    public class SingleProjectModeOptions
+    {
+        /// <summary>
+        /// Determines whether to enable single project mode by removing the project name from the routing.
+        /// When enabled, only a single project is allowed within the module.
+        /// </summary>
+        public bool Enable { get; set; }
+        
+        public string ProjectName { get; set; }
     }
 }

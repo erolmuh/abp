@@ -9,7 +9,6 @@ using Volo.Abp;
 using Volo.Abp.Autofac;
 using Volo.Abp.Castle.DynamicProxy;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.DynamicProxy;
 using Volo.Abp.Modularity;
 
 namespace Autofac.Builder;
@@ -50,14 +49,18 @@ public static class AbpRegistrationBuilderExtensions
         ServiceDescriptor serviceDescriptor)
         where TActivatorData : ReflectionActivatorData
     {
-        registrationBuilder.OnActivated(context =>
+        var actions = activatedActionList.GetActions(serviceDescriptor);
+        if (actions.Any())
         {
-            var serviceActivatedContext = new OnServiceActivatedContext(context.Instance!);
-            foreach (var action in activatedActionList.GetActions(serviceDescriptor))
+            registrationBuilder.OnActivated(context =>
             {
-                action.Invoke(serviceActivatedContext);
-            }
-        });
+                var serviceActivatedContext = new OnServiceActivatedContext(context.Instance!);
+                foreach (var action in actions)
+                {
+                    action.Invoke(serviceActivatedContext);
+                }
+            });
+        }
 
         return registrationBuilder;
     }

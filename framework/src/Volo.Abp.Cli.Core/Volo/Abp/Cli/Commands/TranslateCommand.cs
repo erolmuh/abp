@@ -412,7 +412,7 @@ public class TranslateCommand : IConsoleCommand, ITransientDependency
         {
             jObject = JObject.Parse(json);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return null;
         }
@@ -490,7 +490,7 @@ public class TranslateCommand : IConsoleCommand, ITransientDependency
                 var jsonString = File.ReadAllText(jsonFile);
                 _ = JsonLocalizationDictionaryBuilder.BuildFromJsonString(jsonString);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Logger.LogError($"Invalid json file: {jsonFile}");
                 hasInvalidJsonFile = true;
@@ -550,12 +550,12 @@ public class TranslateCommand : IConsoleCommand, ITransientDependency
         sb.AppendLine("  abp translate -c zh-Hans --online --deepl-auth-key <auth-key>");
         sb.AppendLine("  abp translate -c zh-Hans -r tr --online --deepl-auth-key <auth-key>");
         sb.AppendLine("");
-        sb.AppendLine("See the documentation for more info: https://docs.abp.io/en/abp/latest/CLI");
+        sb.AppendLine("See the documentation for more info: https://abp.io/docs/latest/cli");
 
         return sb.ToString();
     }
 
-    public string GetShortDescription()
+    public static string GetShortDescription()
     {
         return "Mainly used to translate ABP's resources (JSON files) easier.";
     }

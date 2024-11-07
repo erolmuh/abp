@@ -15,6 +15,7 @@
     "TestEmailSubject": "E-mail de testare {0}",
     "TestEmailBody": "Testați corpul mesajului de e-mail aici",
     "SuccessfullySent": "Trimis cu succes",
+    "MailSendingFailed": "Trimiterea e-mailului a eșuat. Verificați configurația e-mailului și încercați din nou.",
     "Send": "Trimite",
     "Menu:Emailing": "Emailing",
     "Menu:TimeZone": "Fus Orar",
@@ -33,6 +34,7 @@
     "Feature:SettingManagementEnable": "Activează administrarea setărilor",
     "Feature:SettingManagementEnableDescription": "Activează sistemul de administrare a setărilor în aplicaţie.",
     "Feature:AllowChangingEmailSettings": "Permiteți modificarea setărilor de e-mail.",
-    "Feature:AllowChangingEmailSettingsDescription": "Permiteți modificarea setărilor de e-mail."
+    "Feature:AllowChangingEmailSettingsDescription": "Permiteți modificarea setărilor de e-mail.",
+    "SmtpPasswordPlaceholder": "Introduceți o valoare pentru a actualiza parola"
   }
 }

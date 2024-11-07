@@ -1,13 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,19 +29,16 @@ using Volo.Abp.AspNetCore.Mvc.DataAnnotations;
 using Volo.Abp.AspNetCore.Mvc.DependencyInjection;
 using Volo.Abp.AspNetCore.Mvc.Infrastructure;
 using Volo.Abp.AspNetCore.Mvc.Json;
+using Volo.Abp.AspNetCore.Mvc.Libs;
 using Volo.Abp.AspNetCore.Mvc.Localization;
-using Volo.Abp.AspNetCore.VirtualFileSystem;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.Http;
 using Volo.Abp.DynamicProxy;
 using Volo.Abp.GlobalFeatures;
 using Volo.Abp.Http.Modeling;
 using Volo.Abp.Http.ProxyScripting.Generators.JQuery;
-using Volo.Abp.Json;
 using Volo.Abp.Json.SystemTextJson;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
-using Volo.Abp.UI;
 using Volo.Abp.UI.Navigation;
 using Volo.Abp.Validation.Localization;
 
@@ -196,8 +190,8 @@ public class AbpAspNetCoreMvcModule : AbpModule
             options.EndpointConfigureActions.Add(endpointContext =>
             {
                 endpointContext.Endpoints.MapControllerRoute("defaultWithArea", "{area}/{controller=Home}/{action=Index}/{id?}");
-                endpointContext.Endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
-                endpointContext.Endpoints.MapRazorPages();
+                endpointContext.Endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}").WithStaticAssets();
+                endpointContext.Endpoints.MapRazorPages().WithStaticAssets();
             });
         });
 
@@ -231,6 +225,7 @@ public class AbpAspNetCoreMvcModule : AbpModule
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         AddApplicationParts(context);
+        CheckLibs(context);
     }
 
     private static void AddApplicationParts(ApplicationInitializationContext context)
@@ -276,5 +271,10 @@ public class AbpAspNetCoreMvcModule : AbpModule
         {
             partManager.ApplicationParts.AddIfNotContains(moduleAssembly);
         }
+    }
+
+    private static void CheckLibs(ApplicationInitializationContext context)
+    {
+        context.ServiceProvider.GetRequiredService<IAbpMvcLibsService>().CheckLibs(context);
     }
 }

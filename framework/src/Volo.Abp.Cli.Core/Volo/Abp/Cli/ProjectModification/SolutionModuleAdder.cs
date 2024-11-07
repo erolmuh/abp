@@ -15,7 +15,6 @@ using Volo.Abp.Cli.Commands;
 using Volo.Abp.Cli.Commands.Services;
 using Volo.Abp.Cli.Http;
 using Volo.Abp.Cli.ProjectBuilding;
-using Volo.Abp.Cli.ProjectBuilding.Files;
 using Volo.Abp.Cli.ProjectBuilding.Templates.MvcModule;
 using Volo.Abp.Cli.ProjectModification.Events;
 using Volo.Abp.Cli.Utils;
@@ -114,7 +113,7 @@ public class SolutionModuleAdder : ITransientDependency
 
         var projectFiles = ProjectFinder.GetProjectFiles(solutionFile);
 
-        await AddNugetAndNpmReferences(module, projectFiles, !(newTemplate || newProTemplate));
+        await AddNugetAndNpmReferences(module, projectFiles, !(newTemplate || newProTemplate), version);
 
         var modulesFolderInSolution = Path.Combine(Path.GetDirectoryName(solutionFile), "modules");
 
@@ -188,7 +187,7 @@ public class SolutionModuleAdder : ITransientDependency
         }
 
         await PublishEventAsync(6, "Configuring angular projects...");
-        
+
         var moduleName = module.Name.Split('.').Last();
 
         ConfigureAngularPackagesForAppModuleFile(angularPath, angularPackages, moduleName);
@@ -301,7 +300,8 @@ public class SolutionModuleAdder : ITransientDependency
 
     private async Task RunBundleForBlazorAsync(string[] projectFiles, ModuleWithMastersInfo module)
     {
-        var blazorProject = projectFiles.FirstOrDefault(f => f.EndsWith(".Blazor.csproj"));
+        var blazorProject = projectFiles.FirstOrDefault(f => f.EndsWith(".Blazor.Client.csproj")) ??
+                            projectFiles.FirstOrDefault(f => f.EndsWith(".Blazor.csproj"));
 
         if (blazorProject == null || !module.NugetPackages.Any(np => np.Target == NuGetPackageTarget.Blazor))
         {
@@ -390,7 +390,7 @@ public class SolutionModuleAdder : ITransientDependency
                 continue;
             }
 
-            RemoveProjectFromSolutionAsync(moduleSolutionFile, projectToRemove);
+            await RemoveProjectFromSolutionAsync(moduleSolutionFile, projectToRemove);
         }
     }
 
@@ -623,7 +623,7 @@ public class SolutionModuleAdder : ITransientDependency
     }
 
     private async Task AddNugetAndNpmReferences(ModuleWithMastersInfo module, string[] projectFiles,
-        bool useDotnetCliToInstall)
+        bool useDotnetCliToInstall, string version = null)
     {
         var webPackagesWillBeAddedToBlazorServerProject = ShouldWebPackagesBeAddedToBlazorServerProject(module, projectFiles);
 
@@ -656,7 +656,7 @@ public class SolutionModuleAdder : ITransientDependency
                 continue;
             }
 
-            await ProjectNugetPackageAdder.AddAsync(null, targetProjectFile, nugetPackage, null, useDotnetCliToInstall);
+            await ProjectNugetPackageAdder.AddAsync(null, targetProjectFile, nugetPackage, version, useDotnetCliToInstall);
         }
 
         var mvcNpmPackages = module.NpmPackages?.Where(p => p.ApplicationType.HasFlag(NpmApplicationType.Mvc))

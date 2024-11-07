@@ -183,12 +183,12 @@ public class LoginCommand : IConsoleCommand, ITransientDependency
         sb.AppendLine("  abp login john");
         sb.AppendLine("  abp login john -p 1234");
         sb.AppendLine("");
-        sb.AppendLine("See the documentation for more info: https://docs.abp.io/en/abp/latest/CLI");
+        sb.AppendLine("See the documentation for more info: https://abp.io/docs/latest/cli");
 
         return sb.ToString();
     }
 
-    public string GetShortDescription()
+    public static string GetShortDescription()
     {
         return "Sign in to " + CliUrls.AccountAbpIo + ".";
     }

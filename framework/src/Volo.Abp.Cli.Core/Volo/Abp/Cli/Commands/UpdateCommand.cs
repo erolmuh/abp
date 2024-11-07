@@ -127,12 +127,12 @@ public class UpdateCommand : IConsoleCommand, ITransientDependency
         sb.AppendLine("  abp update -p");
         sb.AppendLine("  abp update -sp \"D:\\projects\\\" -sn Acme.BookStore");
         sb.AppendLine("");
-        sb.AppendLine("See the documentation for more info: https://docs.abp.io/en/abp/latest/CLI");
+        sb.AppendLine("See the documentation for more info: https://abp.io/docs/latest/cli");
 
         return sb.ToString();
     }
 
-    public string GetShortDescription()
+    public static string GetShortDescription()
     {
         return "Update all ABP related NuGet packages and NPM packages in a solution or project to the latest version.";
     }

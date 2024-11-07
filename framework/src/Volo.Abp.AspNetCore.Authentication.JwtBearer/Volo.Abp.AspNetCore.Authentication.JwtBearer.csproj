@@ -4,7 +4,7 @@
   <Import Project="..\..\..\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
     <AssemblyName>Volo.Abp.AspNetCore.Authentication.JwtBearer</AssemblyName>
@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Volo.Abp.Security\Volo.Abp.Security.csproj" />
     <ProjectReference Include="..\Volo.Abp.Caching\Volo.Abp.Caching.csproj" />
+    <ProjectReference Include="..\Volo.Abp.AspNetCore.Abstractions\Volo.Abp.AspNetCore.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

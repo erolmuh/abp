@@ -10,6 +10,7 @@ using Volo.Abp.ObjectExtending;
 using Volo.Abp.Users;
 using Volo.CmsKit.Admin.MediaDescriptors;
 using Volo.CmsKit.Blogs;
+using Volo.CmsKit.Comments;
 using Volo.CmsKit.Features;
 using Volo.CmsKit.GlobalFeatures;
 using Volo.CmsKit.Permissions;
@@ -25,6 +26,8 @@ public class BlogPostAdminAppService : CmsKitAppServiceBase, IBlogPostAdminAppSe
     protected BlogPostManager BlogPostManager { get; }
     protected IBlogPostRepository BlogPostRepository { get; }
     protected IBlogRepository BlogRepository { get; }
+    
+    protected ICommentRepository CommentRepository { get; }
     protected ICmsUserLookupService UserLookupService { get; }
 
     protected IMediaDescriptorAdminAppService MediaDescriptorAdminAppService { get; }
@@ -34,13 +37,15 @@ public class BlogPostAdminAppService : CmsKitAppServiceBase, IBlogPostAdminAppSe
         IBlogPostRepository blogPostRepository,
         IBlogRepository blogRepository,
         ICmsUserLookupService userLookupService,
-        IMediaDescriptorAdminAppService mediaDescriptorAdminAppService)
+        IMediaDescriptorAdminAppService mediaDescriptorAdminAppService,
+        ICommentRepository commentRepository)
     {
         BlogPostManager = blogPostManager;
         BlogPostRepository = blogPostRepository;
         BlogRepository = blogRepository;
         UserLookupService = userLookupService;
         MediaDescriptorAdminAppService = mediaDescriptorAdminAppService;
+        CommentRepository = commentRepository;
     }
 
     [Authorize(CmsKitAdminPermissions.BlogPosts.Create)]
@@ -126,7 +131,7 @@ public class BlogPostAdminAppService : CmsKitAppServiceBase, IBlogPostAdminAppSe
     [Authorize(CmsKitAdminPermissions.BlogPosts.Delete)]
     public virtual async Task DeleteAsync(Guid id)
     {
-        await BlogPostRepository.DeleteAsync(id);
+        await BlogPostManager.DeleteAsync(id);
     }
 
     [Authorize(CmsKitAdminPermissions.BlogPosts.Publish)]

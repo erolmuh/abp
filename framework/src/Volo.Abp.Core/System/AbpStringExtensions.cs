@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -396,6 +395,36 @@ public static class AbpStringExtensions
                 sb.Append(hashByte.ToString("X2"));
             }
 
+            return sb.ToString();
+        }
+    }
+
+    public static string ToSha256(this string str)
+    {
+        using (var sha = SHA256.Create())
+        {
+            var data = sha.ComputeHash(Encoding.UTF8.GetBytes(str));
+
+            var sb = new StringBuilder();
+            foreach (var d in data)
+            {
+                sb.Append(d.ToString("x2"));
+            }
+            return sb.ToString();
+        }
+    }
+
+    public static string ToSha512(this string str)
+    {
+        using (var sha = SHA512.Create())
+        {
+            var data = sha.ComputeHash(Encoding.UTF8.GetBytes(str));
+
+            var sb = new StringBuilder();
+            foreach (var d in data)
+            {
+                sb.Append(d.ToString("x2"));
+            }
             return sb.ToString();
         }
     }

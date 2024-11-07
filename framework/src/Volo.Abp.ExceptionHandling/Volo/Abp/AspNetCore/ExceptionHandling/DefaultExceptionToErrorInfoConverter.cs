@@ -80,7 +80,16 @@ public class DefaultExceptionToErrorInfoConverter : IExceptionToErrorInfoConvert
 
         if (exception is AbpRemoteCallException remoteCallException && remoteCallException.Error != null)
         {
-            return remoteCallException.Error;
+            var remoteServiceErrorInfo = remoteCallException.Error;
+            if (remoteServiceErrorInfo.Message == AbpExceptionHandlingConsts.Unauthorized)
+            {
+                remoteServiceErrorInfo.Message = L[AbpExceptionHandlingConsts.Unauthorized];
+            }
+            if (remoteServiceErrorInfo.Details == AbpExceptionHandlingConsts.SessionExpired)
+            {
+                remoteServiceErrorInfo.Details = L[AbpExceptionHandlingConsts.SessionExpired];
+            }
+            return remoteServiceErrorInfo;
         }
 
         if (exception is AbpDbConcurrencyException)
@@ -123,7 +132,10 @@ public class DefaultExceptionToErrorInfoConverter : IExceptionToErrorInfoConvert
             errorInfo.Message = L["InternalServerErrorMessage"];
         }
 
-        errorInfo.Data = exception.Data;
+        if (options.SendExceptionDataToClientTypes.Any(t => t.IsInstanceOfType(exception)))
+        {
+            errorInfo.Data = exception.Data;
+        }
 
         return errorInfo;
     }

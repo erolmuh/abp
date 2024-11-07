@@ -45,7 +45,7 @@ public class BundleCommand : IConsoleCommand, ITransientDependency
         await BundlingService.BundleAsync(workingDirectory, forceBuild, projectType);
     }
 
-    public string GetShortDescription()
+    public static string GetShortDescription()
     {
         return "Bundles all third party styles and scripts required by modules and updates index.html file.";
     }
@@ -65,7 +65,7 @@ public class BundleCommand : IConsoleCommand, ITransientDependency
         sb.AppendLine("-f | --force                                            (default: false)");
         sb.AppendLine("-t | --project-type                                     (default: webassembly)");
         sb.AppendLine("");
-        sb.AppendLine("See the documentation for more info: https://docs.abp.io/en/abp/latest/CLI");
+        sb.AppendLine("See the documentation for more info: https://abp.io/docs/latest/cli");
 
         return sb.ToString();
     }

@@ -26,15 +26,18 @@ public class BlogPostPublicAppService : CmsKitPublicAppServiceBase, IBlogPostPub
     protected IBlogPostRepository BlogPostRepository { get; }
 
     protected ITagRepository TagRepository { get; }
+    protected BlogPostManager BlogPostManager { get; }
 
     public BlogPostPublicAppService(
         IBlogRepository blogRepository,
         IBlogPostRepository blogPostRepository,
-        ITagRepository tagRepository)
+        ITagRepository tagRepository,
+        BlogPostManager blogPostManager)
     {
         BlogRepository = blogRepository;
         BlogPostRepository = blogPostRepository;
         TagRepository = tagRepository;
+        BlogPostManager = blogPostManager;
     }
 
     public virtual async Task<BlogPostCommonDto> GetAsync(
@@ -88,7 +91,7 @@ public class BlogPostPublicAppService : CmsKitPublicAppServiceBase, IBlogPostPub
             throw new AbpAuthorizationException();
         }
 
-        await BlogPostRepository.DeleteAsync(id);
+        await BlogPostManager.DeleteAsync(id);
     }
 
     public async Task<string> GetTagNameAsync([NotNull] Guid tagId)

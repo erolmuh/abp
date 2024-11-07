@@ -34,7 +34,11 @@ public class UnitOfWork : IUnitOfWork, ITransientDependency
     public string? ReservationName { get; set; }
 
     protected List<Func<Task>> CompletedHandlers { get; } = new List<Func<Task>>();
+
+    protected List<KeyValuePair<UnitOfWorkEventRecord, Predicate<UnitOfWorkEventRecord>?>> DistributedEventWithPredicates { get; } = new List<KeyValuePair<UnitOfWorkEventRecord, Predicate<UnitOfWorkEventRecord>?>>();
     protected List<UnitOfWorkEventRecord> DistributedEvents { get; } = new List<UnitOfWorkEventRecord>();
+
+    protected List<KeyValuePair<UnitOfWorkEventRecord, Predicate<UnitOfWorkEventRecord>?>> LocalEventWithPredicates { get; } = new List<KeyValuePair<UnitOfWorkEventRecord, Predicate<UnitOfWorkEventRecord>?>>();
     protected List<UnitOfWorkEventRecord> LocalEvents { get; } = new List<UnitOfWorkEventRecord>();
 
     public event EventHandler<UnitOfWorkFailedEventArgs> Failed = default!;
@@ -135,24 +139,31 @@ public class UnitOfWork : IUnitOfWork, ITransientDependency
             _isCompleting = true;
             await SaveChangesAsync(cancellationToken);
 
+            DistributedEvents.AddRange(GetEventsRecords(DistributedEventWithPredicates));
+            LocalEvents.AddRange(GetEventsRecords(LocalEventWithPredicates));
+
             while (LocalEvents.Any() || DistributedEvents.Any())
             {
                 if (LocalEvents.Any())
                 {
                     var localEventsToBePublished = LocalEvents.OrderBy(e => e.EventOrder).ToArray();
+                    LocalEventWithPredicates.Clear();
                     LocalEvents.Clear();
                     await UnitOfWorkEventPublisher.PublishLocalEventsAsync(
                         localEventsToBePublished
                     );
+                    LocalEvents.AddRange(GetEventsRecords(LocalEventWithPredicates));
                 }
 
                 if (DistributedEvents.Any())
                 {
                     var distributedEventsToBePublished = DistributedEvents.OrderBy(e => e.EventOrder).ToArray();
+                    DistributedEventWithPredicates.Clear();
                     DistributedEvents.Clear();
                     await UnitOfWorkEventPublisher.PublishDistributedEventsAsync(
                         distributedEventsToBePublished
                     );
+                    DistributedEvents.AddRange(GetEventsRecords(DistributedEventWithPredicates));
                 }
 
                 await SaveChangesAsync(cancellationToken);
@@ -244,38 +255,44 @@ public class UnitOfWork : IUnitOfWork, ITransientDependency
         UnitOfWorkEventRecord eventRecord,
         Predicate<UnitOfWorkEventRecord>? replacementSelector = null)
     {
-        AddOrReplaceEvent(LocalEvents, eventRecord, replacementSelector);
+        LocalEventWithPredicates.Add(new KeyValuePair<UnitOfWorkEventRecord, Predicate<UnitOfWorkEventRecord>?>(eventRecord, replacementSelector));
     }
 
     public virtual void AddOrReplaceDistributedEvent(
         UnitOfWorkEventRecord eventRecord,
         Predicate<UnitOfWorkEventRecord>? replacementSelector = null)
     {
-        AddOrReplaceEvent(DistributedEvents, eventRecord, replacementSelector);
+        DistributedEventWithPredicates.Add(new KeyValuePair<UnitOfWorkEventRecord, Predicate<UnitOfWorkEventRecord>?>(eventRecord, replacementSelector));
     }
 
-    public virtual void AddOrReplaceEvent(
-        List<UnitOfWorkEventRecord> eventRecords,
-        UnitOfWorkEventRecord eventRecord,
-        Predicate<UnitOfWorkEventRecord>? replacementSelector = null)
+    protected virtual List<UnitOfWorkEventRecord> GetEventsRecords(List<KeyValuePair<UnitOfWorkEventRecord, Predicate<UnitOfWorkEventRecord>?>> eventWithPredicates)
     {
-        if (replacementSelector == null)
+        var eventRecords = new List<UnitOfWorkEventRecord>();
+        foreach (var eventWithPredicate in eventWithPredicates)
         {
-            eventRecords.Add(eventRecord);
-        }
-        else
-        {
-            var foundIndex = eventRecords.FindIndex(replacementSelector);
-            if (foundIndex < 0)
+            var eventRecord = eventWithPredicate.Key;
+            var replacementSelector = eventWithPredicate.Value;
+
+            if (replacementSelector == null)
             {
                 eventRecords.Add(eventRecord);
             }
             else
             {
-                eventRecord.SetOrder(eventRecords[foundIndex].EventOrder);
-                eventRecords[foundIndex] = eventRecord;
+                var foundIndex = eventRecords.FindIndex(replacementSelector);
+                if (foundIndex < 0)
+                {
+                    eventRecords.Add(eventRecord);
+                }
+                else
+                {
+                    eventRecord.SetOrder(eventRecords[foundIndex].EventOrder);
+                    eventRecords[foundIndex] = eventRecord;
+                }
             }
         }
+
+        return eventRecords;
     }
 
     protected virtual async Task OnCompletedAsync()

@@ -15,6 +15,7 @@
     "TestEmailSubject": "Test-E-Mail {0}",
     "TestEmailBody": "Testen Sie hier die E-Mail-Textnachricht",
     "SuccessfullySent": "Erfolgreich gesendet",
+    "MailSendingFailed": "E-Mail-Versand fehlgeschlagen. Bitte überprüfen Sie Ihre E-Mail-Konfiguration und versuchen Sie es erneut.",
     "Send": "Schicken",
     "Menu:Emailing": "E-Mail senden",
     "Menu:TimeZone": "Zeitzone",
@@ -33,6 +34,7 @@
     "Feature:SettingManagementEnable": "Aktivieren Sie die Einstellungsverwaltung",
     "Feature:SettingManagementEnableDescription": "Aktivieren Sie das Einstellungsverwaltungssystem in der Anwendung.",
     "Feature:AllowChangingEmailSettings": "Erlauben Sie das Ändern der E-Mail-Einstellungen.",
-    "Feature:AllowChangingEmailSettingsDescription": "Erlauben Sie das Ändern der E-Mail-Einstellungen."
+    "Feature:AllowChangingEmailSettingsDescription": "Erlauben Sie das Ändern der E-Mail-Einstellungen.",
+    "SmtpPasswordPlaceholder": "Geben Sie einen Wert ein, um das Passwort zu aktualisieren"
   }
 }

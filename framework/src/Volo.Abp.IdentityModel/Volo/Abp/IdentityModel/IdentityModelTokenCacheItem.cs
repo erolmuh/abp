@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Volo.Abp.MultiTenancy;
 
 namespace Volo.Abp.IdentityModel;
 
@@ -21,6 +20,6 @@ public class IdentityModelTokenCacheItem
 
     public static string CalculateCacheKey(IdentityClientConfiguration configuration)
     {
-        return string.Join(",", configuration.Select(x => x.Key + ":" + x.Value)).ToMd5();
+        return string.Join(",", configuration.Select(x => x.Key + ":" + x.Value)).ToSha256();
     }
 }

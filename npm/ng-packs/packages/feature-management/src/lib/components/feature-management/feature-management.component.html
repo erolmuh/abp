@@ -1,7 +1,12 @@
 @if (visible) {
   <abp-modal [(visible)]="visible" [busy]="modalBusy" [options]="{ size: 'lg' }">
     <ng-template #abpHeader>
-      <h3>{{ 'AbpFeatureManagement::Features' | abpLocalization }}</h3>
+      <h3>
+        {{ 'AbpFeatureManagement::Features' | abpLocalization }}
+        @if (providerTitle) {
+          - {{ providerTitle }}
+        }
+      </h3>
     </ng-template>
 
     <ng-template #abpBody>
@@ -26,7 +31,7 @@
                       <div class="mt-2" [ngStyle]="feature.style" (keyup.enter)="save()">
                         @switch (feature.valueType?.name) {
                           @case (valueTypes.ToggleStringValueType) {
-                            <div class="form-check">
+                            <div class="form-check" [class.px-4]="!!feature.parentName">
                               <input
                                 class="form-check-input"
                                 type="checkbox"
@@ -47,7 +52,7 @@
                             </div>
                           }
                           @case (valueTypes.FreeTextStringValueType) {
-                            <div class="mb-3 form-group">
+                            <div class="mb-3 form-group" [class.px-2]="!!feature.parentName">
                               <label [htmlFor]="feature.name" class="form-label">{{
                                 feature.displayName
                               }}</label>
@@ -69,35 +74,35 @@
                           }
                           @case (valueTypes.SelectionStringValueType) {
                             @if (feature.valueType.itemSource?.items?.length) {
-                                <div class="mb-3 form-group">
-                                  <label [htmlFor]="feature.name" class="form-label">{{
-                                    feature.displayName
-                                  }}</label>
-                                  <select
-                                    class="form-select"
-                                    [id]="feature.name"
-                                    [(ngModel)]="feature.value"
-                                  >
-                                    @for (
-                                      item of feature.valueType.itemSource?.items;
-                                      track item.value
-                                    ) {
-                                      <option [ngValue]="item.value">
-                                        {{
-                                          item.displayText?.resourceName +
-                                            '::' +
-                                            item.displayText?.name | abpLocalization
-                                        }}
-                                      </option>
-                                    }
-                                  </select>
-                                  <ng-container
-                                    *ngTemplateOutlet="
-                                      descTmp;
-                                      context: { $implicit: feature.description }
-                                    "
-                                  ></ng-container>
-                                </div>
+                              <div class="mb-3 form-group" [class.px-2]="!!feature.parentName">
+                                <label [htmlFor]="feature.name" class="form-label">{{
+                                  feature.displayName
+                                }}</label>
+                                <select
+                                  class="form-select"
+                                  [id]="feature.name"
+                                  [(ngModel)]="feature.value"
+                                >
+                                  @for (
+                                    item of feature.valueType.itemSource?.items;
+                                    track item.value
+                                  ) {
+                                    <option [ngValue]="item.value">
+                                      {{
+                                        item.displayText?.resourceName +
+                                          '::' +
+                                          item.displayText?.name | abpLocalization
+                                      }}
+                                    </option>
+                                  }
+                                </select>
+                                <ng-container
+                                  *ngTemplateOutlet="
+                                    descTmp;
+                                    context: { $implicit: feature.description }
+                                  "
+                                ></ng-container>
+                              </div>
                             }
                           }
                           @default {
@@ -136,7 +141,6 @@
 
       @if (groups.length) {
         <abp-button
-          iconClass="fa fa-refresh"
           buttonClass="btn btn-outline-primary"
           [disabled]="modalBusy"
           (click)="resetToDefault()"

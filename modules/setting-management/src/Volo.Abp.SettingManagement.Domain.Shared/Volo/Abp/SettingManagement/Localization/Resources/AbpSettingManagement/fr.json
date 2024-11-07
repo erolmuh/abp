@@ -15,6 +15,7 @@
     "TestEmailSubject": "E-mail test {0}",
     "TestEmailBody": "Testez le corps du message ici",
     "SuccessfullySent": "Envoyé avec succès",
+    "MailSendingFailed": "L'envoi de courrier a échoué, veuillez vérifier votre configuration de courrier électronique et réessayer.",
     "Send": "Envoyer",
     "Menu:Emailing": "Envoi par e-mail",
     "Menu:TimeZone": "Fuseau Horaire",
@@ -33,6 +34,7 @@
     "Feature:SettingManagementEnable": "Activer la gestion des paramètres",
     "Feature:SettingManagementEnableDescription": "Activer le système de gestion des paramètres dans l'application.",
     "Feature:AllowChangingEmailSettings": "Autoriser la modification des paramètres de messagerie.",
-    "Feature:AllowChangingEmailSettingsDescription": "Autoriser la modification des paramètres de messagerie."
+    "Feature:AllowChangingEmailSettingsDescription": "Autoriser la modification des paramètres de messagerie.",
+    "SmtpPasswordPlaceholder": "Entrez une valeur pour mettre à jour le mot de passe"
   }
 }

@@ -15,6 +15,7 @@
     "TestEmailSubject": "測試郵件 {0}",
     "TestEmailBody": "測試郵件內容",
     "SuccessfullySent": "成功發送",
+    "MailSendingFailed": "郵件發送失敗,請檢查你的郵件配置並重試.",
     "Send": "發送",
     "Menu:Emailing": "信箱",
     "Menu:TimeZone": "時區",
@@ -33,6 +34,7 @@
     "Feature:SettingManagementEnable": "啟用設定管理",
     "Feature:SettingManagementEnableDescription": "在應用程序中啟用設定管理系統.",
     "Feature:AllowChangingEmailSettings": "允許更改電子郵件設置。",
-    "Feature:AllowChangingEmailSettingsDescription": "允許更改電子郵件設置。"
+    "Feature:AllowChangingEmailSettingsDescription": "允許更改電子郵件設置。",
+    "SmtpPasswordPlaceholder": "輸入一個值以更新密碼"
   }
 }

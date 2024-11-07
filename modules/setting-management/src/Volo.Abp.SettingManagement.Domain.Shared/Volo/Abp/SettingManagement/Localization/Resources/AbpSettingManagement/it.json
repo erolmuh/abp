@@ -15,6 +15,7 @@
     "TestEmailSubject": "Prova l&#39;e-mail {0}",
     "TestEmailBody": "Prova il corpo del messaggio email qui",
     "SuccessfullySent": "Inviato con successo",
+    "MailSendingFailed": "Invio della posta fallito, controlla la tua configurazione email e riprova.",
     "Send": "Inviare",
     "Menu:Emailing": "Invio di e-mail",
     "Menu:TimeZone": "Fuso Orario",
@@ -33,6 +34,7 @@
     "Feature:SettingManagementEnable": "Abilita gestione impostazioni",
     "Feature:SettingManagementEnableDescription": "Abilita sistema gestione impostazioni nell'applicazione",
     "Feature:AllowChangingEmailSettings": "Consenti di modificare le loro impostazioni e-mail.",
-    "Feature:AllowChangingEmailSettingsDescription": "Consenti di modificare le loro impostazioni e-mail."
+    "Feature:AllowChangingEmailSettingsDescription": "Consenti di modificare le loro impostazioni e-mail.",
+    "SmtpPasswordPlaceholder": "Inserisci un valore per aggiornare la password"
   }
 }

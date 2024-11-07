@@ -4,7 +4,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using Shouldly;
 using Volo.Abp.ExceptionHandling;
@@ -108,7 +107,7 @@ public class ExceptionTestController_Tests : AspNetCoreMvcTestBase
 
         var result = await GetResponseAsObjectAsync<RemoteServiceErrorResponse>("/api/exception-test/ExceptionOnUowSaveChange", HttpStatusCode.Conflict);
         result.Error.ShouldNotBeNull();
-        result.Error.Message.ShouldBe("The data you have submitted has already changed by another user/client. Please discard the changes you've done and try from the beginning.");
+        result.Error.Message.ShouldBe("The data you have submitted has already been changed by another user. Discard your changes and try again.");
 
      #pragma warning disable 4014
                  _fakeExceptionSubscriber

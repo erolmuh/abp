@@ -91,9 +91,7 @@ export function createImportRefsToModelReducer(params: ModelGeneratorParams) {
 
             if (propType.isEnum) {
               toBeImported.push({ type: ref, isEnum: true });
-            }
-
-            if (parseNamespace(solution, ref) !== model.namespace) {
+            } else if (parseNamespace(solution, ref) !== model.namespace) {
               toBeImported.push({ type: ref, isEnum: false });
             }
           });

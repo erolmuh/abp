@@ -15,6 +15,7 @@
     "TestEmailSubject": "Test email {0}",
     "TestEmailBody": "Test email body message here",
     "SuccessfullySent": "Successfully sent",
+    "MailSendingFailed": "Mail sending failed, please check your email configuration and try again.",
     "Send": "Send",
     "Menu:Emailing": "Emailing",
     "Menu:TimeZone": "Time Zone",
@@ -33,6 +34,7 @@
     "Feature:SettingManagementEnable": "Enable setting management",
     "Feature:SettingManagementEnableDescription": "Enable setting management system in the application.",
     "Feature:AllowChangingEmailSettings": "Allow changing email settings.",
-    "Feature:AllowChangingEmailSettingsDescription": "Allow changing email settings."
+    "Feature:AllowChangingEmailSettingsDescription": "Allow changing email settings.",
+    "SmtpPasswordPlaceholder": "Enter a value to update password"
   }
 }

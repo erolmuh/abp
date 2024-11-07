@@ -8,8 +8,6 @@ export const SAAS_NAMESPACE = 'Volo.Saas';
 export const TENANT_KEY = 'tenant';
 
 export const VOLO_PACKAGE_PROXY_IMPORTS = new Map<string, string>([
-  ['Volo.Abp.Identity.IdentityUserDto', '@volo/abp.ng.identity/proxy'],
-  ['Volo.Abp.Identity.IdentityRoleDto', '@volo/abp.ng.identity/proxy'],
   ['Volo.Abp.FileManagement.FileDescriptorDto', '@volo/abp.ng.file-management/proxy'],
   ['Volo.Abp.FileManagement.DirectoryContentDto', '@volo/abp.ng.file-management/proxy'],
   ['Volo.Abp.AuditLogging.AuditLogDto', '@volo/abp.ng.audit-logging/proxy'],
@@ -26,10 +24,10 @@ export const VOLO_PACKAGE_PROXY_IMPORTS = new Map<string, string>([
   ['Volo.Saas.Editions.EditionDto', '@volo/abp.ng.saas/proxy'],
   [
     'Volo.Abp.TextTemplateManagement.TextTemplates.TextTemplateContentDto',
-    '@volo/abp.ng.saas/proxy',
+    '@volo/abp.ng.text-template-management/proxy',
   ],
   [
     'Volo.Abp.TextTemplateManagement.TextTemplates.TemplateDefinitionDto',
-    '@volo/abp.ng.saas/proxy',
+    '@volo/abp.ng.text-template-management/proxy',
   ],
 ]);
