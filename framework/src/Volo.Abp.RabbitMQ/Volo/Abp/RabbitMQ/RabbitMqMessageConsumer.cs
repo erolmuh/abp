@@ -34,7 +34,7 @@ public class RabbitMqMessageConsumer : IRabbitMqMessageConsumer, ITransientDepen
 
     protected ConcurrentQueue<QueueBindCommand> QueueBindCommands { get; }
 
-    protected Lock ChannelSendSyncLock { get; } = LockFactory.Create();
+    protected object ChannelSendSyncLock { get; } = new();
 
     public RabbitMqMessageConsumer(
         IConnectionPool connectionPool,
