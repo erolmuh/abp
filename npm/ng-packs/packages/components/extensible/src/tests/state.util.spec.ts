@@ -1,4 +1,4 @@
-import { ConfigStateService, PermissionService } from '@abp/ng.core';
+import { ConfigStateService } from '@abp/ng.core';
 import { firstValueFrom, lastValueFrom, of } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { ePropType } from '../lib/enums/props.enum';
@@ -9,18 +9,25 @@ import {
   getObjectExtensionEntitiesFromStore,
   mapEntitiesToContributors,
 } from '../lib/utils/state.util';
+import { Injector } from '@angular/core';
 
 const fakeAppConfigService = { get: () => of(createMockState()) } as any;
 const fakeLocalizationService = { get: () => of(createMockState()) } as any;
 const configState = new ConfigStateService(fakeAppConfigService, fakeLocalizationService, false);
 configState.refreshAppState();
-const permissionService = new PermissionService(configState);
 
 describe('State Utils', () => {
+  let injector: Injector;
+  beforeEach(() => {
+    injector = {
+      get: jest.fn().mockReturnValue(configState),
+    };
+  });
+
   describe('#getObjectExtensionEntitiesFromStore', () => {
     it('should return observable entities of an existing module', async () => {
       const objectExtensionEntitiesFromStore$ = getObjectExtensionEntitiesFromStore(
-        configState,
+        injector,
         'Identity',
       );
 
@@ -29,7 +36,7 @@ describe('State Utils', () => {
     });
 
     it('should return observable empty object if module does not exist', async () => {
-      const entities = await getObjectExtensionEntitiesFromStore(configState, 'Saas').toPromise();
+      const entities = await getObjectExtensionEntitiesFromStore(injector, 'Saas').toPromise();
       expect(entities).toEqual({});
     });
 
@@ -37,7 +44,11 @@ describe('State Utils', () => {
       const emptyConfigState = new ConfigStateService(null, null, false);
       const emit = jest.fn();
 
-      getObjectExtensionEntitiesFromStore(emptyConfigState, 'Identity').subscribe(emit);
+      injector = {
+        get: jest.fn().mockReturnValue(emptyConfigState),
+      };
+
+      getObjectExtensionEntitiesFromStore(injector, 'Identity').subscribe(emit);
 
       setTimeout(() => {
         expect(emit).not.toHaveBeenCalled();
@@ -49,10 +60,7 @@ describe('State Utils', () => {
   describe('#mapEntitiesToContributors', () => {
     it('should return contributors from given entities', async () => {
       const contributors = await lastValueFrom(
-        of(createMockEntities()).pipe(
-          mapEntitiesToContributors(configState, permissionService, 'AbpIdentity'),
-          take(1),
-        ),
+        of(createMockEntities()).pipe(mapEntitiesToContributors(injector, 'AbpIdentity'), take(1)),
       );
 
       const propList = new EntityPropList();

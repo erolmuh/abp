@@ -49,9 +49,31 @@ However, notice this package is used by the `@abp/aspnetcore.mvc.ui.theme.shared
 
 See the PR for more info: https://github.com/abpframework/abp/pull/19340
 
+### `ApplyAbpConcepts` to Entities Whose Navigation Properties Changed
+
+In this version, we have started updating entities' `EntityVersion`, `ModificationAuditProperties`, and `ConcurrencyStamp` properties whenever their navigation property changes. Normally, this should not affect your code, however, you may need to fix your tests or codebase for this change. Please see [#20012](https://github.com/abpframework/abp/pull/20012#issuecomment-2438383059) for more information.
+
 ### Angular UI
 
 We wish to formally inform you that ABP version 8.3 has been upgraded to incorporate Angular version 18. Consequently, we recommend migrating your application to [Angular v18](https://angular.dev/update-guide) to ensure compatibility.
+
+#### Tenant impersonation & User impersonation
+
+Add the `impersonation: { userImpersonation: true, tenantImpersonation: true}` object to the `oAuthConfig` of the environment if it does not exit.
+
+```
+export const environment = {
+  //Other props..
+  oAuthConfig: {
+    //Other props..
+    impersonation: {
+      userImpersonation: true,
+      tenantImpersonation: true,
+    },
+  },
+```
+
+See https://abp.io/docs/latest/modules/account/impersonation#angular
 
 ## PRO
 

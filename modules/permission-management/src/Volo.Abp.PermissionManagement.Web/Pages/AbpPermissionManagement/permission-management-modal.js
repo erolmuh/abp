@@ -291,6 +291,7 @@ var abp = abp || {};
             $permissionSearchInput.keyup(throttle(function() {
                 var searchTerm = $permissionSearchInput.val().toLowerCase();
                 filterTabs(searchTerm);
+                setFirstVisibleTabActive();
             }, 300));
 
             function filterTabs(searchTerm) {
@@ -304,7 +305,7 @@ var abp = abp || {};
                         return;
                     }
 
-                    var tabName = $tabItem.find('small').text().toLowerCase();
+                    var tabName = $tabItem.text().toLowerCase();
 
                     var tabContentFilters = $($tabItem.attr('href')).find('[data-filter-text]');
                     let includedInTabContent = false;
@@ -322,6 +323,18 @@ var abp = abp || {};
                         $tab.hide();
                     }
                 });
+            }
+
+            function setFirstVisibleTabActive() {
+                $('#PermissionsTabsContent .tab-pane').removeClass('active show');
+
+                var $tabs = $('#PermissionsTabs .nav-link');
+                var $firstVisibleTab = $tabs.filter(':visible').first();
+                $tabs.removeClass('active');
+                $firstVisibleTab.addClass('active');
+                
+                var $firstVisibleTabContent = $($firstVisibleTab.attr('href'));
+                $firstVisibleTabContent.addClass('active show');
             }
 
             function throttle(mainFunction, delay) {

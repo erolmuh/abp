@@ -12,3 +12,7 @@ Please select one of the following documents best fits for your application:
   - [MAUI Application](maui.md)
   - [WPF Application](wpf.md)
   - [Console Application](console.md)
+
+## Which Startup Template is Suitable for Me?
+
+You can see the *[Solution Template Selection Guide](../solution-templates/guide.md)* if you are not sure which solution template is suitable for you.

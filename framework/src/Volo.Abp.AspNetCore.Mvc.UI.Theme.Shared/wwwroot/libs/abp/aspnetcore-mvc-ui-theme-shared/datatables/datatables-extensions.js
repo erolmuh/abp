@@ -226,7 +226,7 @@ var abp = abp || {};
         };
 
         var hideColumnWithoutRedraw = function (tableInstance, colIndex) {
-            tableInstance.fnSetColumnVis(colIndex, false, false);
+            tableInstance.api().column(colIndex).visible(false, false);
         };
 
         var hideEmptyColumn = function (cellContent, tableInstance, colIndex) {

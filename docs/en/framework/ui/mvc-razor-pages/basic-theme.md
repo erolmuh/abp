@@ -85,7 +85,7 @@ See the [User Interface Customization Guide](customization-user-interface.md) to
 
 You can run the following [ABP CLI](../../../cli) command in **Web** project directory to copy the source code to your solution:
 
-`abp add-module Volo.BasicTheme --with-source-code --add-to-solution-file`
+`abp add-source-code Volo.Abp.BasicTheme`
 
 ----
 

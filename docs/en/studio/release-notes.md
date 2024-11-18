@@ -2,6 +2,43 @@
 
 This document contains **brief release notes** for each ABP Studio release. Release notes only include **major features** and **visible enhancements**. Therefore, they don't include all the development done in the related version. 
 
+## 0.9.6 (2024-11-15)
+
+* Added missing imports to templates
+* Fixed bugs during EF Core package installation
+* Show errors to the user when adding a database migration
+* Changed empty solution description on create new solution wizard
+* Fixed problems with templates created with Basic Theme
+* Ensure the correct version is used when adding a new module/package to an existing solution
+
+## 0.9.5 (2024-11-06)
+
+* Added dynamic localization option to microservice template
+* Added new template creation options for the Application (No Layers)
+* Fixed the environment variable setting for .NET global tool and verification of tool installation
+* Fixed log view auto-scrolling issue, ensuring smooth scrolling experience
+* Upgraded templates to version `8.3.3`
+
+## 0.9.4 (2024-10-31)
+
+* Made the `TopMenuLayout` as the default layout type for microservice public website
+* Fixed application crashing problem when the ABP Suite is opened
+
+## 0.9.3 (2024-10-30)
+
+* Added the **standard module template**
+* Made enhancements on the pre-integrated browser
+* Fixed Blazor WebAssembly UI being not run on kubernetes problem
+* Added a database migration after a module added to the solution
+
+## 0.9.2 (2024-10-22)
+
+* Added a status bar to the pre-integrated browser for showing errors
+* Added **Sample CRUD Page** option to pro templates
+* Added test projects optionally for all templates
+* Added **AutoMapper** configurations to microservice host projects
+* Disabled **transaction** for *MongoDB* & *SQLite* by default.
+
 ## 0.9.1 (2024-10-10)
 
 * Fixed the ABP Studio CLI's Bundle Command

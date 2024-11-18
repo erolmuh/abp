@@ -31,7 +31,7 @@ public class AbpIdentityUserValidator_Tests : AbpIdentityAspNetCoreTestBase
         identityResult.Succeeded.ShouldBeFalse();
         identityResult.Errors.Count().ShouldBe(1);
         identityResult.Errors.First().Code.ShouldBe("InvalidUserName");
-        identityResult.Errors.First().Description.ShouldBe(Localizer["InvalidUserName", "user1@volosoft.com"]);
+        identityResult.Errors.First().Description.ShouldBe(Localizer["Volo.Abp.Identity:InvalidUserName", "user1@volosoft.com"]);
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class AbpIdentityUserValidator_Tests : AbpIdentityAspNetCoreTestBase
         var user1 = new IdentityUser(Guid.NewGuid(), "user1@volosoft.com", "user@volosoft.com");
         var identityResult = await _identityUserManager.CreateAsync(user1);
         identityResult.Succeeded.ShouldBeTrue();
-        
+
         var user2 = new IdentityUser(Guid.NewGuid(), "user2", "user1@volosoft.com");
         identityResult = await _identityUserManager.CreateAsync(user2);
         identityResult.Succeeded.ShouldBeFalse();

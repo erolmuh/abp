@@ -279,7 +279,7 @@ UserInfoController  -> connect/userinfo
 
 > **Device flow** implementation will be done in the commercial module.
 
-#### AbpOpenIddictAspNetCoreOptions
+### AbpOpenIddictAspNetCoreOptions
 
 `AbpOpenIddictAspNetCoreOptions` can be configured in the `PreConfigureServices` method of your OpenIddict [module](../framework/architecture/modularity/basics.md). 
 
@@ -516,7 +516,7 @@ In the module's `app` directory there are six projects(including `angular`)
 * `OpenIddict.Demo.Client.BlazorWASM:` ASP NET Core Blazor application using `OidcAuthentication` for authentication.
 * `angular`: An angular application that integrates the abp ng modules and uses oauth for authentication.
 
-#### How to run?
+### How to run?
 
 Confirm the connection string of `appsettings.json` in the `OpenIddict.Demo.Server` project. Running the project will automatically create the database and initialize the data. 
 After running the `OpenIddict.Demo.API` project, then you can run the rest of the projects to test.

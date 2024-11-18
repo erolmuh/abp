@@ -1,66 +1,15 @@
 # Single Layer Application Solution Template
 
-## Introduction
-
 This template provides a simple solution structure with a single project. This document explains that solution structure in details.
 
-### The Difference Between the Application Solution Templates
+## Getting Started
 
-ABP's [Layered Application Solution Template](../layered-web-application) provides a well-organized and layered solution to create maintainable business applications based on the [Domain Driven Design](../../framework/architecture/domain-driven-design) (DDD) practices. However, some developers find this template a little bit complex for simple and short-term applications. The single-layer application template has been created to provide a simpler development model for such applications. This template has the same functionality, features and modules on runtime with the [Layered Application Solution Template](../layered-web-application) but the development model is minimal and everything is in a single project (`.csproj`).
+* Follow the [Getting Started guide](../../get-started/single-layer-web-application.md) to create a new solution using this startup solution template.
+* Follow the [TODO application tutorial](../../tutorials/todo/single-layer/index.md) to learn how to create a simple application with this startup solution template.
 
-## How to Start with It?
+## The Solution Structure
 
-You can use the [ABP CLI](../../cli) to create a new project using this startup template. Alternatively, you can generate a CLI command for this startup template from the [Get Started](https://abp.io/get-started) page. In this section, we will use the ABP CLI.
-
-Firstly, install the ABP CLI if you haven't installed it before:
-
-```bash
-dotnet tool install -g Volo.Abp.Studio.Cli
-```
-
-Then, use the `abp new` command in an empty folder to create a new solution:
-
-```bash
-abp new Acme.BookStore -t app-nolayers
-```
-
-* `Acme.BookStore` is the solution name, like *YourCompany.YourProduct*. You can use single-level, two-level or three-level naming.
-* In this example, the `-t` (or `--template`) option specifies the template name.
-
-### Specify the UI Framework
-
-This template provides multiple UI frameworks:
-
-* `mvc`: ASP.NET Core MVC UI with Razor Pages (default)
-* `blazor`: Blazor UI
-* `blazor-server`: Blazor Server UI
-* `angular`: Angular UI
-* `none`: Without UI (for HTTP API development)
-
-Use the `-u` (or `--ui`) option to specify the UI framework while creating the solution:
-
-```bash
-abp new Acme.BookStore -t app-nolayers -u angular
-```
-
-This example specifies the UI type (the `-u` option) as `angular`. You can also specify `mvc`, `blazor`, `blazor-server` or `none` for the UI type.
-
-### Specify the Database Provider
-
-This template supports the following database providers:
-
-- `ef`: Entity Framework Core (default)
-- `mongodb`: MongoDB
-
-Use the `-d` (or `--database-provider`) option to specify the database provider while creating the solution:
-
-```bash
-abp new Acme.BookStore -t app-nolayers -d mongodb
-```
-
-## Solution Structure
-
-If you don't specify any additional options while creating an `app-nolayers` template, you will have a solution as shown below:
+If you created your solution with the default options, you will have a .NET solution as shown below:
 
 ![](../../images/bookstore-single-layer-solution-structure.png)
 

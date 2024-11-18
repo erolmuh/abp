@@ -71,7 +71,7 @@ No need to do anything here.
 #### Web
 
 1. Depends `AbpAccountPublicWebImpersonationModule(Volo.Abp.Account.Pro.Public.Web.Impersonation)` on your `WebModule`
-2. Chnage the base class of `AccountController` to `AbpAccountImpersonationChallengeAccountController`
+2. Change the base class of `AccountController` to `AbpAccountImpersonationChallengeAccountController`
 
 ```cs
 public class AccountController : AbpAccountImpersonationChallengeAccountController
@@ -197,7 +197,7 @@ No need to do anything here.
 
 1. Depends `AbpAccountPublicWebImpersonationModule(Volo.Abp.Account.Pro.Public.Web.Impersonation)` and `AbpAccountPublicBlazorServerModule(Volo.Abp.Account.Pro.Public.Blazor.Server)` on your `BlazorModule`
 
-2. Chnage the base class of `AccountController` to `AbpAccountImpersonationChallengeAccountController`
+2. Change the base class of `AccountController` to `AbpAccountImpersonationChallengeAccountController`
 ```cs
 public class AccountController : AbpAccountImpersonationChallengeAccountController
 {
@@ -301,7 +301,7 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 #### Web
 
 1. Depends `AbpAccountPublicWebImpersonationModule(Volo.Abp.Account.Pro.Public.Web.Impersonation)` on your `WebModule`
-2. Chnage the base class of `AccountController` to `AbpAccountImpersonationChallengeAccountController`
+2. Change the base class of `AccountController` to `AbpAccountImpersonationChallengeAccountController`
 
 ```cs
 public class AccountController : AbpAccountImpersonationChallengeAccountController
@@ -367,7 +367,7 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 
 1. Depends `AbpAccountPublicWebImpersonationModule(Volo.Abp.Account.Pro.Public.Web.Impersonation)` and `AbpAccountPublicBlazorServerModule(Volo.Abp.Account.Pro.Public.Blazor.Server)` on your `BlazorModule`
 
-2. Chnage the base class of `AccountController` to `AbpAccountImpersonationChallengeAccountController`
+2. Change the base class of `AccountController` to `AbpAccountImpersonationChallengeAccountController`
 ```cs
 public class AccountController : AbpAccountImpersonationChallengeAccountController
 {

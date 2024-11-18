@@ -1,8 +1,8 @@
 # Layered Application Solution Template
 
-## Introduction
-
 This template provides a layered application structure based on the [Domain Driven Design](../../framework/architecture/domain-driven-design) (DDD) practices. 
+
+## Getting Started
 
 This document explains **the solution structure** and projects in details. If you want to start quickly, follow the guides below:
 
@@ -68,7 +68,8 @@ Use the `-m` (or `--mobile`) option to specify the mobile application framework:
 abp new Acme.BookStore -m react-native
 ````
 
-If not specified, no mobile application will be created.
+* [The getting started document](../../get-started/layered-web-application.md) explains how to create a new application with this startup template.
+* [The application development tutorial](../../tutorials/book-store/part-01.md) explains step by step application development with this startup template.
 
 ## Solution Structure
 

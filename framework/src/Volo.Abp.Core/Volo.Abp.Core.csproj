@@ -16,7 +16,6 @@
     <RootNamespace />
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Backport.System.Threading.Lock" />
     <PackageReference Include="System.Collections.Immutable" />
     <PackageReference Include="Microsoft.Extensions.Localization" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -34,6 +33,9 @@
     <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="Nito.AsyncEx.Context" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
+  </ItemGroup>	
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1')) ">
     <PackageReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>

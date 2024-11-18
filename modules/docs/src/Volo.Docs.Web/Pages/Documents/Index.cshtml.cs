@@ -29,14 +29,14 @@ namespace Volo.Docs.Pages.Documents
         {
             if (_uiOptions.SingleProjectMode.Enable)
             {
-                return RedirectToPage("/Documents/Project/Index", new {version = DocsAppConsts.Latest });
+                return Redirect($"/Documents/Project/Index?version={DocsAppConsts.Latest}");
             }
 
             var listResult = await _projectAppService.GetListAsync();
 
             if (listResult.Items.Count == 1)
             {
-                return RedirectToPage("/Documents/Project/Index", new { shortName = listResult.Items[0].ShortName });
+                return Redirect($"/Documents/{listResult.Items[0].ShortName}");
             }
 
             Projects = listResult.Items;
