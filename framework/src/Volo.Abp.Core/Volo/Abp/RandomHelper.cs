@@ -12,6 +12,7 @@ namespace Volo.Abp;
 public static class RandomHelper
 {
     private static readonly Random Rnd = new Random();
+    private static readonly Lock _syncLock = LockFactory.Create();
 
     /// <summary>
     /// Returns a random number within a specified range.
@@ -25,7 +26,7 @@ public static class RandomHelper
     /// </returns>
     public static int GetRandom(int minValue, int maxValue)
     {
-        lock (Rnd)
+        lock (_syncLock)
         {
             return Rnd.Next(minValue, maxValue);
         }
@@ -42,7 +43,7 @@ public static class RandomHelper
     /// </returns>
     public static int GetRandom(int maxValue)
     {
-        lock (Rnd)
+        lock (_syncLock)
         {
             return Rnd.Next(maxValue);
         }
@@ -54,7 +55,7 @@ public static class RandomHelper
     /// <returns>A 32-bit signed integer greater than or equal to zero and less than <see cref="int.MaxValue"/>.</returns>
     public static int GetRandom()
     {
-        lock (Rnd)
+        lock (_syncLock)
         {
             return Rnd.Next();
         }

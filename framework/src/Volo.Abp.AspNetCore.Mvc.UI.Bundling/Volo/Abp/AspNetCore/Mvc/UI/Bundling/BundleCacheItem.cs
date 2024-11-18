@@ -9,6 +9,8 @@ public class BundleCacheItem
 
     public List<IDisposable> WatchDisposeHandles { get; }
 
+    public Lock SyncLock { get; } = new();
+
     public BundleCacheItem(List<BundleFile> files)
     {
         Files = files;

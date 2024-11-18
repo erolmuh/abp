@@ -10,6 +10,7 @@ public class BundleConfigurationCollection
     private readonly ConcurrentDictionary<string, BundleConfiguration> _bundles;
     private readonly ConcurrentDictionary<string, List<Action<BundleConfiguration>>> _lazyBundleConfigurationActions;
     private readonly List<Action<BundleConfiguration>> _lazyAllBundleConfigurationActions;
+    private readonly Lock _syncLock = new();
 
     public BundleConfigurationCollection()
     {
@@ -92,7 +93,7 @@ public class BundleConfigurationCollection
             }
         }
 
-        lock (_lazyAllBundleConfigurationActions)
+        lock (_syncLock)
         {
             _lazyAllBundleConfigurationActions.ForEach(c => c.Invoke(bundle));
         }
@@ -146,7 +147,7 @@ public class BundleConfigurationCollection
             configureAction.Invoke(bundle.Value);
         }
 
-        lock (_lazyAllBundleConfigurationActions)
+        lock (_syncLock)
         {
             _lazyAllBundleConfigurationActions.Add(configureAction);
         }

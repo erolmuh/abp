@@ -138,13 +138,13 @@ public class BundleManager : IBundleManager, ITransientDependency
 
     private void WatchChanges(BundleCacheItem cacheValue, List<string> files, string bundleRelativePath)
     {
-        lock (cacheValue.WatchDisposeHandles)
+        lock (cacheValue.SyncLock)
         {
             foreach (var file in files)
             {
                 var watchDisposeHandle = HostingEnvironment.WebRootFileProvider.Watch(file).RegisterChangeCallback(_ =>
                 {
-                    lock (cacheValue.WatchDisposeHandles)
+                    lock (cacheValue.SyncLock)
                     {
                         cacheValue.WatchDisposeHandles.ForEach(h => h.Dispose());
                         cacheValue.WatchDisposeHandles.Clear();

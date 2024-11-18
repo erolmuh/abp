@@ -15,6 +15,7 @@ namespace Volo.Abp.DynamicProxy;
 public static class DynamicProxyIgnoreTypes
 {
     private static HashSet<Type> IgnoredTypes { get; } = new HashSet<Type>();
+    private static readonly Lock _syncLock = LockFactory.Create();
 
     public static void Add<T>()
     {
@@ -23,7 +24,7 @@ public static class DynamicProxyIgnoreTypes
 
     public static void Add(Type type)
     {
-        lock (IgnoredTypes)
+        lock (_syncLock)
         {
             IgnoredTypes.AddIfNotContains(type);
         }
@@ -31,7 +32,7 @@ public static class DynamicProxyIgnoreTypes
 
     public static void Add(params Type[] types)
     {
-        lock (IgnoredTypes)
+        lock (_syncLock)
         {
             IgnoredTypes.AddIfNotContains(types);
         }
@@ -39,7 +40,7 @@ public static class DynamicProxyIgnoreTypes
 
     public static bool Contains(Type type, bool includeDerivedTypes = true)
     {
-        lock (IgnoredTypes)
+        lock (_syncLock)
         {
             return includeDerivedTypes
                 ? IgnoredTypes.Any(t => t.IsAssignableFrom(type))

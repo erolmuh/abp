@@ -6,6 +6,7 @@ namespace Volo.Abp.Testing.Utils;
 public class TestCounter : ITestCounter, ISingletonDependency
 {
     private readonly Dictionary<string, int> _values;
+    private readonly Lock _syncLock = LockFactory.Create();
 
     public TestCounter()
     {
@@ -24,7 +25,7 @@ public class TestCounter : ITestCounter, ISingletonDependency
 
     public int Add(string name, int count)
     {
-        lock (_values)
+        lock (_syncLock)
         {
             var newValue = _values.GetOrDefault(name) + count;
             _values[name] = newValue;
@@ -34,7 +35,7 @@ public class TestCounter : ITestCounter, ISingletonDependency
 
     public int GetValue(string name)
     {
-        lock (_values)
+        lock (_syncLock)
         {
             return _values.GetOrDefault(name);
         }
@@ -42,7 +43,7 @@ public class TestCounter : ITestCounter, ISingletonDependency
 
     public void ResetCount(string name)
     {
-        lock (_values)
+        lock (_syncLock)
         {
             _values[name] = 0;
         }
