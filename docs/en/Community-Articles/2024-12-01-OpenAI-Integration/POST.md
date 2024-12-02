@@ -2,6 +2,8 @@
 
 In this article, I will show you how to integrate and use the [OpenAI API](https://github.com/openai/openai-dotnet?tab=readme-ov-file#getting-started) with the [ABP Framework](https://abp.io/). We will explore step-by-step how these technologies can work together to enhance your application with powerful AI capabilities, such as natural language processing, image generation, and more.
 
+![cover-image](cover-image.png)
+
 ## Creating an ABP Project
 
 To begin integrating OpenAI API with ABP Framework, you first need to create an ABP project. Follow these steps to create and set up your ABP project:
@@ -374,7 +376,7 @@ To showcase the integration of the OpenAI API with the ABP Framework, we impleme
 
 ![rag-example-2](rag-example-2.gif)
 
-4. **Image Generation Example**: This example leverages the [DALL-E](https://openai.com/index/dall-e-3/) model to generate images based on user-provided prompts. On the `Sample` page, users can provide a description of the image they want to generate, and the `OnPostImageGenerationAsync` method uses the `OpenAIClient` to generate the image.
+3. **Image Generation Example**: This example leverages the [DALL-E](https://openai.com/index/dall-e-3/) model to generate images based on user-provided prompts. On the `Sample` page, users can provide a description of the image they want to generate, and the `OnPostImageGenerationAsync` method uses the `OpenAIClient` to generate the image.
 
 ![image-generation-example](image-generation-example.gif)
 
