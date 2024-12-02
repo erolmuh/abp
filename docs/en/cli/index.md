@@ -211,6 +211,7 @@ For more samples, go to [ABP CLI Create Solution Samples](new-command-samples.md
       * `leptonx`: LeptonX Theme.
       * `basic`: Basic Theme.
     * `--public-website`: Public Website is a front-facing website for describing your project, listing your products and doing SEO for marketing purposes. Users can login and register on your website with this website. This option is only included in PRO templates.
+    * `--no-grafana-dashboard` or `-ngd`: Does not add example Grafana Dashboard to the solution.
 * `--output-folder` or `-o`: Specifies the output folder. Default value is the current directory.
 * `--local-framework-ref` or `-lfr`: Uses local projects references to the ABP framework instead of using the NuGet packages. It tries to find the paths from `ide-state.json`. The file is located at `%UserProfile%\.abp\studio\ui\ide-state.json` (for Windows) and `~/.abp/studio/ui/ide-state.json` (for MAC).
 * `--create-solution-folder` or `-csf`: Specifies if the project will be in a new folder in the output folder or directly the output folder.
@@ -225,6 +226,7 @@ For more samples, go to [ABP CLI Create Solution Samples](new-command-samples.md
 * `--dont-run-bundling`: Skip bundling for Blazor packages.
 * `--no-kubernetes-configuration` or `-nkc`: Skips the Kubernetes configuration files.
 * `--no-social-logins` or `-nsl`: Skipts the social login configuration.
+* `--no-tests` or `-ntp`: Does not add test projects.
 * *Module Options*: You can skip some modules if you don't want to add them to your solution (*Available for* ***Team*** *or higher licenses*). Available commands:
   * `-no-saas`: Skips the Saas module.
   * `-no-gdpr`: Skips the GDPR module.
