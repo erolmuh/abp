@@ -99,6 +99,9 @@ public abstract class AbstractKeyCrudAppService<TEntity, TGetOutputDto, TGetList
         await CheckUpdatePolicyAsync();
 
         var entity = await GetEntityByIdAsync(id);
+        if(entity is IHasConcurrencyStamp && input is IHasConcurrencyStamp){
+            entity.ConcurrencyStamp = input.ConcurrencyStamp;
+        }
         //TODO: Check if input has id different than given id and normalize if it's default value, throw ex otherwise
         await MapToEntityAsync(input, entity);
         await Repository.UpdateAsync(entity, autoSave: true);
