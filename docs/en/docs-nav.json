@@ -116,6 +116,35 @@
           ]
         },
         {
+          "text": "Book Store Application (with ABP Suite)",
+          "items": [
+            {
+              "text": "Overview",
+              "path": "tutorials/book-store-with-abp-suite"
+            },
+            {
+              "text": "1: Creating the Solution",
+              "path": "tutorials/book-store-with-abp-suite/part-01.md"
+            },
+            {
+              "text": "2: Creating the Books",
+              "path": "tutorials/book-store-with-abp-suite/part-02.md"
+            },
+            {
+              "text": "3: Creating the Authors",
+              "path": "tutorials/book-store-with-abp-suite/part-03.md"
+            },
+            {
+              "text": "4: Book to Author Relation",
+              "path": "tutorials/book-store-with-abp-suite/part-04.md"
+            },
+            {
+              "text": "5: Customizing the Generated Code",
+              "path": "tutorials/book-store-with-abp-suite/part-05.md"
+            }               
+          ]
+        },        
+        {
           "text": "Modular Monolith Application",
           "items": [
             {
@@ -153,6 +182,43 @@
             {
               "text": "8: Integrating the Modules: Joining the Products and Orders Data",
               "path": "tutorials/modular-crm/part-08.md"
+            }
+          ]
+        },
+        {
+          "text": "Microservice Solution",
+          "items": [
+            {
+              "text": "Overview",
+              "path": "tutorials/microservice/index.md"
+            },
+            {
+              "text": "1: Creating the initial solution",
+              "path": "tutorials/microservice/part-01.md"
+            },
+            {
+              "text": "2: Creating the initial Catalog service",
+              "path": "tutorials/microservice/part-02.md"
+            },
+            {
+              "text": "3: Building the Catalog service",
+              "path": "tutorials/microservice/part-03.md"
+            },
+            {
+              "text": "4: Creating the initial Ordering service",
+              "path": "tutorials/microservice/part-04.md"
+            },
+            {
+              "text": "5: Building the Ordering service",
+              "path": "tutorials/microservice/part-05.md"
+            },
+            {
+              "text": "6: Integrating the services: HTTP API Calls",
+              "path": "tutorials/microservice/part-06.md"
+            },
+            {
+              "text": "7: Integrating the services: Using Distributed Events",
+              "path": "tutorials/microservice/part-07.md"
             }
           ]
         },
@@ -1875,7 +1941,7 @@
         },
         {
           "text": "The Basic Theme",
-          "path": "framework/ui/mvc-razor-pages/basic-theme.md"
+          "path": "ui-themes/basic-theme"
         },
         {
           "text": "LeptonX Theme",

@@ -3,7 +3,7 @@
 ````json
 //[doc-params]
 {
-    "UI": ["MVC", "Blazor", "BlazorServer", "NG"],
+    "UI": ["MVC", "Blazor", "BlazorServer", "BlazorWebApp", "NG"],
     "DB": ["EF", "Mongo"],
     "Tiered": ["Yes", "No"]
 }
@@ -19,10 +19,10 @@ First things first! Let's setup your development environment before creating the
 
 The following tools should be installed on your development machine:
 
-* [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) (v17.3+) for Windows / [Visual Studio for Mac](https://visualstudio.microsoft.com/vs/mac/). <sup id="a-editor">[1](#f-editor)</sup>
-* [.NET 8.0+](https://dotnet.microsoft.com/en-us/download/dotnet)
+* [Visual Studio 2022](https://visualstudio.microsoft.com/) or another IDE that supports [.NET 9.0+](https://dotnet.microsoft.com/download/dotnet) development.  <sup id="a-editor">[1](#f-editor)</sup>
+* [.NET 9.0+](https://dotnet.microsoft.com/en-us/download/dotnet)
 {{ if UI != "Blazor" }}
-* [Node v18.19+](https://nodejs.org/)
+* [Node v20.11+](https://nodejs.org/)
 * [Yarn v1.22+ (not v2)](https://classic.yarnpkg.com/en/docs/install) <sup id="a-yarn">[2](#f-yarn)</sup> or npm v10+ (already installed with Node)
 {{ end }}
 {{ if Tiered == "Yes" }}
@@ -162,7 +162,7 @@ You can start the following application(s):
 {{ else if UI == "Blazor" }}
 {{ if Tiered == "No" }}- `Acme.BookStore.HttpApi.Host`{{ end }}
 - `Acme.BookStore.Blazor`
-{{ else if UI == "BlazorServer" }}
+{{ else if UI == "BlazorServer" || UI == "BlazorWebApp" }}
 - `Acme.BookStore.Blazor`
 {{ else }}
 - `Acme.BookStore.Web`
@@ -174,7 +174,7 @@ You can start the following application(s):
 > Notice that the services running in docker-compose are exposed to your localhost. If any service in your localhost is already using the same port(s), you will get an error. In that case, stop your local services first.
 {{ end }}
 
-Once the `Acme.BookStore.{{ if UI == "NG" }}Angular{{ else if UI == "BlazorServer" || UI == "Blazor" }}Blazor{{ else }}Web{{ end }}` application started, you can right-click it and select the *Browse* command:
+Once the `Acme.BookStore.{{ if UI == "NG" }}Angular{{ else if UI == "BlazorServer" || UI == "Blazor" || UI == "BlazorWebApp" }}Blazor{{ else }}Web{{ end }}` application started, you can right-click it and select the *Browse* command:
 
 ![abp-studio-quick-start-browse-command](images/abp-studio-quick-start-browse-command.png)
 
@@ -206,7 +206,7 @@ Once the solution is opened in Visual Studio, you should see a screen like shown
 
 ![visual-studio-bookstore-application](images/visual-studio-bookstore-application.png)
 
-Right-click the `Acme.BookStore.{{ if UI == "NG" || UI == "Blazor" }}HttpApi.Host{{ else if UI == "BlazorServer" }}Blazor{{ else }}Web{{ end }}` project and select the *Set as Startup Project* command. You can then hit *F5* or *Ctrl + F5* to run the web application. It will run and open the application UI in your default browser:
+Right-click the `Acme.BookStore.{{ if UI == "NG" || UI == "Blazor" }}HttpApi.Host{{ else if UI == "BlazorServer" || UI == "BlazorWebApp" }}Blazor{{ else }}Web{{ end }}` project and select the *Set as Startup Project* command. You can then hit *F5* or *Ctrl + F5* to run the web application. It will run and open the application UI in your default browser:
 
 ![bookstore-browser-users-page](images/bookstore-browser-users-page.png)
 

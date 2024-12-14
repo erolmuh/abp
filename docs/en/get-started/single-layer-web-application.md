@@ -18,10 +18,10 @@ First things first! Let's setup your development environment before creating the
 
 The following tools should be installed on your development machine:
 
-* [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) (v17.3+) for Windows / [Visual Studio for Mac](https://visualstudio.microsoft.com/vs/mac/). <sup id="a-editor">[1](#f-editor)</sup>
-* [.NET 8.0+](https://dotnet.microsoft.com/en-us/download/dotnet)
+* [Visual Studio 2022](https://visualstudio.microsoft.com/) or another IDE that supports [.NET 9.0+](https://dotnet.microsoft.com/download/dotnet) development.  <sup id="a-editor">[1](#f-editor)</sup>
+* [.NET 9.0+](https://dotnet.microsoft.com/en-us/download/dotnet)
 {{ if UI != "Blazor" }}
-* [Node v18.19+](https://nodejs.org/)
+* [Node v20.11+](https://nodejs.org/)
 * [Yarn v1.22+ (not v2)](https://classic.yarnpkg.com/en/docs/install) <sup id="a-yarn">[2](#f-yarn)</sup> or npm v10+ (already installed with Node)
 {{ end }}
 {{ if Tiered == "Yes" }}
@@ -50,11 +50,11 @@ Assuming that you have [installed and logged in](../studio/installation.md) to t
 
 Select the *File* -> *New Solution* in the main menu, or click the *New solution* button on the Welcome screen to open the *Create new solution* wizard:
 
-![abp-studio-new-solution-dialog](images/abp-studio-no-layers-new-solution-dialog.png)
+![abp-studio-new-solution-dialog](images/abp-studio-no-layers-new-solution-dialog-0.9.13.png)
 
 We will use the *Application (Single Layer)* solution template for this tutorial, so pick it and click the *Next* button:
 
-![abp-studio-new-solution-dialog-solution-properties](images/abp-studio-no-layers-new-solution-dialog-solution-properties.png)
+![abp-studio-new-solution-dialog-solution-properties](images/abp-studio-no-layers-new-solution-dialog-solution-properties-0.9.13.png)
 
 On that screen, you choose a name for your solution. You can use different levels of namespaces; e.g. `BookStore`, `Acme.BookStore` or `Acme.Retail.BookStore`.
 
@@ -62,31 +62,35 @@ Then select an *output folder* to create your solution. The *Create solution fol
 
 Once your configuration is done, click the *Next* button to navigate to the *UI Framework* selection:
 
-![abp-studio-new-solution-dialog-ui-framework](images/abp-studio-no-layers-new-solution-dialog-ui-framework.png)
+![abp-studio-new-solution-dialog-ui-framework](images/abp-studio-no-layers-new-solution-dialog-ui-framework-0.9.13.png)
 
 Here, you see all the possible UI options supported by that startup solution template. Pick the **{{ UI_Value }}**.
 
 Notice that; Once you select a UI type, some additional options will be available under the UI Framework list. You can further configure the options or leave them as default and click the *Next* button for the *UI Theme* selection screen:
 
-![abp-studio-new-solution-dialog-ui-theme](images/abp-studio-nolayers-new-solution-dialog-ui-theme.png)
+![abp-studio-new-solution-dialog-ui-theme](images/abp-studio-nolayers-new-solution-dialog-ui-theme-0.9.13.png)
 
 LeptonX is the suggested UI theme that is proper for production usage. Select one of the themes, configure the additional options, and click the *Next* button for the *Database Provider* selection:
 
 {{ if DB == "EF" }}
-![abp-studio-new-solution-dialog-database-provider](images/abp-studio-no-layers-new-solution-dialog-database-provider-efcore.png)
+![abp-studio-new-solution-dialog-database-provider](images/abp-studio-no-layers-new-solution-dialog-database-provider-efcore-0.9.13.png)
 {{ else }}
-![abp-studio-new-solution-dialog-database-provider](images/abp-studio-no-layers-new-solution-dialog-database-provider-mongo.png)
+![abp-studio-new-solution-dialog-database-provider](images/abp-studio-no-layers-new-solution-dialog-database-provider-mongo-0.9.13.png)
 {{ end }}
 
 On that screen, you can decide on your database provider by selecting one of the provided options. There are some additional options for each database provider. Leave them as default or change them based on your preferences, then click the *Next* button for additional *Database Configurations*:
 
 {{ if DB == "EF" }}
-![abp-studio-new-solution-dialog-database-configurations](images/abp-studio-no-layers-new-solution-dialog-database-configurations-efcore.png)
+![abp-studio-new-solution-dialog-database-configurations](images/abp-studio-no-layers-new-solution-dialog-database-configurations-efcore-0.9.13.png)
 {{ else }}
-![abp-studio-new-solution-dialog-database-configurations](images/abp-studio-no-layers-new-solution-dialog-database-configurations-mongo.png)
+![abp-studio-new-solution-dialog-database-configurations](images/abp-studio-no-layers-new-solution-dialog-database-configurations-mongo-0.9.13.png)
 {{ end }}
 
-Here, you can select the database management systems (DBMS){{ if DB == "EF" }} and the connection string{{ end }}. Now, we are ready to allow ABP Studio to create our solution. Just click the *Create* button and let the ABP Studio do the rest for you.
+Here, you can select the database management systems (DBMS){{ if DB == "EF" }} and the connection string{{ end }}. Then, you can select optional modules and enable additional options according to your preferences. 
+
+![abp-studio-no-layers-new-solution-additional-options](images/abp-studio-no-layers-new-solution-additional-options-0.9.13.png)
+
+Now, we are ready to allow ABP Studio to create our solution. Just click the *Create* button and let the ABP Studio do the rest for you.
 
 After clicking the Create button, the dialog is closed and your solution is loaded into ABP Studio:
 

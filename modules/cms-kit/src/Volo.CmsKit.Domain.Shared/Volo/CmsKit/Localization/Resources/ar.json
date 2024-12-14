@@ -237,6 +237,10 @@
     "CssClass": "فئة CSS",
     "TagsHelpText": "يجب أن تكون العلامات مفصولة بفواصل (على سبيل المثال: tag1، tag2، tag3)",
     "ThisPartOfContentCouldntBeLoaded": "لا يمكن تحميل هذا الجزء من المحتوى.",
-    "DuplicateCommentAttemptMessage": "تم اكتشاف محاولة نشر تعليق مكررة. لقد تم بالفعل تقديم تعليقك."
+    "DuplicateCommentAttemptMessage": "تم اكتشاف محاولة نشر تعليق مكررة. لقد تم بالفعل تقديم تعليقك.",
+    "ChooseAnActionForBlog": "اختر إجراءً للمدونة",
+    "AssignBlogPostsToOtherBlog": "تعيين مشاركات المدونة إلى مدونة أخرى",
+    "SelectAnBlogToAssign": "حدد مدونة لتعيين مشاركات المدونة إليها",
+    "DeleteAllBlogPostsOfThisBlog": "حذف جميع مشاركات المدونة"
   }
 }

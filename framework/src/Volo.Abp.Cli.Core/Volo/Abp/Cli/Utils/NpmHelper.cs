@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -48,10 +49,10 @@ public class NpmHelper : ITransientDependency
         return version > SemanticVersion.Parse("1.20.0");
     }
 
-    public void RunNpmInstall(string directory)
+    public void RunNpmInstall(string directory, params string[] args)
     {
         Logger.LogInformation($"Running npm install on {directory}");
-        CmdHelper.RunCmd($"npm install", directory);
+        CmdHelper.RunCmd($"npm install {args.JoinAsString(" ")}", directory);
     }
 
     public void RunYarn(string directory)

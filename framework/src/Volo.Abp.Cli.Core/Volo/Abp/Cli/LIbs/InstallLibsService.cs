@@ -72,7 +72,7 @@ public class InstallLibsService : IInstallLibsService, ITransientDependency
                 }
                 else
                 {
-                    NpmHelper.RunNpmInstall(projectDirectory);
+                    NpmHelper.RunNpmInstall(projectDirectory, "--no-audit");
                 }
             }
 
@@ -92,7 +92,7 @@ public class InstallLibsService : IInstallLibsService, ITransientDependency
                 }
                 else
                 {
-                    NpmHelper.RunNpmInstall(projectDirectory);
+                    NpmHelper.RunNpmInstall(projectDirectory, "--no-audit");
                 }
 
                 await CleanAndCopyResources(projectDirectory);

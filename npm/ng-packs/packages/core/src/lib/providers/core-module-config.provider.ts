@@ -1,6 +1,11 @@
 import { makeEnvironmentProviders, APP_INITIALIZER, Injector, Provider } from '@angular/core';
 import { TitleStrategy } from '@angular/router';
 import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+  withXsrfConfiguration,
+} from '@angular/common/http';
+import {
   CORE_OPTIONS,
   LOCALIZATIONS,
   DYNAMIC_LAYOUTS_TOKEN,
@@ -92,6 +97,13 @@ export function withCompareFuncFactory(
 
 export function provideAbpCore(...features: CoreFeature<CoreFeatureKind>[]) {
   const providers = [
+    provideHttpClient(
+      withInterceptorsFromDi(),
+      withXsrfConfiguration({
+        cookieName: 'XSRF-TOKEN',
+        headerName: 'RequestVerificationToken',
+      }),
+    ),
     LocaleProvider,
     CookieLanguageProvider,
     {

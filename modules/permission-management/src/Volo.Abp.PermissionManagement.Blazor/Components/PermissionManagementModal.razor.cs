@@ -154,7 +154,7 @@ public partial class PermissionManagementModal
 
             var updateDto = new UpdatePermissionsDto
             {
-                Permissions = _groups
+                Permissions = _allGroups
                     .SelectMany(g => g.Permissions)
                     .Select(p => new UpdatePermissionDto { IsGranted = p.IsGranted, Name = p.Name })
                     .ToArray()
