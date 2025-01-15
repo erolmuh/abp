@@ -1,32 +1,31 @@
-using System;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
+using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
+using Volo.Abp.AspNetCore.Mvc.UI.Bundling.Styles;
 using Volo.Abp.Bundling.Styles;
 using Volo.Abp.Minify.Styles;
 
-namespace Volo.Abp.AspNetCore.Mvc.UI.Bundling.Styles;
+namespace Volo.Abp.AspNetCore.Components.MauiBlazor.Bundling.Styles;
 
-public class StyleBundler : MvcUiBundlerBase, IStyleBundler
+public class StyleBundler : MauiBlazorBundlerBase, IStyleBundler
 {
-    private readonly IWebHostEnvironment _hostingEnvironment;
+    private readonly IMauiBlazorContentFileProvider _mauiBlazorContentFileProvider;
     public override string FileExtension => "css";
 
     public StyleBundler(
-        IWebHostEnvironment hostingEnvironment,
+        IMauiBlazorContentFileProvider mauiBlazorContentFileProvider,
         ICssMinifier minifier,
         IOptions<AbpBundlingOptions> bundlingOptions)
         : base(
-            hostingEnvironment,
+            mauiBlazorContentFileProvider,
             minifier,
             bundlingOptions)
     {
-        _hostingEnvironment = hostingEnvironment;
+        _mauiBlazorContentFileProvider = mauiBlazorContentFileProvider;
     }
 
     public string GetAbsolutePath(string relativePath)
     {
-        return Path.Combine(_hostingEnvironment.ContentRootPath, "wwwroot", relativePath.RemovePreFix("/"));
+        return Path.Combine(_mauiBlazorContentFileProvider.ContentRootPath, "wwwroot", relativePath.RemovePreFix("/"));
     }
 
     protected override string ProcessBeforeAddingToTheBundle(IBundlerContext context, string filePath, string fileContent)
