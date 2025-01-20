@@ -2614,6 +2614,10 @@
           "path": "others/free-licenses-vs-pro-licenses.md"
         },
         {
+          "text": "Knowledge Base",
+          "path": "kb/index.md"
+        },
+        {
           "text": "Penetration Test Report",
           "path": "others/penetration-test-report.md"
         },
