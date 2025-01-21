@@ -372,11 +372,11 @@ public class IdentityUserStore :
 
         Check.NotNull(user, nameof(user));
 
-        var userRoles = await UserRepository
-            .GetRoleNamesAsync(user.Id, cancellationToken: cancellationToken);
+        var userRoles = (await UserRepository
+            .GetRoleNamesAsync(user.Id, cancellationToken: cancellationToken)).ToList();
 
-        var userOrganizationUnitRoles = await UserRepository
-            .GetRoleNamesInOrganizationUnitAsync(user.Id, cancellationToken: cancellationToken);
+        var userOrganizationUnitRoles = (await UserRepository
+            .GetRoleNamesInOrganizationUnitAsync(user.Id, cancellationToken: cancellationToken)).ToList();
 
         return userRoles.Union(userOrganizationUnitRoles).ToList();
     }
