@@ -2,6 +2,7 @@
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
+using Microsoft.VisualBasic.FileIO;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.VirtualFileSystem;
 
@@ -29,7 +30,7 @@ public class MauiBlazorContentFileProvider : IMauiBlazorContentFileProvider, ISi
         }
 
         var fileInfo = _fileProvider.GetFileInfo(subpath);
-        return fileInfo.Exists ? fileInfo : _fileProvider.GetFileInfo( _rootPath + subpath);
+        return fileInfo.Exists ? fileInfo : _fileProvider.GetFileInfo( _rootPath + subpath.EnsureStartsWith('/'));
     }
 
     public IDirectoryContents GetDirectoryContents(string subpath)
@@ -39,8 +40,10 @@ public class MauiBlazorContentFileProvider : IMauiBlazorContentFileProvider, ISi
             return NotFoundDirectoryContents.Singleton;
         }
 
+
+
         var directory = _fileProvider.GetDirectoryContents(subpath);
-        return directory.Exists ? directory : _fileProvider.GetDirectoryContents( _rootPath + subpath);
+        return directory.Exists ? directory : _fileProvider.GetDirectoryContents( _rootPath + subpath.EnsureStartsWith('/'));
     }
 
     public IChangeToken Watch(string filter)
