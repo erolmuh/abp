@@ -1,4 +1,5 @@
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling.Scripts;
@@ -45,6 +46,49 @@ public class BundleManager : BundleManagerBase, ITransientDependency
                 return !IsDebug();
             default:
                 throw new AbpException($"Unhandled {nameof(BundlingMode)}: {Options.Mode}");
+        }
+    }
+
+    protected async override Task<List<BundleFile>> GetBundleFilesAsync(List<IBundleContributor> contributors)
+    {
+        var files = await base.GetBundleFilesAsync(contributors);
+
+        foreach (var file in files)
+        {
+            await CopyFileToAppDataDirectoryAsync(file);
+        }
+
+        return files;
+    }
+
+    protected virtual async Task CopyFileToAppDataDirectoryAsync(BundleFile file)
+    {
+        if (file.IsExternalFile)
+        {
+            return;
+        }
+
+        var fileName = Path.Combine("wwwroot", file.FileName);
+        if(MauiBlazorContentFileProvider.GetFileInfo(fileName).Exists)
+        {
+            return;
+        }
+
+        try
+        {
+            await using var inputStream = await FileSystem.Current.OpenAppPackageFileAsync(fileName);
+            var targetFile = Path.Combine(FileSystem.Current.AppDataDirectory, fileName);
+            var fileDirectory = Path.GetDirectoryName(targetFile)!;
+            if (!Path.Exists(fileDirectory))
+            {
+                Directory.CreateDirectory(fileDirectory);
+            }
+            await using var outputStream = File.Create(targetFile);
+            await inputStream.CopyToAsync(outputStream);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError($"Could not copy the file to the app data directory: {fileName}", e);
         }
     }
 

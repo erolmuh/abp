@@ -1,12 +1,10 @@
-﻿using System;
-using System.IO;
-using Microsoft.Extensions.FileProviders;
+﻿using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
-using Microsoft.VisualBasic.FileIO;
+using Microsoft.Maui.Controls.PlatformConfiguration;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.VirtualFileSystem;
 
-namespace Volo.Abp.AspNetCore.Components.MauiBlazor;
+namespace Volo.Abp.AspNetCore.Components.MauiBlazor.Bundling;
 
 public class MauiBlazorContentFileProvider : IMauiBlazorContentFileProvider, ISingletonDependency
 {
@@ -20,7 +18,7 @@ public class MauiBlazorContentFileProvider : IMauiBlazorContentFileProvider, ISi
         _fileProvider = CreateFileProvider();
     }
 
-    public string ContentRootPath => AppDomain.CurrentDomain.BaseDirectory;
+    public string ContentRootPath => FileSystem.Current.AppDataDirectory;
 
     public IFileInfo GetFileInfo(string subpath)
     {
@@ -40,8 +38,6 @@ public class MauiBlazorContentFileProvider : IMauiBlazorContentFileProvider, ISi
             return NotFoundDirectoryContents.Singleton;
         }
 
-
-
         var directory = _fileProvider.GetDirectoryContents(subpath);
         return directory.Exists ? directory : _fileProvider.GetDirectoryContents( _rootPath + subpath.EnsureStartsWith('/'));
     }
@@ -58,6 +54,12 @@ public class MauiBlazorContentFileProvider : IMauiBlazorContentFileProvider, ISi
 
     protected virtual IFileProvider CreateFileProvider()
     {
-        return new CompositeFileProvider(new PhysicalFileProvider(Path.Combine(ContentRootPath, _rootPath.TrimStart('/'))), _virtualFileProvider);
+        var assetsDirectory = Path.Combine(ContentRootPath, _rootPath.TrimStart('/'));
+        if (!Path.Exists(assetsDirectory))
+        {
+            Directory.CreateDirectory(assetsDirectory);
+        }
+
+        return new CompositeFileProvider(new PhysicalFileProvider(assetsDirectory), _virtualFileProvider);
     }
 }

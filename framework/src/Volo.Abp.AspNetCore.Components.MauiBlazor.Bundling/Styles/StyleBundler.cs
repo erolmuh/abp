@@ -25,7 +25,7 @@ public class StyleBundler : MauiBlazorBundlerBase, IStyleBundler
 
     public string GetAbsolutePath(string relativePath)
     {
-        return Path.Combine(_mauiBlazorContentFileProvider.ContentRootPath, "wwwroot", relativePath.RemovePreFix("/"));
+        return Path.Combine(_mauiBlazorContentFileProvider.ContentRootPath, "wwwroot", relativePath.RemovePreFix("/")).Replace("file://", "");
     }
 
     protected override string ProcessBeforeAddingToTheBundle(IBundlerContext context, string filePath, string fileContent)
