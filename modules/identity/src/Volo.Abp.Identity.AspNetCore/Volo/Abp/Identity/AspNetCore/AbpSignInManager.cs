@@ -48,6 +48,9 @@ public class AbpSignInManager : SignInManager<IdentityUser>
         bool isPersistent,
         bool lockoutOnFailure)
     {
+        userName = userName.Trim();
+        password = password.Trim();
+        
         foreach (var externalLoginProviderInfo in AbpOptions.ExternalLoginProviders.Values)
         {
             var externalLoginProvider = (IExternalLoginProvider)Context.RequestServices

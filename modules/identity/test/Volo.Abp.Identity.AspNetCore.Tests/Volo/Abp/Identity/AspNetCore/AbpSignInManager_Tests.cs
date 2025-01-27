@@ -45,4 +45,24 @@ public class AbpSignInManager_Tests : AbpIdentityAspNetCoreTestBase
 
         result.ShouldBe("NotAllowed");
     }
+
+    [Fact]
+    public async Task Should_SignIn_With_Correct_Credentials_When_Has_Spaces()
+    {
+        var result = await GetResponseAsStringAsync(
+            "api/signin-test/password?userName= admin &password= 1q2w3E* "
+        );
+1
+        result.ShouldBe("Succeeded");
+    }
+
+    [Fact]
+    public async Task Should_Not_SignIn_With_Correct_Credentials_When_Has_Middle_Spaces()
+    {
+        var result = await GetResponseAsStringAsync(
+            "api/signin-test/password?userName=ad min&password=1q2w 3E*"
+        );
+
+        result.ShouldBe("Failed");
+    }
 }
