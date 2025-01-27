@@ -52,7 +52,7 @@ public class AbpSignInManager_Tests : AbpIdentityAspNetCoreTestBase
         var result = await GetResponseAsStringAsync(
             "api/signin-test/password?userName= admin &password= 1q2w3E* "
         );
-1
+
         result.ShouldBe("Succeeded");
     }
 
