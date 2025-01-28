@@ -16,22 +16,12 @@ export function createTypeSimplifier() {
     type = /any</.test(type) ? 'any' : type;
     const { identifier, generics, array } = extractSimpleGenerics(type);
 
-    // if (type === 'enum') {
-    //   console.log('🚀 ~ createTypeSimplifier ~ identifier:', identifier);
-    // }
-    // const rtn = generics.length ? `${identifier}<${generics.join(', ')}>${array}` : identifier;
-    // console.log('🚀 ~ createTypeSimplifier ~ rtn:', rtn);
     return generics.length ? `${identifier}<${generics.join(', ')}>${array}` : identifier;
   });
 
   return (type: string) => {
     const parsed = parseType(type);
-    // if (type === 'MyCompanyName.MyProjectName.TeklifEnum.TeklifTip') {
-    //   console.log('🚀 ~ return ~ parsed:', parsed);
-    // }
     const last = parsed.pop()!;
-    // const rtn = parsed.reduceRight((record, tKey) => `Record<${tKey}, ${record}>`, last);
-    // console.log('🚀 ~ return ~ rtn:', rtn);
     return parsed.reduceRight((record, tKey) => `Record<${tKey}, ${record}>`, last);
   };
 }
