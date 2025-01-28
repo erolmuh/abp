@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -431,6 +433,13 @@ public class SuiteCommand : IConsoleCommand, ITransientDependency
         }
         
         var targetSolution = GetTargetSolutionOrNull(commandLineArgs);
+
+        var isPortAlreadyInUse = IsPortAlreadyInUse();
+        if (isPortAlreadyInUse)
+        {
+            _abpSuitePort = GetAvailablePort();
+        }
+        
         var launchUrl = targetSolution == null?
             $"http://localhost:{_abpSuitePort}":
             $"http://localhost:{_abpSuitePort}/CrudPageGenerator/Create?targetSolution={targetSolution}";
@@ -442,18 +451,14 @@ public class SuiteCommand : IConsoleCommand, ITransientDependency
             return;
         }
 
-        if (IsPortAlreadyInUse())
-        {
-            Logger.LogError($"Port \"{_abpSuitePort}\" is already in use.");
-            return;
-        }
-
         if (targetSolution == null)
         {
             var args = Environment.GetCommandLineArgs();
+        
             var suiteArgs = args.Skip(2).JoinAsString(" ");
-            var command = string.Concat("abp-suite ", suiteArgs);
-
+            var command = isPortAlreadyInUse ? 
+                string.Concat($"abp-suite --AbpSuite:ApplicationUrl=\"http://localhost:{_abpSuitePort}\" ", suiteArgs) : 
+                string.Concat("abp-suite ", suiteArgs);
             CmdHelper.RunCmd(command);
         }
         else
@@ -498,8 +503,9 @@ public class SuiteCommand : IConsoleCommand, ITransientDependency
 
         if (IsPortAlreadyInUse())
         {
-            Logger.LogError($"Port \"{_abpSuitePort}\" is already in use.");
-            return null;
+            _abpSuitePort = GetAvailablePort();
+            
+            return CmdHelper.RunCmdAndGetProcess($"abp-suite --AbpSuite:ApplicationUrl=\"http://localhost:{_abpSuitePort}\" --no-browser");
         }
 
         return CmdHelper.RunCmdAndGetProcess("abp-suite --no-browser");
@@ -515,6 +521,13 @@ public class SuiteCommand : IConsoleCommand, ITransientDependency
         var ipGP = IPGlobalProperties.GetIPGlobalProperties();
         var endpoints = ipGP.GetActiveTcpListeners();
         return endpoints.Any(e => e.Port == _abpSuitePort);
+    }
+    
+    private int GetAvailablePort()
+    {
+        using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+        return ((IPEndPoint)socket.LocalEndPoint!).Port;
     }
 
     private void KillSuite()
