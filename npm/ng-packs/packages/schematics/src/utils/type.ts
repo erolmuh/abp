@@ -15,12 +15,23 @@ export function createTypeSimplifier() {
 
     type = /any</.test(type) ? 'any' : type;
     const { identifier, generics, array } = extractSimpleGenerics(type);
+
+    // if (type === 'enum') {
+    //   console.log('🚀 ~ createTypeSimplifier ~ identifier:', identifier);
+    // }
+    // const rtn = generics.length ? `${identifier}<${generics.join(', ')}>${array}` : identifier;
+    // console.log('🚀 ~ createTypeSimplifier ~ rtn:', rtn);
     return generics.length ? `${identifier}<${generics.join(', ')}>${array}` : identifier;
   });
 
   return (type: string) => {
     const parsed = parseType(type);
+    // if (type === 'MyCompanyName.MyProjectName.TeklifEnum.TeklifTip') {
+    //   console.log('🚀 ~ return ~ parsed:', parsed);
+    // }
     const last = parsed.pop()!;
+    // const rtn = parsed.reduceRight((record, tKey) => `Record<${tKey}, ${record}>`, last);
+    // console.log('🚀 ~ return ~ rtn:', rtn);
     return parsed.reduceRight((record, tKey) => `Record<${tKey}, ${record}>`, last);
   };
 }
@@ -54,6 +65,10 @@ export function removeGenerics(type: string) {
   return type.replace(/<.+>/g, '');
 }
 
+export function getTypeForEnumList(type: string) {
+  return type.replace(/^.*<([^>]+)>.*$/, '[$1]');
+}
+
 export function removeTypeModifiers(type: string) {
   return type.replace(/\[\]/g, '');
 }
@@ -68,7 +83,7 @@ export function createTypesToImportsReducer(solution: string, namespace: string)
         return;
       }
 
-      if(newImport.specifiers.some(f => f.toLocaleLowerCase() === type.toLocaleLowerCase())){
+      if (newImport.specifiers.some(f => f.toLocaleLowerCase() === type.toLocaleLowerCase())) {
         return;
       }
 
@@ -76,7 +91,7 @@ export function createTypesToImportsReducer(solution: string, namespace: string)
         ({ keyword, path }) => keyword === newImport.keyword && path === newImport.path,
       );
 
-      if (!existingImport){
+      if (!existingImport) {
         return imports.push(newImport);
       }
 
@@ -95,13 +110,15 @@ export function createTypeToImportMapper(solution: string, namespace: string) {
   const simplifyType = createTypeSimplifier();
 
   return (type: string, isEnum: boolean) => {
-    if (!type || type.startsWith('System')) return;
+    if (!type || type.startsWith('System')) {
+      return;
+    }
 
     const modelNamespace = parseNamespace(solution, type);
     const refs = [removeTypeModifiers(type)];
     const specifiers = [adaptType(simplifyType(refs[0]).split('<')[0])];
     let path = relativePathToModel(namespace, modelNamespace);
-    
+
     if (VOLO_REGEX.test(type)) {
       path = '@abp/ng.core';
     }
