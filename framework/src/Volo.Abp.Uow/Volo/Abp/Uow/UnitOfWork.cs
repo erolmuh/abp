@@ -139,15 +139,14 @@ public class UnitOfWork : IUnitOfWork, ITransientDependency
             _isCompleting = true;
             await SaveChangesAsync(cancellationToken);
 
-            DistributedEvents.AddRange(GetEventsRecords(DistributedEventWithPredicates));
-            LocalEvents.AddRange(GetEventsRecords(LocalEventWithPredicates));
+            DistributedEvents.AddRange(ExtractEventsRecords(DistributedEventWithPredicates));
+            LocalEvents.AddRange(ExtractEventsRecords(LocalEventWithPredicates));
 
             while (LocalEvents.Any() || DistributedEvents.Any())
             {
                 if (LocalEvents.Any())
                 {
                     var localEventsToBePublished = LocalEvents.OrderBy(e => e.EventOrder).ToArray();
-                    LocalEventWithPredicates.Clear();
                     LocalEvents.Clear();
                     await UnitOfWorkEventPublisher.PublishLocalEventsAsync(
                         localEventsToBePublished
@@ -157,7 +156,6 @@ public class UnitOfWork : IUnitOfWork, ITransientDependency
                 if (DistributedEvents.Any())
                 {
                     var distributedEventsToBePublished = DistributedEvents.OrderBy(e => e.EventOrder).ToArray();
-                    DistributedEventWithPredicates.Clear();
                     DistributedEvents.Clear();
                     await UnitOfWorkEventPublisher.PublishDistributedEventsAsync(
                         distributedEventsToBePublished
@@ -166,8 +164,8 @@ public class UnitOfWork : IUnitOfWork, ITransientDependency
 
                 await SaveChangesAsync(cancellationToken);
 
-                LocalEvents.AddRange(GetEventsRecords(LocalEventWithPredicates));
-                DistributedEvents.AddRange(GetEventsRecords(DistributedEventWithPredicates));
+                LocalEvents.AddRange(ExtractEventsRecords(LocalEventWithPredicates));
+                DistributedEvents.AddRange(ExtractEventsRecords(DistributedEventWithPredicates));
             }
 
             await CommitTransactionsAsync(cancellationToken);
@@ -294,6 +292,14 @@ public class UnitOfWork : IUnitOfWork, ITransientDependency
         }
 
         return eventRecords;
+    }
+
+    protected virtual List<UnitOfWorkEventRecord> ExtractEventsRecords(
+        List<KeyValuePair<UnitOfWorkEventRecord, Predicate<UnitOfWorkEventRecord>?>> eventWithPredicates)
+    {
+        var eventRecordList = GetEventsRecords(eventWithPredicates);
+        eventWithPredicates.Clear();
+        return eventRecordList;
     }
 
     protected virtual async Task OnCompletedAsync()
