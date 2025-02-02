@@ -25,7 +25,7 @@ In this part, you will learn how to create entities and services and a basic use
 
 > **This module's functionality will be minimal to focus on modularity.** You can follow the [Book Store tutorial](../book-store/index.md) to learn building more real-world applications with ABP.
 
-If it is still running, please stop the web application before continuing with the tutorial.
+If it is still running, please stop the applications before continuing with the tutorial.
 
 ## Creating a `Product` Entity
 
@@ -33,7 +33,7 @@ Open the `ModularCrm.Products` module in your favorite IDE. You can right-click 
 
 ![abp-studio-open-with-visual-studio](images/abp-studio-open-with-visual-studio.png)
 
-The `ModularCrm.Products` .NET solution should look like the following figure:
+The `ModularCrm.Products` .NET solution should look like the following figure (slightly differ according to your preferences):
 
 ![product-module-visual-studio](images/product-module-visual-studio.png)
 
@@ -54,9 +54,11 @@ public class Product : AggregateRoot<Guid>
 
 ## Mapping Entity to Database
 
-The next step is to configure the Entity Framework Core `DbContext` class and the database for the new entity.
+The next step is to configure the {{if DB=="EF"}}Entity Framework Core{{else}}MongoDB{{end}} `DbContext` class and the database for the new entity.
 
 ### Add a `DbSet` Property
+
+{{if DB=="EF"}}
 
 Open the `ProductsDbContext` in the `ModularCrm.Products.EntityFrameworkCore` project and add a new `DbSet` property for the `Product` entity. The final `ProductsDbContext.cs` file content should be the following:
 
@@ -104,11 +106,63 @@ namespace ModularCrm.Products.EntityFrameworkCore;
 [ConnectionStringName(ProductsDbProperties.ConnectionStringName)]
 public interface IProductsDbContext : IEfCoreDbContext
 {
-    DbSet<Product> Products { get; set; }
+    DbSet<Product> Products { get; }
 }
 ````
 
-Having such an `IProductsDbContext` interface allows us to decouple our repositories (and other classes) from the concrete `ProductsDbContext` class. This provides flexibility to the final application to merge multiple `DbContext`s into a single `DbContext` to manage database migrations easier and have a database level transaction support for multi-module database operations.
+{{ else }}
+
+Open the `ProductsMongoDbContext` in the `ModularCrm.Products.MongoDB` project and add a new `DbSet` property for the `Product` entity. The final `ProductsMongoDbContext.cs` file content should be the following:
+
+```cs
+using MongoDB.Driver;
+using Volo.Abp.Data;
+using Volo.Abp.MongoDB;
+
+namespace ModularCrm.Products.MongoDB;
+
+[ConnectionStringName(ProductsDbProperties.ConnectionStringName)]
+public class ProductsMongoDbContext : AbpMongoDbContext, IProductsMongoDbContext
+{
+     public IMongoCollection<Product> Products => Collection<Product>();
+
+    protected override void CreateModel(IMongoModelBuilder modelBuilder)
+    {
+        base.CreateModel(modelBuilder);
+
+        modelBuilder.ConfigureProducts();
+    }
+}
+```
+
+The `ProductsMongoDbContext` class implements the `IProductsMongoDbContext` interface. Add the following property to the `IProductsMongoDbContext` interface:
+
+````csharp
+IMongoCollection<Product> Products { get; set; }
+````
+
+The final `IProductsMongoDbContext` interface should be the following:
+
+````csharp
+using MongoDB.Driver;
+using Volo.Abp.Data;
+using Volo.Abp.MongoDB;
+
+namespace ModularCrm.Products.MongoDB;
+
+[ConnectionStringName(ProductsDbProperties.ConnectionStringName)]
+public interface IProductsMongoDbContext : IAbpMongoDbContext
+{
+    IMongoCollection<Product> Products { get; set; }
+}
+````
+
+{{ end }}
+
+
+Having such an {{if DB=="EF"}}`IProductsDbContext`{{else}}`IProductsMongoDbContext`{{end}} interface allows us to decouple our repositories (and other classes) from the concrete {{if DB=="EF"}}`ProductsDbContext`{{else}}`ProductsMongoDbContext`{{end}} class. This provides flexibility to the final application to merge multiple `DbContext`s into a single `DbContext` to manage database migrations easier and have a database level transaction support for multi-module database operations.
+
+{{if DB=="EF"}}
 
 ### Configure the Table Mapping
 
@@ -161,9 +215,11 @@ You can set a `DbSchema` to collect a module's tables under a separate schema (i
 
 At that point, build the `ModularCrm.Products` .NET solution in your IDE (or ABP Studio UI). We will switch to the main application's .NET solution.
 
+{{ end }}
+
 ### Configuring the Main Application Database
 
-We changed the Entity Framework Core configuration. The next step should be adding a new code-first database migration and updating the database so the new Products table is created on the database.
+We changed the {{if DB=="EF"}}Entity Framework Core{{else}}MongoDB{{end}} configuration. The next step should be adding a new code-first database migration and updating the database so the new Products table is created on the database.
 
 We are not managing the database migrations in the module. Instead, the main application decides which DBMS (Database Management System) to use and how to share physical database(s) among modules. We will store all the modules' data in a single physical database to simplify this tutorial.
 
@@ -183,13 +239,25 @@ Follow the three steps below;
 
 **(1)** Add the following attribute on top of the `ModularCrmDbContext` class:
 
+{{if DB=="EF"}}
+
 ````csharp
 [ReplaceDbContext(typeof(IProductsDbContext))]
 ````
 
+{{else}}
+
+````csharp
+[ReplaceDbContext(typeof(IProductsMongoDbContext))]
+````
+
+{{end}}
+
 `ReplaceDbContext` attribute makes it possible to use the `ModularCrmDbContext` class in the services in the Products module.
 
-**(2)** Implement the `IProductsDbContext` by the `ModularCrmDbContext` class:
+**(2)** Implement the {{if DB=="EF"}}`IProductsDbContext`{{else}}`IProductsMongoDbContext`{{end}} by the `ModularCrmDbContext` class:
+
+{{if DB=="EF"}}
 
 ````csharp
 [ReplaceDbContext(typeof(IProductsDbContext))]
@@ -202,7 +270,24 @@ public class ModularCrmDbContext :
 }
 ````
 
-**(3)** Finally, call the `ConfigureProducts()` extension method inside the `OnModelCreating` method after other `Configure...` module calls:
+{{else}}
+
+````csharp
+[ReplaceDbContext(typeof(IProductsMongoDbContext))]
+public class ModularCrmDbContext : 
+    AbpMongoDbContext,
+    IProductsMongoDbContext
+{
+    public IMongoCollection<Product> Products => Collection<Product>();
+    ...
+}
+````
+
+{{end}}
+
+**(3)** Finally, call the `ConfigureProducts()` extension method inside the {{if DB=="EF"}}`OnModelCreating`{{else}}`CreateModel`{{end}} method:
+
+{{if DB=="EF"}}
 
 ````csharp
 protected override void OnModelCreating(ModelBuilder builder)
@@ -212,7 +297,22 @@ protected override void OnModelCreating(ModelBuilder builder)
 }
 ````
 
-In this way, `ModularCrmDbContext` can be used by the products module over the `IProductsDbContext` interface. This part is only needed once for a module. Next time, you can add a new database migration, as explained in the next section.
+{{else}}
+
+```csharp
+protected override void CreateModel(IMongoModelBuilder modelBuilder)
+{
+    base.CreateModel(modelBuilder);
+
+    modelBuilder.ConfigureProducts(); //NEW: CALL THE EXTENSION METHOD
+}
+```
+
+{{end}}
+
+In this way, `ModularCrmDbContext` can be used by the products module over the {{if DB=="EF"}}`IProductsDbContext`{{else}}`IProductsMongoDbContext`{{end}} interface. This part is only needed once for a module. Next time, you can add a new database migration, as explained in the next section.
+
+{{ if DB == "EF" }}
 
 #### Add a Database Migration
 
@@ -239,6 +339,8 @@ Now, you can return to ABP Studio, right-click the `ModularCrm.EntityFrameworkCo
 After the operation completes, you can check your database to see the new `Products` table has been created:
 
 ![sql-server-products-database-table](images/sql-server-products-database-table.png)
+
+{{ end }}
 
 ## Creating the Application Service
 
@@ -370,7 +472,15 @@ We've added the `CreateMap<Product, ProductDto>();` line to define the mapping.
 
 ### Exposing Application Services as HTTP API Controllers
 
+{{ if UI == "MVC" }}
+
 For this application, we don't need to create HTTP API endpoints for the products module. But it is good to understand how to do it when you need it. You have two options;
+
+{{ else }}
+
+For this application, we need to create HTTP API endpoints for the products module to use them in our angular application. To do that, you have two options:
+
+{{ end }}
 
 * You can create a regular ASP.NET Core Controller class in the `ModularCrm.Products.HttpApi` project, inject `IProductAppService` and use it to create wrapper methods. We will do this later while we create the Ordering module.
 * Alternatively, you can use the ABP's [Auto API Controllers](../../framework/api-development/auto-controllers.md) feature to expose your application services as API controllers by conventions. We will do it here.
@@ -417,7 +527,15 @@ After the build process completes, open the Solution Runner panel and click the 
 
 Once you see the user interface of the web application, type `/swagger` at the end of the URL to open the Swagger UI. If you scroll down, you should see the `Products` API:
 
+{{ if UI == "MVC" }}
+
 ![abp-studio-swagger-ui-in-browser](images/abp-studio-swagger-ui-in-browser.png)
+
+{{ else if UI == "NG" }}
+
+![abp-studio-swagger-ui-in-browser-ng](images/abp-studio-swagger-ui-in-browser-ng.png)
+
+{{ end }}
 
 Expand the `/api/products/product` API and click the *Try it out* button as shown in the following figure:
 
@@ -429,7 +547,15 @@ Then, create a few products by filling in the *Request body* and clicking the *E
 
 If you check the database, you should see the entities created in the `Products` table:
 
+{{ if DB == "EF" }}
+
 ![sql-server-products-database-table-filled](images/sql-server-products-database-table-filled.png)
+
+{{ else }}
+
+![mongodb-products-database-table-filled](images/mongodb-products-database-table-filled.png)
+
+{{ end }}
 
 We've some entities in the database; we can show them on the user interface now.
 
@@ -437,7 +563,9 @@ We've some entities in the database; we can show them on the user interface now.
 
 In this section, we will create a very simple user interface to demonstrate how to build UI in the products module and make it work in the main application.
 
-As a first step, you can stop the application on ABP Studio's Solution Runner if it is currently running.
+As a first step, you can stop all applications on ABP Studio's Solution Runner if they are currently running.
+
+{{ if UI == "MVC" }}
 
 Open the `ModularCrm.Products` .NET solution in your IDE, and find the `Pages/Products/Index.cshtml` file under the `ModularCrm.Products.Web` project:
 
@@ -502,6 +630,12 @@ Right-click the `ModularCrm` application on ABP Studio's solution runner and sel
 Now, you can browse the *Products* page to see the list of the products:
 
 ![abp-studio-browser-list-of-products](images/abp-studio-browser-list-of-products.png)
+
+{{ else if UI == "NG" }}
+
+//TODO: get help from @angular-team
+
+{{ end }}
 
 As you can see, developing a UI page in a modular ABP application is pretty straightforward. We kept the UI very simple to focus on modularity. To learn how to build complex application UIs, please check the [Book Store Tutorial](../book-store/index.md).
 
