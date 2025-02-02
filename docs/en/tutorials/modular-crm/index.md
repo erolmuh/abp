@@ -29,7 +29,11 @@ This tutorial is organized as the following parts:
 
 ## Download the Source Code
 
-You can download the completed sample solution [here](https://github.com/abpframework/abp-samples/tree/master/ModularCrm).
+This tutorial has multiple versions based on your **UI** and **Database** preferences. We've prepared a few combinations of the source code to be downloaded:
+
+* [MVC (Razor Pages) UI with EF Core](https://github.com/abpframework/abp-samples/tree/master/ModularCrm)
+* [Blazor UI with EF Core](https://github.com/abpframework/abp-samples/tree/master/ModularCrm-Blazor-EfCore)
+* [Angular UI with MongoDB](https://github.com/abpframework/abp-samples/tree/master/ModularCrm-Angular-MongoDb)
 
 ## See Also
 

@@ -1,6 +1,13 @@
 # Building the Ordering Module
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer", "BlazorWebApp","NG","MAUIBlazor"],
+    "DB": ["EF","Mongo"]
+}
+````
+````json
 //[doc-nav]
 {
   "Previous": {

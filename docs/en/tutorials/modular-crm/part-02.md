@@ -1,6 +1,13 @@
 # Creating the Initial Products Module
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer", "BlazorWebApp","NG","MAUIBlazor"],
+    "DB": ["EF","Mongo"]
+}
+````
+````json
 //[doc-nav]
 {
   "Previous": {
@@ -56,21 +63,39 @@ Here, you can select the UI type you want to support in your module:
 
 ![abp-studio-create-new-module-dialog-step-ui](images/abp-studio-create-new-module-dialog-step-ui.png)
 
+{{ if UI == "MVC" }}
+
+In this tutorial, we are selecting the MVC UI since we are building that module only for our `ModularCrm` solution and we are using the MVC UI in our application. So, select the MVC UI and click the *Next* button.
+
+{{ else if UI == "NG" }}
+
+In this tutorial, we are selecting the Angular UI since we are building that module only for our `ModularCrm` solution and we are using the Angular UI in our application. So, select the Angular UI and click the *Next* button.
+
+{{ end }}
+
 A module;
 
 * May not contain a UI and leaves the UI development to the final application.
 * May contain a single UI implementation that is typically in the same technology as the main application.
 * May contain more than one UI implementation if you want to create a reusable application module and you want to make that module usable by different applications with different UI technologies. For example, all of [pre-built ABP modules](https://abp.io/modules) support multiple UI options.
 
-In this tutorial, we are selecting the MVC UI since we are building that module only for our `ModularCrm` solution and we are using the MVC UI in our application. So, select the MVC UI and click the *Next* button.
-
 ### Selecting the Database Provider
 
 The next step is to select the database provider (or providers) you want to support with your module:
 
-![abp-studio-create-new-module-dialog-step-db](images/abp-studio-create-new-module-dialog-step-db.png)
+{{ if DB == "EF" }}
+
+![abp-studio-create-new-module-dialog-step-db-ef](images/abp-studio-create-new-module-dialog-step-db-ef.png)
 
 Since our main application is using Entity Framework Core and we will use the `ModularCrm.Products` module only for that main application, we can select the *Entity Framework Core* option and click the *Next* button.
+
+{{ else }}
+
+![abp-studio-create-new-module-dialog-step-db-mongo](images/abp-studio-create-new-module-dialog-step-db-mongo.png)
+
+Since our main application is using MongoDB and we will use the `ModularCrm.Products` module only for that main application, we can select the *MongoDB* option and click the *Next* button.
+
+{{ end }}
 
 ![abp-studio-create-new-module-dialog-step-additional-options](images/abp-studio-create-new-module-dialog-step-additional-options.png)
 
@@ -78,9 +103,17 @@ Lastly, you can uncheck the *Include Tests* option if you don't want to include 
 
 ### Exploring the New Module
 
-After adding the new module, the *Solution Explorer* panel should look like the following figure:
+After adding the new module, the *Solution Explorer* panel will show the module projects. The exact structure depends on your selected configurations - the following figure shows an example module structure{{ if DB == "EF"}} (for UI: MVC / Razor Pages, DB: Entity Framework Core){{else}} (for UI: Angular, DB: MongoDB){{end}}:
 
-![abp-studio-solution-explorer-two-modules](images/abp-studio-solution-explorer-two-modules.png)
+{{ if DB == "EF"}}
+
+![abp-studio-solution-explorer-two-modules-mvc-ef](images/abp-studio-solution-explorer-two-modules-mvc-ef.png)
+
+{{ else }}
+
+![abp-studio-solution-explorer-two-modules-angular-mongo](images/abp-studio-solution-explorer-two-modules-angular-mongo.png)
+
+{{ end }}
 
 The new `ModularCrm.Products` module has been created and added to the solution. The `ModularCrm.Products` module has a separate and independent .NET solution. Right-click the `ModularCrm.Products` module and select the *Open with* -> *Explorer* command:
 
@@ -88,17 +121,33 @@ The new `ModularCrm.Products` module has been created and added to the solution.
 
 This command opens the solution folder in your file system:
 
-![product-module-folder](images/product-module-folder.png)
+{{ if UI != "NG" }}
+
+![product-module-folder-without-angular](images/product-module-folder-without-angular.png)
+
+{{ else }}
+
+![product-module-folder-angular](images/product-module-folder-angular.png)
+
+{{ end }}
 
 You can open `ModularCrm.Products.sln` in your favorite IDE (e.g. Visual Studio):
 
 ![product-module-visual-studio](images/product-module-visual-studio.png)
 
-As seen in the preceding figure, the `ModularCrm.Products` solution consists of several layers, each has own responsibility.
+As seen in the preceding figure, the `ModularCrm.Products` solution consists of several layers, each has own responsibility (even though your project structure might slightly differ based on your UI and database choices).
 
 ### Installing the Product Module to the Main Application
 
+{{ if UI == "MVC" }}
+
 A module does not contain an executable application inside. The `Modular.Products.Web` project is just a class library project, not an executable web application. A module should be installed in an executable application to run it.
+
+{{ else if == "NG" }}
+
+A module does not contain an executable application inside. The angular project is just a modular project, not an executable web application. A module should be installed in an executable application to run it.
+
+{{ end }}
 
 > **Ensure that the web application is not running in [Solution Runner](../../studio/running-applications.md) or in your IDE. Installing a module to a running application will produce errors.**
 
@@ -114,7 +163,15 @@ Select the `ModularCrm.Products` module and check the *Install this module* opti
 
 When you click the *OK* button, ABP Studio opens the *Install Module* dialog:
 
-![abp-studio-module-installation-dialog](images/abp-studio-module-installation-dialog.png)
+{{ if DB == "EF" }}
+
+![abp-studio-module-installation-dialog-ef](images/abp-studio-module-installation-dialog-ef.png)
+
+{{ else }}
+
+![abp-studio-module-installation-dialog-mongo](images/abp-studio-module-installation-dialog-mongo.png)
+
+{{ end }}
 
 This dialog simplifies installing a multi-layer module to a single-layer application. It automatically determines which package of the `ModularCrm.Products` module should be installed to which package of the main application.
 
@@ -132,9 +189,124 @@ Graph Build is a dotnet CLI command that recursively builds all the referenced d
 
 ### Run the Main Application
 
+{{ if UI == "MVC" }}
+
 Open the *Solution Runner* panel, click the *Play* button (near to the solution root), right-click the `ModularCrm` application and select the *Browse* command. It will open the web application in the built-in browser. Then you can navigate to the *Products* page on the main menu of the application to see the Products page that is coming from the `ModularCrm.Products` module:
 
-![abp-studio-solution-runner-initial-product-page](images/abp-studio-solution-runner-initial-product-page.png)
+![abp-studio-solution-runner-initial-product-page-mvc](images/abp-studio-solution-runner-initial-product-page-mvc.png)
+
+{{ else if == "NG" }}
+
+Before running the main application, we should reference our angular module in the main angular application. To do that, open the `angular` folder in your root directory in an IDE, and make the following changes:
+
+1. Open the `tsconfig.json` file and update the _paths_ section as follows:
+
+```json
+{
+    //...
+
+    "paths": {
+      "@proxy": [
+        "src/app/proxy/index.ts"
+      ],
+      "@proxy/*": [
+        "src/app/proxy/*"
+      ],
+
+      //add the following lines 👇
+      "@angular/*": ["node_modules/@angular/*"],
+      "@abp/*":["node_modules/@abp/*"],
+      "@volo/*": ["node_modules/@volo/*"],
+      "@volosoft/*": ["node_modules/@volosoft/*"],
+
+      "@modularcrm/products": [
+        "../modules/modularcrm.products/angular/projects/products/src/public-api.ts"
+      ],
+      "@modularcrm/products/config": [
+        "../modules/modularcrm.products/angular/projects/products/config/src/public-api.ts"
+      ],
+    },
+
+    //...
+}
+```
+
+2. Then, open the `app.module.ts` file and import the `ProductsConfigModule`:
+
+```diff
+//other import statements...
++ import { ProductsConfigModule } from '@modularcrm/products/config';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    AppRoutingModule,
+    ThemeSharedModule,
+    CoreModule,
+    ThemeLeptonXModule.forRoot(),
+    SideMenuLayoutModule.forRoot(),
++   ProductsConfigModule.forRoot()
+  ],
+  providers: [APP_ROUTE_PROVIDER,
+    provideAbpCore(
+      withOptions({
+        environment,
+        registerLocaleFn: registerLocale(),
+      }),
+    ),
+    provideAbpOAuth(),
+    provideIdentityConfig(),
+    provideSettingManagementConfig(),
+    provideFeatureManagementConfig(),
+    provideAccountConfig(),
+    provideTenantManagementConfig(),
+    provideAbpThemeShared(),
+  ],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+
+```
+
+3. After importing the related module, now we can add its routing info to the `app-routing.module.ts` file:
+
+```ts
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { ProductsModule } from '@modularcrm/products'; //importing the ProductsModule
+
+const routes: Routes = [
+  //other routings...
+
+  {
+    path: 'products',
+    loadChildren: () => import('@modularcrm/products').then(m => m.ProductsModule),
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes, {})],
+  exports: [RouterModule],
+})
+export class AppRoutingModule {}
+
+```
+
+4. Finally, you should run the `npx yarn install` (or `yarn install`, if _yarn_ is globally installed) command under the **modules/modularcrm.products/angular** directory:
+
+![product-module-yarn-install-ng](images/product-module-yarn-install-ng.png)
+
+After these configurations, you can open the *Solution Runner* panel, click the *Play* button (near to the solution root) to run the backend and the angular applications. After the applications are up & running, right-click the `ModularCrm.Angular` application and select the *Browse* command. It will open the angular application in the built-in browser. Then you can navigate to the _Products_ page on the main menu of the application to see the Products page that is coming from the `ModularCrm.Products` module:
+
+![abp-studio-solution-runner-initial-product-page-ng](images/abp-studio-solution-runner-initial-product-page-ng.png)
+
+{{ else }}
+
+//TODO: blazor-ui...
+
+{{ end }}
 
 ## Summary
 
