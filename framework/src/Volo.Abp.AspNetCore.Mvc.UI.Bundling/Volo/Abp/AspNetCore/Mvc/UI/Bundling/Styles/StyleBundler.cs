@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
+using Volo.Abp.AspNetCore.Bundling;
+using Volo.Abp.AspNetCore.Bundling.Styles;
 using Volo.Abp.Bundling.Styles;
 using Volo.Abp.Minify.Styles;
 

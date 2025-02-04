@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
+using Volo.Abp.AspNetCore.Bundling;
+using Volo.Abp.AspNetCore.Bundling.Styles;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
-using Volo.Abp.AspNetCore.Mvc.UI.Bundling.Styles;
 using Volo.Abp.Bundling.Styles;
 using Volo.Abp.Minify.Styles;
 

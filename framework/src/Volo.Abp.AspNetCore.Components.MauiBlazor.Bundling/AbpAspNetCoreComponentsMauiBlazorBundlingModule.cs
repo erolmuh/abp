@@ -2,6 +2,7 @@
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Volo.Abp.AspNetCore.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.Bundling.Styles;
 using Volo.Abp.Modularity;
@@ -12,7 +13,7 @@ namespace Volo.Abp.AspNetCore.Components.MauiBlazor.Bundling;
 
 [DependsOn(
     typeof(AbpAspNetCoreComponentsMauiBlazorModule),
-    typeof(AbpAspNetCoreMvcUiBundlingAbstractionsModule)
+    typeof(AbpAspNetCoreBundlingModule)
 )]
 public class AbpAspNetCoreComponentsMauiBlazorBundlingModule : AbpModule
 {

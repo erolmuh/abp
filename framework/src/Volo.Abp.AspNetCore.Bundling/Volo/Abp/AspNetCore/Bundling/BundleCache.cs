@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.DependencyInjection;
 
-namespace Volo.Abp.AspNetCore.Mvc.UI.Bundling;
+namespace Volo.Abp.AspNetCore.Bundling;
 
 public class BundleCache : IBundleCache, ISingletonDependency
 {

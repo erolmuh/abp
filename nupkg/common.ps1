@@ -99,6 +99,7 @@ $projects = (
     "framework/src/Volo.Abp.AspNetCore.Authentication.OpenIdConnect",
     "framework/src/Volo.Abp.AspNetCore.Abstractions",
     "framework/src/Volo.Abp.AspNetCore",
+    "framework/src/Volo.Abp.AspNetCore.Bundling",
     "framework/src/Volo.Abp.AspNetCore.Mvc.Dapr",
     "framework/src/Volo.Abp.AspNetCore.Mvc.Dapr.EventBus",
     "framework/src/Volo.Abp.AspNetCore.Components",

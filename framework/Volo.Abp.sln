@@ -487,6 +487,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Volo.Abp.BlobStoring.Bunny"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Volo.Abp.BlobStoring.Bunny.Tests", "test\Volo.Abp.BlobStoring.Bunny.Tests\Volo.Abp.BlobStoring.Bunny.Tests.csproj", "{BC4BB2D6-DFD8-4190-AAC3-32C0A7A8E915}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Volo.Abp.AspNetCore.Bundling", "src\Volo.Abp.AspNetCore.Bundling\Volo.Abp.AspNetCore.Bundling.csproj", "{230224E7-F922-4A82-8796-F23B66CA584A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1453,6 +1455,10 @@ Global
 		{BC4BB2D6-DFD8-4190-AAC3-32C0A7A8E915}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC4BB2D6-DFD8-4190-AAC3-32C0A7A8E915}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC4BB2D6-DFD8-4190-AAC3-32C0A7A8E915}.Release|Any CPU.Build.0 = Release|Any CPU
+		{230224E7-F922-4A82-8796-F23B66CA584A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{230224E7-F922-4A82-8796-F23B66CA584A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{230224E7-F922-4A82-8796-F23B66CA584A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{230224E7-F922-4A82-8796-F23B66CA584A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1698,6 +1704,7 @@ Global
 		{87C6B558-CC63-49F4-BDAB-6CEF76E1BEED} = {5DF0E140-0513-4D0D-BE2E-3D4D85CD70E6}
 		{1BBCBA72-CDB6-4882-96EE-D4CD149433A2} = {5DF0E140-0513-4D0D-BE2E-3D4D85CD70E6}
 		{BC4BB2D6-DFD8-4190-AAC3-32C0A7A8E915} = {447C8A77-E5F0-4538-8687-7383196D04EA}
+		{230224E7-F922-4A82-8796-F23B66CA584A} = {5DF0E140-0513-4D0D-BE2E-3D4D85CD70E6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BB97ECF4-9A84-433F-A80B-2A3285BDD1D5}

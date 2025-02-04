@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Volo.Abp.AspNetCore.Mvc.UI.Bundling;
+namespace Volo.Abp.AspNetCore.Bundling;
 
 public class BundlerContext : IBundlerContext
 {

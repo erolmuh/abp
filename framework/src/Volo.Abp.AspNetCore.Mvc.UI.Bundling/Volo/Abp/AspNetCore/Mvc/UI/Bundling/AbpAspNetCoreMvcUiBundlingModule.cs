@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Volo.Abp.AspNetCore.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap;
 using Volo.Abp.AspNetCore.VirtualFileSystem;
 using Volo.Abp.Bundling.Styles;
@@ -21,8 +22,7 @@ namespace Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 
 [DependsOn(
     typeof(AbpAspNetCoreMvcUiBootstrapModule),
-    typeof(AbpMinifyModule),
-    typeof(AbpAspNetCoreMvcUiBundlingAbstractionsModule)
+    typeof(AbpAspNetCoreBundlingModule)
     )]
 public class AbpAspNetCoreMvcUiBundlingModule : AbpModule
 {

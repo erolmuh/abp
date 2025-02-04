@@ -8,12 +8,12 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Volo.Abp.AspNetCore.Mvc.UI.Bundling.Scripts;
-using Volo.Abp.AspNetCore.Mvc.UI.Bundling.Styles;
-using Volo.Abp.DependencyInjection;
+using Volo.Abp.AspNetCore.Bundling.Scripts;
+using Volo.Abp.AspNetCore.Bundling.Styles;
+using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.VirtualFileSystem;
 
-namespace Volo.Abp.AspNetCore.Mvc.UI.Bundling;
+namespace Volo.Abp.AspNetCore.Bundling;
 
 public abstract class BundleManagerBase : IBundleManager
 {

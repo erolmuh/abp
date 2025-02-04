@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using Volo.Abp.AspNetCore.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.Minify;
 

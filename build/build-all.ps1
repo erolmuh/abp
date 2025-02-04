@@ -8,7 +8,6 @@ Write-Host $solutionPaths
 
 dotnet workload install wasm-tools
 dotnet workload install maui-tizen
-dotnet workload install maui
 
 foreach ($solutionPath in $solutionPaths) {    
     $solutionAbsPath = (Join-Path $rootFolder $solutionPath)

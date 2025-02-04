@@ -4,10 +4,11 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Minify;
 
-namespace Volo.Abp.AspNetCore.Mvc.UI.Bundling;
+namespace Volo.Abp.AspNetCore.Bundling;
 
 public abstract class BundlerBase : IBundler, ITransientDependency
 {

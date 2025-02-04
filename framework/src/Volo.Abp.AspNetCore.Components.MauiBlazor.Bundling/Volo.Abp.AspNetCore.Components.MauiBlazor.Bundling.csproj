@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Volo.Abp.AspNetCore.Mvc.UI.Bundling.Abstractions\Volo.Abp.AspNetCore.Mvc.UI.Bundling.Abstractions.csproj" />
+        <ProjectReference Include="..\Volo.Abp.AspNetCore.Bundling\Volo.Abp.AspNetCore.Bundling.csproj" />
         <ProjectReference Include="..\Volo.Abp.AspNetCore.Components.MauiBlazor\Volo.Abp.AspNetCore.Components.MauiBlazor.csproj" />
     </ItemGroup>
 
