@@ -23,6 +23,11 @@ $solutionPaths = @(
 		"../modules/blob-storing-database"
 	)
 
+# Remove MAUI related projects if not on Windows
+if ($env:OS -ne "Windows_NT") {
+	dotnet sln ../framework/Volo.Abp.sln remove ../framework/src/Volo.Abp.AspNetCore.Components.MauiBlazor.Bundling/Volo.Abp.AspNetCore.Components.MauiBlazor.Bundling.csproj
+}
+
 if ($full -eq "-f")
 {
 	# List of additional solutions required for full build
