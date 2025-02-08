@@ -16,7 +16,7 @@ ABP provides two types of event buses for loosely coupled communication:
 
 * [Local Event Bus](../../framework/infrastructure/event-bus/local/index.md) is suitable for in-process messaging. However, it’s not suitable for microservices as it cannot communicate across different processes. For distributed systems, consider using a distributed event bus.
 
-* **[Distributed Event Bus](../../framework/infrastructure/event-bus/distributed/index.md)** is normal for inter-process messaging, like microservices, for publishing and subscribing to distributed events. However, ABP's distributed event bus works as local (in-process) by default (actually, it uses the Local Event Bus under the hood by default) unless you configure an external message broker.
+* [Distributed Event Bus](../../framework/infrastructure/event-bus/distributed/index.md) is normal for inter-process messaging, like microservices, for publishing and subscribing to distributed events. However, ABP's distributed event bus works as local (in-process) by default (actually, it uses the Local Event Bus under the hood by default) unless you configure an external message broker.
 
 In this tutorial, we will use the distributed event bus to communicate between the `Order` and `Catalog` microservices.
 
@@ -64,7 +64,7 @@ namespace CloudCrm.OrderingService.Services;
 
 public class OrderAppService : ApplicationService, IOrderAppService
 {
-    private readonly IRepository<Order> _orderRepository;
+    private readonly IRepository<Order, Guid>  _orderRepository;
     private readonly IProductIntegrationService _productIntegrationService;
     private readonly IDistributedEventBus _distributedEventBus;
 
@@ -170,9 +170,9 @@ public class OrderEventHandler :
     IDistributedEventHandler<OrderPlacedEto>,
     ITransientDependency
 {
-    private readonly IRepository<Product, Guid> _productRepository;
+    private readonly IProductRepository _productRepository;
 
-    public OrderEventHandler(IRepository<Product, Guid> productRepository)
+    public OrderEventHandler(IProductRepository productRepository)
     {
         _productRepository = productRepository;
     }
@@ -201,7 +201,7 @@ Implementing `ITransientDependency` registers the `OrderEventHandler` class to t
 
 ### Testing the Order Creation
 
-To keep this tutorial simple, we will not implement a user interface for creating orders. Instead, we will use the Swagger UI to create an order. Open the *Solution Runner* panel in ABP Studio and use *Build & Start* to launch the `CloudCrm.OrderingService` and `CloudCrm.CatalogService` applications. Then, go to *Run* -> *Start All* to start the remaining applications listed in the [Solution Runner root item](../../studio/running-applications.md#run).
+To keep this tutorial simple, we will not implement a user interface for creating orders. Instead, we will use the Swagger UI to create an order. Open the *Solution Runner* panel in ABP Studio and use the *Start* action to launch the `CloudCrm.OrderingService` and `CloudCrm.CatalogService` applications. Then, use the *Start All* action to start the remaining applications listed in the [Solution Runner root item](../../studio/running-applications.md#run).
 
 Once the application is running and ready, [Browse](../../studio/running-applications.md#c-application) the `CloudCrm.OrderingService` application. Use the `POST /api/ordering/order` endpoint to create a new order:
 

@@ -55,8 +55,9 @@ public partial class PermissionManagementModal
 
             _grantedPermissionCount = 0;
             _notGrantedPermissionCount = 0;
+            Task.Run(()=>OnPermissionGroupSearchTextChangedAsync(null));
 
-            foreach (var permission in _groups.SelectMany(x => x.Permissions))
+            foreach (var permission in _allGroups.SelectMany(x => x.Permissions))
             {
                 if (!IsDisabledPermission(permission))
                 {

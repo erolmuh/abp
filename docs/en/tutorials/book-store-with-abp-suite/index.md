@@ -1,11 +1,13 @@
-# Web Application Development (with ABP Suite) Tutorial
+# Web Application Development Tutorial (with ABP Suite)
+
 ````json
 //[doc-params]
 {
-    "UI": ["MVC"],
-    "DB": ["EF"]
+    "UI": ["MVC","Blazor","BlazorServer", "BlazorWebApp","NG","MAUIBlazor"],
+    "DB": ["EF", "Mongo"]
 }
 ````
+
 ````json
 //[doc-nav]
 {
@@ -20,7 +22,7 @@
 
 ## About This Tutorial
 
-> In this tutorial, you will use the [ABP Suite](../../suite/index.md) to generate everything you need to build the **BookStore** application, such as [*Entities*](../../framework/architecture/domain-driven-design/entities.md), [*Domain Services*](../../framework/architecture/domain-driven-design/domain-services.md), [*Application Services*](../../framework/architecture/domain-driven-design/application-services.md), *CRUD pages* and more... 
+> This tutorial explains how to build code using the [ABP Suite](../../suite/index.md) tool. You will develop an application similar to the one developed in [that tutorial](../book-store/index.md), but this time, the code will be automatically generated instead of manually written.
 
 In this tutorial series, you will build an ABP based web application named `Acme.BookStore`. This application is used to manage a list of books and their authors. It is developed using the following technologies:
 

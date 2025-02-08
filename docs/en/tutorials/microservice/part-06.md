@@ -103,24 +103,6 @@ public class ProductIntegrationService : ApplicationService, IProductIntegration
 
 > Here, we directly used `List<T>` classes, but instead, you could wrap inputs and outputs into [DTOs](../../framework/architecture/domain-driven-design/data-transfer-objects.md). In that way, it can be possible to add new properties to these DTOs without changing the signature of your integration service method (and without introducing breaking changes for your client applications).
 
-### Exposing the Integration Service as an API
-
-Integration services are not exposed as HTTP APIs by default. However, you can expose them as HTTP APIs if you need to. To do this, you should configure the `AbpAspNetCoreMvcOptions` in the `ConfigureServices` method of the `CloudCrmCatalogServiceModule`. Open the `CloudCrm.CatalogService` project and locate the `CloudCrmCatalogServiceModule` class. Add the following code to the `ConfigureServices` method:
-
-```csharp
-public override void ConfigureServices(ServiceConfigurationContext context)
-{
-    // Other configurations...
-
-    Configure<AbpAspNetCoreMvcOptions>(options =>
-    {
-        options.ExposeIntegrationServices = true;
-    });
-}
-```
-
-This code configures the `AbpAspNetCoreMvcOptions` to expose integration services as HTTP APIs. This is useful when you need to call the integration service from a different service using HTTP. You can learn more about this in the [Integration Services](../../framework/api-development/integration-services.md#exposing-integration-services) document.
-
 ## Consuming the Products Integration Service
 
 Now that we have created the `IProductIntegrationService` interface and the `ProductIntegrationService` class, we can consume this service from the Ordering service.
@@ -161,7 +143,7 @@ namespace CloudCrm.OrderingService.Services;
 
 public class OrderAppService : ApplicationService, IOrderAppService
 {
-    private readonly IRepository<Order> _orderRepository;
+    private readonly IRepository<Order, Guid>  _orderRepository;
     private readonly IProductIntegrationService _productIntegrationService;
 
     public OrderAppService(
@@ -252,7 +234,7 @@ Let's explain the changes we made:
 
 ### Generating Proxy Classes for the Integration Service
 
-We have created the `IProductIntegrationService` interface and the `ProductIntegrationService` class in the `CloudCrm.CatalogService` solution. Now, we need to generate the proxy classes for the integration service in the `CloudCrm.OrderingService` package. First, *Build & Start* the `CloudCrm.CatalogService` application in ABP Studio *Solution Runner*. Then, open the *Solution Explorer* and right-click on the `CloudCrm.OrderingService` package. Select the *ABP CLI* -> *Generate Proxy* -> *C#* command:
+We have created the `IProductIntegrationService` interface and the `ProductIntegrationService` class in the `CloudCrm.CatalogService` solution. Now, we need to generate the proxy classes for the integration service in the `CloudCrm.OrderingService` package. First, *Start* the `CloudCrm.CatalogService` application in ABP Studio *Solution Runner*. Then, open the *Solution Explorer* and right-click on the `CloudCrm.OrderingService` package. Select the *ABP CLI* -> *Generate Proxy* -> *C#* command:
 
 ![generate-proxy-catalog-service](images/generate-proxy-catalog-service.png)
 
@@ -273,6 +255,19 @@ We have generated the proxy classes for the `IProductIntegrationService` interfa
 ```
 
 > **BaseUrl** refers to the base URL of the Catalog service. You can use the *Copy Url* option from the Catalog service's context menu in the ABP Studio **Solution Runner** to paste it here.
+
+Lastly, open the `CloudCrmOrderingServiceModule` class (the `CloudCrmOrderingServiceModule.cs` file under the `CloudCrm.OrderingService` project of the `CloudCrm.OrderingService` .NET solution) and add the following code to the `ConfigureServices` method:
+
+```csharp
+public override void ConfigureServices(ServiceConfigurationContext context)
+{
+    // Other configurations...
+    context.Services.AddStaticHttpClientProxies(
+        typeof(CloudCrmCatalogServiceContractsModule).Assembly,
+        "CatalogService");
+}
+
+```
 
 ### Updating the UI to Display the Product Name
 
@@ -300,7 +295,7 @@ Open the `Index.cshtml` file (the `Index.cshtml` file under the `Pages/Orders` f
 </abp-card>
 ```
 
-That's it! Now, you can *Build & Start* the all applications and run it in ABP Studio to see the result:
+That's it! Now, you can *Start* the all applications and browse it in ABP Studio to see the result:
 
 ![web-orders-page-with-product-name](images/web-orders-page-with-product-name.png)
 

@@ -4,6 +4,21 @@
 
 In this quick start guide, you will learn how to create and run a microservice solution using [ABP Studio](../studio/index.md).
 
+## Setup your development environment
+
+First things first! Let's setup your development environment before creating the first project. The following tools should be installed on your development machine:
+
+* [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or another IDE that supports .NET development
+* [.NET 9.0+](https://dotnet.microsoft.com/en-us/download/dotnet)
+* [Node v22.11+](https://nodejs.org/)
+* [Yarn v1.22+ (not v2+)](https://classic.yarnpkg.com/en/docs/install) or npm v10+ (already installed with Node)
+* [Docker Desktop (with Kubernetes enabled)](https://www.docker.com/products/docker-desktop/)
+* [Helm](https://helm.sh/docs/intro/install/)
+* [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/deploy/)
+* [mkcert](https://github.com/FiloSottile/mkcert#installation)
+
+> Check the [Pre-requirements document](pre-requirements.md) for more detailed information about these tools.
+
 ## Creating a New Solution
 
 > 🛈 This document uses [ABP Studio](../studio/index.md) to create new ABP solutions. **ABP Studio** is in the beta version now. If you have any issues, you can use the [ABP CLI](../cli/index.md) to create new solutions. You can also use the [getting started page](https://abp.io/get-started) to easily build ABP CLI commands for new project creations.
@@ -127,13 +142,11 @@ In the *Solution Runner* section (on the left side) you can see all the runnable
 
 As shown in the figure above, the executable applications are grouped into folders like `apps`, `gateways`, `infrastructure`, and `services`. You can start/stop them all, a group (folder) of them, or one by one.
 
-Before running the applications, it is good to be sure that all applications are built. To do that, right-click the root item in the *Solution Runner* and select *Build* -> *Build All* action.
+Before running the applications, you can run the all application by right-clicking the root item in the *Solution Runner* and select *Build* -> *Build All* action. However, you don't need to do that, because ABP Studio builds the applications before running them by default.
 
-![abp-studio-microservice-solution-runner-build-all](images/abp-studio-microservice-solution-runner-build-all.png)
+> If you want to change this behavior, and don't want ABP Studio to build before running the applications, you can click the *Manage start actions* button in the *Solution Runner*, which you can see from the root item or per folder.
 
-> *Solution Runner* doesn't build an application before running it. That provides a great performance gain because most of the time you will work on one or a few services and you don't need to build all of the other applications in every run. However, if you want to build before running, you can right-click an item in the *Solution Runner* tree and select *Run* -> *Build & Start* command.
-
-It will take some time to build all. Once all is done, you can start the system. You can click the *Play* button on the root item in Solution Runner to start all the applications.
+You can click the *Play* button on the root item in *Solution Runner* to start all the applications.
 
 > **About the Docker Containers**
 >

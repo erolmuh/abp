@@ -177,13 +177,29 @@ public static class AbpApplicationBuilderExtensions
             throw new AbpException("The app(IApplicationBuilder) is not an IEndpointRouteBuilder.");
         }
 
-        app.UseVirtualStaticFiles();
+        var environment = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+        if (environment.IsDevelopment())
+        {
+            // MapStaticAssets in development mode will have a performance issue if there are many static files.
+            // https://github.com/dotnet/aspnetcore/issues/59673
+            app.UseStaticFiles();
+
+            // Volo.Abp.AspNetCore.staticwebassets.endpoints.json is an empty file. Just compatible with the return type of MapAbpStaticAssets.
+            var tempStaticAssetsManifestPath = Path.Combine(AppContext.BaseDirectory, "Volo.Abp.AspNetCore.staticwebassets.endpoints.json");
+            if (!File.Exists(tempStaticAssetsManifestPath))
+            {
+                File.WriteAllText(tempStaticAssetsManifestPath, "{\"Version\":1,\"ManifestType\":\"Build\",\"Endpoints\":[]}");
+            }
+            return endpoints.MapStaticAssets(tempStaticAssetsManifestPath);
+        }
 
         var options = app.ApplicationServices.GetRequiredService<IOptions<AbpAspNetCoreContentOptions>>().Value;
         foreach (var folder in options.AllowedExtraWebContentFolders)
         {
             app.UseVirtualStaticFiles(folder);
         }
+
+        app.UseVirtualStaticFiles();
 
         return endpoints.MapStaticAssets(staticAssetsManifestPath);
     }

@@ -15,6 +15,15 @@ namespace Volo.Docs.Documents
 
         [JsonPropertyName("items")]
         public List<NavigationNode> Items { get; set; }
+        
+        [JsonPropertyName("isLazyExpandable")]
+        public bool IsLazyExpandable { get; set; }
+        
+        [JsonPropertyName("isIndex")]
+        public bool IsIndex { get; set; }
+        
+        [JsonPropertyName("keywords")]
+        public string[] Keywords { get; set; }
 
         public bool IsLeaf => !HasChildItems;
 
