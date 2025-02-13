@@ -1,0 +1,27 @@
+using System;
+using System.Threading;
+
+class RehanMayoIntro
+{
+    static void Main()
+    {
+        Console.WriteLine("====================================");
+        Console.WriteLine("   WELCOME TO REHAN MAYO!");
+        Console.WriteLine("====================================");
+        Thread.Sleep(1000);
+        
+        Console.WriteLine("Bringing you the creamiest, most delicious mayonnaise!");
+        Thread.Sleep(1500);
+        
+        Console.WriteLine("Made with love, perfected with flavor.");
+        Thread.Sleep(1500);
+        
+        Console.WriteLine("Taste the difference with Rehan Mayo!");
+        Thread.Sleep(1000);
+        
+        Console.WriteLine("====================================");
+        Console.WriteLine("      ENJOY EVERY BITE!   ");
+        Console.WriteLine("====================================");
+    }
+}
+
