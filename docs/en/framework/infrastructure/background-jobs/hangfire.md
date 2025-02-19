@@ -119,6 +119,68 @@ namespace MyProject
 }
 ````
 
+### Specifying Queue Names
+
+You can specify the queue for Hangfire jobs in two ways:
+
+1. **Using `AddHangfireServer` Method**:
+
+```csharp
+context.Services.AddHangfireServer(options =>
+{
+    options.Queues = new[] { "alpha" };
+});
+```
+
+1. **Using `AbpHangfireOptions` **:
+
+```csharp
+Configure<AbpHangfireOptions>(options =>
+{
+    options.ServerOptions = new BackgroundJobServerOptions()
+    {
+        Queues = new[] { "default", "alpha" }
+    };
+});
+```
+
+You can add one of these configurations to the ConfigureHangfire method or after the ConfigureHangfire method in the ConfigureServices method.
+
+Here is an example of how to add these configurations:
+```csharp
+public override void ConfigureServices(ServiceConfigurationContext context)
+{
+    var configuration = context.Services.GetConfiguration();
+
+    ConfigureHangfire(context, configuration);
+
+   
+}
+
+private void ConfigureHangfire(ServiceConfigurationContext context, IConfiguration configuration)
+{
+    context.Services.AddHangfire(config =>
+    {
+        config.UseSqlServerStorage(configuration.GetConnectionString("Default"));
+    });
+
+    // Option 1: Using AddHangfireServer
+    context.Services.AddHangfireServer(options =>
+    {
+        options.Queues = new[] { "alpha" };
+    });
+
+    // Option 2: Using AbpHangfireOptions
+    Configure<AbpHangfireOptions>(options =>
+    {
+        options.ServerOptions = new BackgroundJobServerOptions()
+        {
+            Queues = new[] { "default", "alpha" }
+        };
+    });
+}
+```
+
 ### Dashboard Authorization
 
 Hangfire Dashboard provides information about your background jobs, including method names and serialized arguments as well as gives you an opportunity to manage them by performing different actions – retry, delete, trigger, etc. So it is important to restrict access to the Dashboard.
