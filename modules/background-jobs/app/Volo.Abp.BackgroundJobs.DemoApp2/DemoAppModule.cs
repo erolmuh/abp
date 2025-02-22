@@ -8,7 +8,7 @@ using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
 using Volo.Abp.Modularity;
 
-namespace Volo.Abp.BackgroundJobs.DemoApp;
+namespace Volo.Abp.BackgroundJobs.DemoApp2;
 
 [DependsOn(
     typeof(DemoAppSharedModule),

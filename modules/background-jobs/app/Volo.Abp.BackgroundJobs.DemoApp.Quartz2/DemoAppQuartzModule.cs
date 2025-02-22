@@ -8,7 +8,7 @@ using Volo.Abp.BackgroundWorkers.Quartz;
 using Volo.Abp.Modularity;
 using Volo.Abp.Quartz;
 
-namespace Volo.Abp.BackgroundJobs.DemoApp.Quartz;
+namespace Volo.Abp.BackgroundJobs.DemoApp.Quartz2;
 
 [DependsOn(
     typeof(DemoAppSharedModule),

@@ -10,7 +10,7 @@ using Volo.Abp.BackgroundWorkers.Hangfire;
 using Volo.Abp.Hangfire;
 using Volo.Abp.Modularity;
 
-namespace Volo.Abp.BackgroundJobs.DemoApp.HangFire;
+namespace Volo.Abp.BackgroundJobs.DemoApp.HangFire2;
 
 [DependsOn(
     typeof(DemoAppSharedModule),

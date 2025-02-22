@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Volo.Abp.BackgroundJobs.DemoApp.Db;
+using Volo.Abp.BackgroundJobs.DemoApp2.Db;
 using Volo.Abp.EntityFrameworkCore;
 
 #nullable disable
 
-namespace Volo.Abp.BackgroundJobs.DemoApp.Migrations
+namespace Volo.Abp.BackgroundJobs.DemoApp2.Migrations
 {
     [DbContext(typeof(DemoAppDbContext))]
     partial class DemoAppDbContextModelSnapshot : ModelSnapshot
