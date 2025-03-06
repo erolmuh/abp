@@ -1,6 +1,13 @@
 # Creating the Initial Products Module
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer","NG", "MAUIBlazor"]
+}
+````
+
+````json
 //[doc-nav]
 {
   "Previous": {
