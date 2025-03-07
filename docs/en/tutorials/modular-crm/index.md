@@ -1,5 +1,11 @@
 # Modular Monolith Application Development Tutorial
-
+````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer","NG", "MAUIBlazor"],
+    "DB": ["EF","Mongo"]
+}
+````
 ````json
 //[doc-nav]
 {

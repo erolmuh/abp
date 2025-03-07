@@ -1,6 +1,13 @@
 # Creating the Initial Solution
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer","NG", "MAUIBlazor"]
+}
+````
+
+````json
 //[doc-nav]
 {
   "Previous": {
@@ -17,7 +24,7 @@
 Follow the *[Get Started](../../get-started/single-layer-web-application.md)* guide to create a single layer web application with the following configuration:
 
 * **Solution name**: `ModularCrm`
-* **UI Framework**: ASP.NET Core MVC / Razor Pages
+* **UI Framework**: {{UI_Value}}
 * **Database Provider**: Entity Framework Core
 
 You can select the other options based on your preference.
