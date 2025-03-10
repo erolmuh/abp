@@ -14,7 +14,9 @@ export function isLibrary(project: workspaces.ProjectDefinition): boolean {
 }
 
 export function readEnvironment(tree: Tree, project: workspaces.ProjectDefinition) {
-  if (isLibrary(project)) return undefined;
+  if (isLibrary(project)) {
+    return undefined;
+  }
 
   const srcPath = project.sourceRoot || `${project.root}/src`;
   const envPath = srcPath + '/environments/environment.ts';
@@ -26,6 +28,14 @@ export function getFirstApplication(tree: Tree) {
   const [name, project] =
     Object.entries(workspace.projects).find(
       ([_, project]) => project.projectType === ProjectType.Application,
+    ) || [];
+  return { name, project };
+}
+export function getFirstLibrary(tree: Tree) {
+  const workspace = readWorkspaceSchema(tree);
+  const [name, project] =
+    Object.entries(workspace.projects).find(
+      ([_, project]) => project.projectType === ProjectType.Library,
     ) || [];
   return { name, project };
 }
@@ -52,7 +62,11 @@ export async function resolveProject<T = any>(
   // @typescript-eslint/no-explicit-any
   notFoundValue: T = NOT_FOUND_VALUE as unknown as any,
 ): Promise<Project | T> {
-  name = name || readWorkspaceSchema(tree).defaultProject || getFirstApplication(tree).name!;
+  name =
+    name ||
+    readWorkspaceSchema(tree).defaultProject ||
+    getFirstApplication(tree).name ||
+    getFirstLibrary(tree).name!;
   const workspace = await getWorkspace(tree);
   let definition: Project['definition'] | undefined;
 
