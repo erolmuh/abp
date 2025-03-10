@@ -61,7 +61,11 @@ When you click the *Next* button, you are redirected to the UI selection step.
 
 Here, you can select the UI type you want to support in your module:
 
+{{if UI == 'NG'}} 
+![abp-studio-create-new-module-dialog-step-ui](images/abp-studio-create-new-module-dialog-step-ui-ng.png)
+{{else}}
 ![abp-studio-create-new-module-dialog-step-ui](images/abp-studio-create-new-module-dialog-step-ui.png)
+{{end}}
 
 A module;
 
