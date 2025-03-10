@@ -55,25 +55,29 @@ export function createRootNamespaceGetter(params: GenerateProxySchema) {
     const project = await resolveProject(tree, params.source!);
     const environmentExpr = readEnvironment(tree, project.definition);
 
-    if (!environmentExpr)
-      throw new SchematicsException(interpolate(Exception.NoEnvironment, project.name));
+    let assignment = undefined;
 
-    let assignment = getAssignedPropertyFromObjectliteral(environmentExpr, [
-      'apis',
-      apiName,
-      'rootNamespace',
-    ]);
+    if (apiName) {
+      assignment = apiName;
+    }
 
-    if (!assignment)
+    if (environmentExpr) {
       assignment = getAssignedPropertyFromObjectliteral(environmentExpr, [
         'apis',
-        'default',
+        apiName,
         'rootNamespace',
       ]);
 
+      if (!assignment)
+        assignment = getAssignedPropertyFromObjectliteral(environmentExpr, [
+          'apis',
+          'default',
+          'rootNamespace',
+        ]);
+    }
+
     if (!assignment)
       throw new SchematicsException(interpolate(Exception.NoRootNamespace, project.name, apiName));
-
     return assignment.replace(/[`'"]/g, '');
   };
 }
