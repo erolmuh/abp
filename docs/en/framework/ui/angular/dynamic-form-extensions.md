@@ -341,6 +341,52 @@ export const identityEditFormPropContributors = {
 };
 ```
 
+### Using `ePropType.Typeahead` FormProp Type
+#### Overview
+When adding a **Typeahead** (`ePropType.Typeahead`) field to your form, you should also include a corresponding string
+field
+with the same name suffixed with `_Text`.
+
+#### Why Do You Need the _Text Field ?
+
+- The **Typeahead field** (`myTypeaheadProp`) stores the selected value.
+- The _Text field (`myTypeaheadProp_Text`) automatically stores the selected **key** value.
+- This helps with `data binding` and `ensures compatibility` when saving or processing the form data.
+
+#### Example Implementation
+
+```ts
+{
+    type: ePropType.Typeahead,
+    name: 'myTypeaheadProp',
+    displayName: '::MyTypeaheadProp',
+    options: data => {
+        const service = data.getInjected(MyService);
+        return service.getOptions(); // Fetch dropdown options dynamically
+    },
+    validators: () => [Validators.required],
+},
+{
+    type: ePropType.String, 
+    name: 'myTypeaheadProp_Text', 
+    displayName: '::MyTypeaheadProp', 
+    visible: data => false, // Hide this field while still storing the selected key
+}
+
+```
+#### Request Body Example
+
+```json
+{
+    "myTypeaheadProp": 1, // Selected option value
+    "myTypeaheadProp_Text": "Option 1" // Selected option key that populated automatically
+}
+```
+
+#### Key Notes
+- The `myTypeaheadProp_Text` field can be hidden using `visible: data => false`.
+- This field is still **automatically updated** when the user selects an option in `myTypeaheadProp`.
+
 ## See Also
 
 - [Customizing Application Modules Guide](../../architecture/modularity/extending/customizing-application-modules-guide.md)
