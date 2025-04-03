@@ -1,10 +1,11 @@
 import { APP_INITIALIZER, Provider } from '@angular/core';
 import { eLayoutType, RoutesService } from '@abp/ng.core';
 import { e<%= pascal(libraryName) %>RouteNames } from '../enums/route-names';
+import { makeEnvironmentProviders, provideAppInitializer } from '@angular/core';
 
-export function configureRoutes(routesService: RoutesService) {
-  return () => {
-    routesService.add([
+export function configureRoutes() {
+  const routes = inject(RoutesService);
+  routes.add([
       {
         path: '/<%= kebab(libraryName) %>',
         name: e<%= pascal(libraryName) %>RouteNames.<%= pascal(libraryName) %>,
@@ -12,15 +13,13 @@ export function configureRoutes(routesService: RoutesService) {
         layout: eLayoutType.application,
         order: 3,
       },
-    ]);
-  };
+  ]);
 }
 
-export const <%= macro(libraryName) %>RouteProviders: Provider[] = [
-  {
-    provide: APP_INITIALIZER,
-    useFactory: configureRoutes,
-    deps: [RoutesService],
-    multi: true,
-  },
-];
+export function provide<%= pascal(libraryName) %>Config() {
+  return makeEnvironmentProviders([
+    provideAppInitializer(() => {
+      configureRoutes();
+    }),
+  ]);
+}
