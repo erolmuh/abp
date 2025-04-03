@@ -70,7 +70,6 @@ function createLibrary(options: GenerateLibSchema): Rule {
       console.log(options);
       if (options.isModuleTemplate) {
         if (options.isStandaloneTemplate) {
-          console.log('Standalone template ----->>>>>>>>>>>>>>');
           return createLibFromModuleStandaloneTemplate(tree, options);
         } else {
           return createLibFromModuleTemplate(tree, options);
