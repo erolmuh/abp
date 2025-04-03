@@ -1,0 +1,9 @@
+import { ModuleWithProviders, NgModule } from '@angular/core';
+import { <%= macro(libraryName) %>_ROUTE_PROVIDERS } from './providers/route.provider';
+
+import { Provider } from '@angular/core';
+import { <%= macro(libraryName) %>_ROUTE_PROVIDERS } from './providers';
+
+export function provide<%= pascal(libraryName) %>Config(): Provider[] {
+  return [<%= macro(libraryName) %>_ROUTE_PROVIDERS];
+}

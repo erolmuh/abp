@@ -1,0 +1,14 @@
+import { importProvidersFrom } from '@angular/core';
+import { CoreModule, LazyModuleFactory } from '@abp/ng.core';
+import { ThemeSharedModule } from '@abp/ng.theme.shared';
+import { <%= pascal(libraryName) %>Routes } from './<%= kebab(libraryName) %>-routing';
+import { Routes } from '@angular/router';
+
+export const <%= camel(libraryName) %>Providers = [
+  importProvidersFrom(CoreModule, ThemeSharedModule, <%= pascal(libraryName) %>RoutingModule)
+  provideRouter(<%= camel(libraryName) %>Routes)
+];
+
+export const <%= camel(libraryName) %>LazyModule = new LazyModuleFactory({
+  providers: <%= camel(libraryName) %>Providers,
+});
