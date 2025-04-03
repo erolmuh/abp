@@ -67,8 +67,10 @@ function createLibrary(options: GenerateLibSchema): Rule {
   return async (tree: Tree) => {
     const target = await resolveProject(tree, options.packageName, null);
     if (!target || options.override) {
+      console.log(options);
       if (options.isModuleTemplate) {
         if (options.isStandaloneTemplate) {
+          console.log('Standalone template ----->>>>>>>>>>>>>>');
           return createLibFromModuleStandaloneTemplate(tree, options);
         } else {
           return createLibFromModuleTemplate(tree, options);
@@ -127,7 +129,7 @@ async function createLibFromModuleStandaloneTemplate(tree: Tree, options: Genera
   const abpVersion = packageJson.dependencies['@abp/ng.core'];
 
   return chain([
-    applyWithOverwrite(url('./files-package'), [
+    applyWithOverwrite(url('./files-package-standalone'), [
       applyTemplates({
         ...cases,
         libraryName: options.packageName,
@@ -203,7 +205,7 @@ export async function createLibSecondaryEntryWithStandaloneTemplate(
   const packageName = `${kebab(targetLib.name)}/${kebab(options.packageName)}`;
   const importPath = `${targetLib.definition.root}/${kebab(options.packageName)}`;
   return chain([
-    applyWithOverwrite(url('./files-secondary-entrypoint'), [
+    applyWithOverwrite(url('./files-secondary-entrypoint-standalone'), [
       applyTemplates({
         ...cases,
         libraryName: options.packageName,

@@ -1,4 +1,4 @@
 import { Routes } from '@angular/router';
 
-export const <%= camel(libraryName) %>Routes: Routes = [
+export const <%= pascal(libraryName) %>Routes: Routes = [
 ];

@@ -31,7 +31,7 @@
       },
       "x-prompt": "Is module template?"
     },
-    "isStandaloneModule": {
+    "isStandaloneTemplate": {
       "description": "Is standalone template",
       "type": "boolean",
       "$default": {
