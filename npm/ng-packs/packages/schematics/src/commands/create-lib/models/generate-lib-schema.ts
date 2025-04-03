@@ -8,6 +8,10 @@ export interface GenerateLibSchema {
    * İs the package a library or a library module
    */
   isSecondaryEntrypoint: boolean;
+  /**
+   * İs the package has standalone template
+   */
+  isStandaloneTemplate: boolean;
 
   isModuleTemplate: boolean;
 

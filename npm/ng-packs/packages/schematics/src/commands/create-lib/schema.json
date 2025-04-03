@@ -31,12 +31,21 @@
       },
       "x-prompt": "Is module template?"
     },
+    "isStandaloneModule": {
+      "description": "Is standalone template",
+      "type": "boolean",
+      "$default": {
+        "$source": "argv",
+        "index": 3
+      },
+      "x-prompt": "Is standalone template?"
+    },
     "override": {
       "description": "Override existing files",
       "type": "boolean",
       "$default": {
         "$source": "argv",
-        "index": 3
+        "index": 4
       },
       "x-prompt": "Override existing files?"
     }

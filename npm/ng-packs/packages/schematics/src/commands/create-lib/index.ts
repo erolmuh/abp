@@ -68,10 +68,18 @@ function createLibrary(options: GenerateLibSchema): Rule {
     const target = await resolveProject(tree, options.packageName, null);
     if (!target || options.override) {
       if (options.isModuleTemplate) {
-        return createLibFromModuleTemplate(tree, options);
+        if (options.isStandaloneTemplate) {
+          return createLibFromModuleStandaloneTemplate(tree, options);
+        } else {
+          return createLibFromModuleTemplate(tree, options);
+        }
       }
       if (options.isSecondaryEntrypoint) {
-        return createLibSecondaryEntry(tree, options);
+        if (options.isStandaloneTemplate) {
+          return createLibSecondaryEntryWithStandaloneTemplate(tree, options);
+        } else {
+          return createLibSecondaryEntry(tree, options);
+        }
       }
     } else {
       throw new SchematicsException(
@@ -96,6 +104,24 @@ function readFirstLibInAngularJson(workspace: WorkspaceDefinition): ProjectDefin
 }
 
 async function createLibFromModuleTemplate(tree: Tree, options: GenerateLibSchema) {
+  const packagesDir = await resolvePackagesDirFromAngularJson(tree);
+  const packageJson = JSON.parse(tree.read('./package.json')!.toString());
+  const abpVersion = packageJson.dependencies['@abp/ng.core'];
+
+  return chain([
+    applyWithOverwrite(url('./files-package'), [
+      applyTemplates({
+        ...cases,
+        libraryName: options.packageName,
+        abpVersion,
+      }),
+      move(normalize(packagesDir)),
+    ]),
+    addLibToWorkspaceIfNotExist(options.packageName, packagesDir),
+  ]);
+}
+
+async function createLibFromModuleStandaloneTemplate(tree: Tree, options: GenerateLibSchema) {
   const packagesDir = await resolvePackagesDirFromAngularJson(tree);
   const packageJson = JSON.parse(tree.read('./package.json')!.toString());
   const abpVersion = packageJson.dependencies['@abp/ng.core'];
@@ -153,6 +179,26 @@ export function updateTsConfig(packageName: string, path: string) {
 }
 
 export async function createLibSecondaryEntry(tree: Tree, options: GenerateLibSchema) {
+  const targetLib = await resolveProject(tree, options.target);
+  const packageName = `${kebab(targetLib.name)}/${kebab(options.packageName)}`;
+  const importPath = `${targetLib.definition.root}/${kebab(options.packageName)}`;
+  return chain([
+    applyWithOverwrite(url('./files-secondary-entrypoint'), [
+      applyTemplates({
+        ...cases,
+        libraryName: options.packageName,
+        target: targetLib.name,
+      }),
+      move(normalize(targetLib.definition.root)),
+      updateTsConfig(packageName, importPath),
+    ]),
+  ]);
+}
+
+export async function createLibSecondaryEntryWithStandaloneTemplate(
+  tree: Tree,
+  options: GenerateLibSchema,
+) {
   const targetLib = await resolveProject(tree, options.target);
   const packageName = `${kebab(targetLib.name)}/${kebab(options.packageName)}`;
   const importPath = `${targetLib.definition.root}/${kebab(options.packageName)}`;
