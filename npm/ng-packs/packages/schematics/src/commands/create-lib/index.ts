@@ -118,7 +118,7 @@ async function createLibFromModuleTemplate(tree: Tree, options: GenerateLibSchem
       }),
       move(normalize(packagesDir)),
     ]),
-    addLibToWorkspaceIfNotExist(options.packageName, packagesDir),
+    addLibToWorkspaceIfNotExist(options, packagesDir),
   ]);
 }
 
@@ -136,14 +136,14 @@ async function createLibFromModuleStandaloneTemplate(tree: Tree, options: Genera
       }),
       move(normalize(packagesDir)),
     ]),
-    addLibToWorkspaceIfNotExist(options.packageName, packagesDir),
+    addLibToWorkspaceIfNotExist(options, packagesDir),
   ]);
 }
 
-export function addLibToWorkspaceIfNotExist(name: string, packagesDir: string): Rule {
+export function addLibToWorkspaceIfNotExist(options: GenerateLibSchema, packagesDir: string): Rule {
   return async (tree: Tree) => {
     const workspace = await getWorkspace(tree);
-    const packageName = kebab(name);
+    const packageName = kebab(options.packageName);
     const isProjectExist = workspace.projects.has(packageName);
 
     const projectRoot = join(normalize(packagesDir), packageName);
@@ -157,7 +157,7 @@ export function addLibToWorkspaceIfNotExist(name: string, packagesDir: string): 
         : noop(),
       addLibToWorkspaceFile(projectRoot, packageName),
       updateTsConfig(packageName, pathImportLib),
-      importConfigModuleToDefaultProjectAppModule(workspace, packageName),
+      importConfigModuleToDefaultProjectAppModule(workspace, packageName, options),
       addRoutingToAppRoutingModule(workspace, packageName),
     ]);
   };
@@ -219,6 +219,7 @@ export async function createLibSecondaryEntryWithStandaloneTemplate(
 export function importConfigModuleToDefaultProjectAppModule(
   workspace: WorkspaceDefinition,
   packageName: string,
+  options: GenerateLibSchema,
 ) {
   return (tree: Tree) => {
     const projectName = readWorkspaceSchema(tree).defaultProject || getFirstApplication(tree).name!;
@@ -229,17 +230,25 @@ export function importConfigModuleToDefaultProjectAppModule(
       return;
     }
     const appModuleContent = appModule.toString();
-    if (appModuleContent.includes(`${camel(packageName)}ConfigModule`)) {
+    if (
+      appModuleContent.includes(
+        options.isStandaloneTemplate
+          ? `provide${pascal(packageName)}Config`
+          : `${camel(packageName)}ConfigModule`,
+      )
+    ) {
       return;
     }
 
-    const forRootStatement = `${pascal(packageName)}ConfigModule.forRoot()`;
+    const rootConfigStatement = options.isStandaloneTemplate
+      ? `provide${pascal(packageName)}Config()`
+      : `${pascal(packageName)}ConfigModule.forRoot()`;
     const text = tree.read(appModulePath);
     if (!text) {
       return;
     }
     const sourceText = text.toString();
-    if (sourceText.includes(forRootStatement)) {
+    if (sourceText.includes(rootConfigStatement)) {
       return;
     }
     const source = ts.createSourceFile(appModulePath, sourceText, ts.ScriptTarget.Latest, true);
@@ -247,8 +256,9 @@ export function importConfigModuleToDefaultProjectAppModule(
     const changes = addImportToModule(
       source,
       appModulePath,
-      forRootStatement,
+      rootConfigStatement,
       `${kebab(packageName)}/config`,
+      options.isStandaloneTemplate,
     );
     const recorder = tree.beginUpdate(appModulePath);
     for (const change of changes) {

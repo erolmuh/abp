@@ -493,8 +493,15 @@ export function addImportToModule(
   modulePath: string,
   classifiedName: string,
   importPath: string,
+  isStandalone = false,
 ): Change[] {
-  return addSymbolToNgModuleMetadata(source, modulePath, 'imports', classifiedName, importPath);
+  return addSymbolToNgModuleMetadata(
+    source,
+    modulePath,
+    isStandalone ? 'providers' : 'imports',
+    classifiedName,
+    importPath,
+  );
 }
 
 /**
