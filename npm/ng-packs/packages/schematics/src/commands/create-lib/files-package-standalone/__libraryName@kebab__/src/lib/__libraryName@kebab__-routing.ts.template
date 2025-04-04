@@ -1,4 +1,10 @@
 import { Routes } from '@angular/router';
+import { <%= pascal(libraryName) %>HomeComponent } from './<%= kebab(libraryName) %>.component';
 
 export const <%= pascal(libraryName) %>Routes: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./<%= kebab(libraryName) %>.component').then(m => m.<%= pascal(libraryName) %>HomeComponent),
+  },
 ];
