@@ -8,4 +8,4 @@ import {ThemeSharedModule} from "@abp/ng.theme.shared";
   template: `<h1>Lazy Loaded Test Component</h1>`,
   imports: [CoreModule, ThemeSharedModule],
 })
-export class <%= camel(libraryName) %>HomeComponent {}
+export class <%= pascal(libraryName) %>HomeComponent {}
