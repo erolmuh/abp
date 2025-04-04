@@ -1,1 +1,1 @@
-export * from './<%= kebab(target) %>-<%= kebab(libraryName) %>.module';
+export * from './<%= kebab(target) %>-<%= kebab(libraryName) %>';

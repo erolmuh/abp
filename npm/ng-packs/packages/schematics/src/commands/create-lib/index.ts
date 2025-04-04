@@ -67,7 +67,6 @@ function createLibrary(options: GenerateLibSchema): Rule {
   return async (tree: Tree) => {
     const target = await resolveProject(tree, options.packageName, null);
     if (!target || options.override) {
-      console.log(options);
       if (options.isModuleTemplate) {
         if (options.isStandaloneTemplate) {
           return createLibFromModuleStandaloneTemplate(tree, options);
@@ -158,7 +157,7 @@ export function addLibToWorkspaceIfNotExist(options: GenerateLibSchema, packages
       addLibToWorkspaceFile(projectRoot, packageName),
       updateTsConfig(packageName, pathImportLib),
       importConfigModuleToDefaultProjectAppModule(workspace, packageName, options),
-      addRoutingToAppRoutingModule(workspace, packageName),
+      addRoutingToAppRoutingModule(workspace, packageName, options),
     ]);
   };
 }
@@ -272,7 +271,11 @@ export function importConfigModuleToDefaultProjectAppModule(
   };
 }
 
-export function addRoutingToAppRoutingModule(workspace: WorkspaceDefinition, packageName: string) {
+export function addRoutingToAppRoutingModule(
+  workspace: WorkspaceDefinition,
+  packageName: string,
+  options: GenerateLibSchema,
+) {
   return (tree: Tree) => {
     const projectName = readWorkspaceSchema(tree).defaultProject || getFirstApplication(tree).name!;
     const project = workspace.projects.get(projectName);
@@ -294,7 +297,9 @@ export function addRoutingToAppRoutingModule(workspace: WorkspaceDefinition, pac
       true,
     );
     const importPath = `${kebab(packageName)}`;
-    const importStatement = `() => import('${importPath}').then(m => m.${moduleName}.forLazy())`;
+    const importStatement = options.isStandaloneTemplate
+      ? `() => import('${importPath}').then(m => m.${pascal(packageName)}Routes)`
+      : `() => import('${importPath}').then(m => m.${moduleName}.forLazy())`;
     const routeDefinition = `{ path: '${kebab(packageName)}', loadChildren: ${importStatement} }`;
     const change = addRouteDeclarationToModule(source, `${kebab(packageName)}`, routeDefinition);
 
