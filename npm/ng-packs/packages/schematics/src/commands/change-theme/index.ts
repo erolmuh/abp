@@ -5,6 +5,7 @@ import * as ts from 'typescript';
 import { allStyles, importMap, styleMap } from './style-map';
 import { ChangeThemeOptions } from './model';
 import {
+  applicationHasStandaloneTemplate,
   Change,
   createDefaultPath,
   InsertChange,
@@ -68,13 +69,15 @@ function updateProjectStyle(
 
 function updateAppModule(selectedProject: string, targetThemeName: ThemeOptionsEnum): Rule {
   return async (host: Tree) => {
-    const appModulePath = (await createDefaultPath(host, selectedProject)) + '/app.module.ts';
+    const isStandalone = applicationHasStandaloneTemplate(host, selectedProject);
+    const defaultPath = await createDefaultPath(host, selectedProject);
+    const appModulePath = defaultPath + `${isStandalone ? '/app.component.ts' : '/app.module.ts'}`;
 
     return chain([
       removeImportPath(appModulePath, targetThemeName),
       removeImportFromNgModuleMetadata(appModulePath, targetThemeName),
       removeProviderFromNgModuleMetadata(appModulePath, targetThemeName),
-      insertImports(appModulePath, targetThemeName),
+      insertImports(appModulePath, targetThemeName, isStandalone),
       insertProviders(appModulePath, targetThemeName),
     ]);
   };
@@ -192,7 +195,11 @@ export function removeProviderFromNgModuleMetadata(
   };
 }
 
-export function insertImports(appModulePath: string, selectedTheme: ThemeOptionsEnum): Rule {
+export function insertImports(
+  appModulePath: string,
+  selectedTheme: ThemeOptionsEnum,
+  isStandalone = false,
+): Rule {
   return (host: Tree) => {
     const recorder = host.beginUpdate(appModulePath);
     const source = createSourceFile(host, appModulePath);
@@ -205,7 +212,7 @@ export function insertImports(appModulePath: string, selectedTheme: ThemeOptions
     const changes: Change[] = [];
 
     selected.map(({ importName, path }) =>
-      changes.push(...addImportToModule(source, appModulePath, importName, path)),
+      changes.push(...addImportToModule(source, appModulePath, importName, path, isStandalone)),
     );
 
     if (changes.length > 0) {
