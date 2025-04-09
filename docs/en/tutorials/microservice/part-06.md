@@ -253,6 +253,7 @@ We have generated the proxy classes for the `IProductIntegrationService` interfa
   }
 }
 ```
+> This step is automatically done by ABP Studio wherever possible.
 
 > **BaseUrl** refers to the base URL of the Catalog service. You can use the *Copy Url* option from the Catalog service's context menu in the ABP Studio **Solution Runner** to paste it here.
 
