@@ -1,4 +1,8 @@
 @using Volo.Abp.AspNetCore.Components.Web
+@if (AccessToken.IsNullOrWhiteSpace())
+{
+    <script>localStorage.removeItem('@PersistentAccessToken.Key');</script>
+}
 @code
 {
     [Parameter]
@@ -11,20 +15,13 @@
         LocalStorageService = localStorageService;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (OperatingSystem.IsBrowser())
+        if (OperatingSystem.IsBrowser() || AccessToken.IsNullOrWhiteSpace())
         {
             return;
         }
 
-        if (AccessToken.IsNullOrWhiteSpace())
-        {
-            await LocalStorageService.RemoveItemAsync(PersistentAccessToken.Key);
-        }
-        else
-        {
-            await LocalStorageService.SetItemAsync(PersistentAccessToken.Key, AccessToken);
-        }
+        await LocalStorageService.SetItemAsync(PersistentAccessToken.Key, AccessToken);
     }
 }

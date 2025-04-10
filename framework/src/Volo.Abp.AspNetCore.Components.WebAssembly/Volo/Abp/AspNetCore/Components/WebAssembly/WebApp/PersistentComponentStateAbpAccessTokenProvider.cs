@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Volo.Abp.AspNetCore.Components.Web;
@@ -23,7 +24,7 @@ public class PersistentComponentStateAbpAccessTokenProvider : IAbpAccessTokenPro
 
     public virtual async Task<string?> GetTokenAsync()
     {
-        if (AccessToken != null)
+        if (!AccessToken.IsNullOrWhiteSpace())
         {
             return AccessToken;
         }
