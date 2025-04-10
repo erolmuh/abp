@@ -1,14 +1,14 @@
-@using Microsoft.JSInterop
+@using Volo.Abp.AspNetCore.Components.Web
 @code
 {
     [Parameter]
     public string? AccessToken { get; set; }
 
-    protected IJSRuntime JsRuntime { get; }
+    protected ILocalStorageService LocalStorageService { get; }
 
-    public PersistentAccessTokenToClient(IJSRuntime jsRuntime)
+    public PersistentAccessTokenToClient(ILocalStorageService localStorageService)
     {
-        JsRuntime = jsRuntime;
+        LocalStorageService = localStorageService;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -20,11 +20,11 @@
 
         if (AccessToken.IsNullOrWhiteSpace())
         {
-            await JsRuntime.InvokeVoidAsync("localStorage.removeItem", "access_token");
+            await LocalStorageService.RemoveItemAsync(PersistentAccessToken.Key);
         }
         else
         {
-            await JsRuntime.InvokeVoidAsync("localStorage.setItem", "access_token", AccessToken);
+            await LocalStorageService.SetItemAsync(PersistentAccessToken.Key, AccessToken);
         }
     }
 }

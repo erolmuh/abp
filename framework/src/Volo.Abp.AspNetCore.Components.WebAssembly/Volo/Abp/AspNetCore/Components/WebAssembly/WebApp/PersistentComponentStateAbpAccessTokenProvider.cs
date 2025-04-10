@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
+using Volo.Abp.AspNetCore.Components.Web;
 using Volo.Abp.Http.Client.Authentication;
 
 namespace Volo.Abp.AspNetCore.Components.WebAssembly.WebApp;
@@ -11,12 +11,13 @@ public class PersistentComponentStateAbpAccessTokenProvider : IAbpAccessTokenPro
 
     protected PersistentComponentState PersistentComponentState { get; }
 
-    protected IJSRuntime JsRuntime { get; }
+    protected ILocalStorageService LocalStorageService { get; }
 
-    public PersistentComponentStateAbpAccessTokenProvider(PersistentComponentState persistentComponentState, IJSRuntime jsRuntime)
+    public PersistentComponentStateAbpAccessTokenProvider(PersistentComponentState persistentComponentState, ILocalStorageService localStorageService)
     {
         PersistentComponentState = persistentComponentState;
-        JsRuntime = jsRuntime;
+        LocalStorageService = localStorageService;
+
         AccessToken = null;
     }
 
@@ -27,11 +28,7 @@ public class PersistentComponentStateAbpAccessTokenProvider : IAbpAccessTokenPro
             return AccessToken;
         }
 
-        AccessToken = await JsRuntime.InvokeAsync<string>(
-            "localStorage.getItem",
-            "access_token"
-        );
-
+        AccessToken = await LocalStorageService.GetItemAsync(PersistentAccessToken.Key);
         if (string.IsNullOrWhiteSpace(AccessToken))
         {
             AccessToken = PersistentComponentState.TryTakeFromJson<PersistentAccessToken>(PersistentAccessToken.Key, out var token)
