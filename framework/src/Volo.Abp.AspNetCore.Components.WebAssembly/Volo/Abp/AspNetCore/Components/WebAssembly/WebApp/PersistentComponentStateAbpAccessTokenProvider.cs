@@ -1,32 +1,44 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Volo.Abp.Http.Client.Authentication;
 
 namespace Volo.Abp.AspNetCore.Components.WebAssembly.WebApp;
 
 public class PersistentComponentStateAbpAccessTokenProvider : IAbpAccessTokenProvider
 {
-    private string? AccessToken { get; set; }
+    protected string? AccessToken { get; set; }
 
-    private readonly PersistentComponentState _persistentComponentState;
+    protected PersistentComponentState PersistentComponentState { get; }
 
-    public PersistentComponentStateAbpAccessTokenProvider(PersistentComponentState persistentComponentState)
+    protected IJSRuntime JsRuntime { get; }
+
+    public PersistentComponentStateAbpAccessTokenProvider(PersistentComponentState persistentComponentState, IJSRuntime jsRuntime)
     {
-        _persistentComponentState = persistentComponentState;
+        PersistentComponentState = persistentComponentState;
+        JsRuntime = jsRuntime;
         AccessToken = null;
     }
 
-    public virtual Task<string?> GetTokenAsync()
+    public virtual async Task<string?> GetTokenAsync()
     {
         if (AccessToken != null)
         {
-            return Task.FromResult<string?>(AccessToken);
+            return AccessToken;
         }
 
-        AccessToken = _persistentComponentState.TryTakeFromJson<PersistentAccessToken>(PersistentAccessToken.Key, out var token)
-            ? token?.AccessToken
-            : null;
+        AccessToken = await JsRuntime.InvokeAsync<string>(
+            "localStorage.getItem",
+            "access_token"
+        );
 
-        return Task.FromResult(AccessToken);
+        if (string.IsNullOrWhiteSpace(AccessToken))
+        {
+            AccessToken = PersistentComponentState.TryTakeFromJson<PersistentAccessToken>(PersistentAccessToken.Key, out var token)
+                ? token?.AccessToken
+                : null;
+        }
+
+        return AccessToken;
     }
 }

@@ -1,0 +1,30 @@
+@using Microsoft.JSInterop
+@code
+{
+    [Parameter]
+    public string? AccessToken { get; set; }
+
+    protected IJSRuntime JsRuntime { get; }
+
+    public PersistentAccessTokenToClient(IJSRuntime jsRuntime)
+    {
+        JsRuntime = jsRuntime;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            return;
+        }
+
+        if (AccessToken.IsNullOrWhiteSpace())
+        {
+            await JsRuntime.InvokeVoidAsync("localStorage.removeItem", "access_token");
+        }
+        else
+        {
+            await JsRuntime.InvokeVoidAsync("localStorage.setItem", "access_token", AccessToken);
+        }
+    }
+}
