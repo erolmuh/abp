@@ -690,6 +690,13 @@
     "Permission:Campaigns": "Campaigns",
     "Permission:Licenses": "License Settings",
     "BlockUserPolicy": "User Block Policies",
-    "Permission:BlockUserPolicy": "User Block Policy"
+    "Permission:BlockUserPolicy": "User Block Policy",
+    "ManageImages" : "Manage Image",
+    "ModuleMainImage": "Module Main Image",
+    "ModuleImageInfo1": "Accepted file types : <strong> JPEG, JPG, PNG </strong>",
+    "ModuleImageInfo2": "Max file size : <strong> 1 MB </strong>",
+    "ModuleImageInfo3": "Image Proportion : <strong> 1:1 </strong>",
+    "ModuleImageInfo4": "<a href='/images/example-module-img.png' download> Download a sample cover image </a>",
+    "AreYouSureToDeleteImage": "Are you sure you want to delete this image?"
   }
 }

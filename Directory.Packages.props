@@ -142,7 +142,7 @@
     <PackageVersion Include="Quartz.Extensions.DependencyInjection" Version="3.13.0" />
     <PackageVersion Include="Quartz.Plugins.TimeZoneConverter" Version="3.13.0" />
     <PackageVersion Include="Quartz.Serialization.Json" Version="3.13.0" />
-    <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
+    <PackageVersion Include="RabbitMQ.Client" Version="7.1.2" />
     <PackageVersion Include="Rebus" Version="8.6.0" />
     <PackageVersion Include="Rebus.ServiceProvider" Version="10.2.0" />
     <PackageVersion Include="Scriban" Version="5.10.0" />

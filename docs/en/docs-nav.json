@@ -614,7 +614,7 @@
                       "path": "framework/infrastructure/blob-storing/google.md"
                     },
                     {
-                      "text": "Bunny Provider",
+                      "text": "Bunny.Net Provider",
                       "path": "framework/infrastructure/blob-storing/bunny.md"
                     },
                     {
