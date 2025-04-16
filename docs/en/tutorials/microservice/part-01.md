@@ -1,6 +1,14 @@
 # Microservice Tutorial Part 01: Creating the Initial Solution
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer", "BlazorWebApp", "NG"],
+    "DB": ["EF","Mongo"]
+}
+````
+
+````json
 //[doc-nav]
 {
   "Next": {
@@ -13,9 +21,27 @@
 Follow the *[Get Started](../../get-started/microservice.md)* guide to create a new layered web application with the following configurations:
 
 * **Solution name**: `CloudCrm`
+{{if DB == "Mongo"}}
 * **Database Provider**: Entity Framework Core
-* **Database Management System**: SQL Server
+{{end}}
+{{if DB == "Mongo"}}
+* **Database Provider**: MongoDB
+{{end}}
+{{if UI == "Mvc"}}
 * **UI Framework**: MVC / Razor Pages
+{{end}}
+{{if UI == "BlazorWebAssembly"}}
+* **UI Framework**: Blazor WebAssembly
+{{end}}
+{{if UI == "BlazorServer"}}
+* **UI Framework**: Blazor Server
+{{end}}
+{{if UI == "BlazorWebApp"}}
+* **UI Framework**: Blazor Web App
+{{end}}
+{{if UI == "Angular"}}
+* **UI Framework**: Angular
+{{end}}
 * **Mobile framework**: None
 * **Public website**: Selected
 

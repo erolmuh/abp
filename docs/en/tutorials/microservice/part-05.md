@@ -1,6 +1,14 @@
 # Microservice Tutorial Part 05: Building the Ordering service
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer", "BlazorWebApp", "NG"],
+    "DB": ["EF","Mongo"]
+}
+````
+
+````json
 //[doc-nav]
 {
   "Previous": {
@@ -283,6 +291,8 @@ If you check the database, you should see the entities created in the `Orders` t
 
 ## Creating the User Interface
 
+{{if UI == "MVC"}}
+
 Now, we will create the user interface for the Ordering module. We will use the `CloudCrm.Web` project to create the user interface. Open the `CloudCrm.Web` .NET solution in your favorite IDE.
 
 ### Creating the Orders Page
@@ -408,6 +418,140 @@ private static async Task ConfigureMainMenuAsync(MenuConfigurationContext contex
         );
 }
 ```
+{{else if UI == "NG"}}
+
+### Generating the Proxies
+
+Run the following command line under the `Angular` project folder to generate the UI proxy for the `OrderingService`:
+
+```bash
+abp generate-proxy -t ng -m ordering -u http://localhost:44311 --target ordering-service
+```
+
+For more information, please refer to the [Service Proxies](https://abp.io/docs/latest/framework/ui/angular/service-proxies) documentation.
+
+### Create Order Module
+
+Run the following command line to create a new module, named `OrderModule` in the root folder of the angular application:
+
+```bash
+yarn ng generate module order --module ordering-service --project ordering-service --routing --route orders
+```
+
+### Add Order Route
+
+* Create `order-base.routes.ts` file under the `projects/ordering-service/config/src/providers` folder and add the following code:
+
+*order-base.routes.ts*
+```typescript
+import { ABP, eLayoutType } from '@abp/ng.core';
+
+import { eOrderingServiceRouteNames } from '../enums/route-names';
+
+export const ORDER_BASE_ROUTES: ABP.Route[] = [
+  {
+    path: '/ordering-service/orders',
+    parentName: eOrderingServiceRouteNames.OrderingService,
+    name: 'OrderingService::Menu:Orders',
+    layout: eLayoutType.application,
+    breadcrumbText: 'OrderingService::Orders',
+  },
+];
+```
+
+* Create `order-route.provider.ts` file under the `projects/ordering-service/config/src/providers` folder and add the following code:
+
+*order-route.provider.ts*
+```typescript
+import { inject, provideAppInitializer } from '@angular/core';
+import { ABP, RoutesService } from '@abp/ng.core';
+import { ORDER_BASE_ROUTES } from './order-base.routes';
+
+export const ORDERS_ORDER_ROUTE_PROVIDER = [
+  provideAppInitializer(() => {
+    configureRoutes();
+  }),
+];
+
+function configureRoutes() {
+  const routesService = inject(RoutesService);
+  const routes: ABP.Route[] = [...ORDER_BASE_ROUTES];
+  routesService.add(routes);
+}
+```
+
+* Open the `projects/ordering-service/config/src/ordering-service-config.module.ts` file and add `ORDERS_ORDER_ROUTE_PROVIDER` to the `providers` array as following code:
+
+*ordering-service-config.module.ts*
+```typescript
+import { ModuleWithProviders, NgModule } from '@angular/core';
+import { ORDERING_SERVICE_ROUTE_PROVIDERS } from './providers/route.provider';
+import { ORDERS_ORDER_ROUTE_PROVIDER } from './providers/order-route.provider';
+
+@NgModule()
+export class OrderingServiceConfigModule {
+  static forRoot(): ModuleWithProviders<OrderingServiceConfigModule> {
+    return {
+      ngModule: OrderingServiceConfigModule,
+      providers: [ORDERING_SERVICE_ROUTE_PROVIDERS, ORDERS_ORDER_ROUTE_PROVIDER],
+    };
+  }
+}
+```
+
+### Create Order Page
+
+* Update `order.component.ts` file under the `projects/ordering-service/src/lib/order` folder as following code:
+
+```typescript
+import { Component } from '@angular/core';
+import { OrderDto, OrderService } from '../proxy/ordering-service/services';
+
+@Component({
+  selector: 'lib-order',
+  standalone: false,
+  templateUrl: './order.component.html',
+  styleUrl: './order.component.css'
+})
+export class OrderComponent {
+
+  items: OrderDto[] = [];
+
+  constructor(private readonly proxy: OrderService) {
+    this.proxy.getList().subscribe((res) => {
+      this.items = res;
+    });
+  }
+  
+}
+```
+
+* Update `order.component.html` file under the `projects/ordering-service/src/lib/order` folder as following code:
+
+```html
+<div class="card">
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Product Id</th>
+                    <th>Customer Name</th>
+                </tr>
+                <tr *ngFor="let item of items">
+                    <td>{{item.id}}</td>
+                    <td>{{item.productId}}</td>
+                    <td>{{item.customerName}}</td>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+```
+
+{{else if UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
+
+{{end}}
 
 ## Building and Running the Application
 

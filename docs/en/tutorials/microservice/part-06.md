@@ -1,6 +1,14 @@
 # Microservice Tutorial Part 06: Integrating the services: HTTP API Calls
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer", "BlazorWebApp", "NG"],
+    "DB": ["EF","Mongo"]
+}
+````
+
+````json
 //[doc-nav]
 {
   "Previous": {
@@ -271,6 +279,8 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 
 ### Updating the UI to Display the Product Name
 
+{{if UI == "MVC"}}
+
 Open the `Index.cshtml` file (the `Index.cshtml` file under the `Pages/Orders` folder of the `CloudCrm.Web` project of the `CloudCrm.Web` .NET solution) and update the table content to display the product name instead of the product ID:
 
 ```html
@@ -294,6 +304,33 @@ Open the `Index.cshtml` file (the `Index.cshtml` file under the `Pages/Orders` f
     </abp-card-body>
 </abp-card>
 ```
+
+{{else if UI == "NG"}}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Product Id</th>
+                    <th>Product Name</th>
+                    <th>Customer Name</th>
+                </tr>
+                <tr *ngFor="let item of items">
+                    <td>{{item.id}}</td>
+                    <td>{{item.productId}}</td>
+                    <td>{{item.productName}}</td>
+                    <td>{{item.customerName}}</td>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+{{else if UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
+
+{{end}}
 
 That's it! Now, you can *Start* the all applications and browse it in ABP Studio to see the result:
 

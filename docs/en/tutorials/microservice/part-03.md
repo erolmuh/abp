@@ -1,6 +1,14 @@
 # Microservice Tutorial Part 03: Building the Catalog service
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer", "BlazorWebApp", "NG"],
+    "DB": ["EF","Mongo"]
+}
+````
+
+````json
 //[doc-nav]
 {
   "Previous": {
@@ -79,6 +87,7 @@ We can now start the `CloudCrm.CatalogService` application by clicking the *Star
 
 After the application is started, you can right-click and [Browse](../../studio/running-applications.md#monitoring) on the `CloudCrm.CatalogService` application to open it in the ABP Studio's pre-integrated browser. You can see the *Products* controller in the Swagger UI.
 
+{{if UI == "Mvc"}}
 ### Generating the UI Proxy
 
 Now, we need to generate the [Static API Proxy](../../framework/api-development/static-csharp-clients.md) for the *Web* project. Right-click the *CloudCrm.Web* [package](../../studio/concepts.md#package) and select the *ABP CLI* -> *Generate Proxy* -> *C#* command:
@@ -104,6 +113,20 @@ public override void ConfigureServices(ServiceConfigurationContext context)
       typeof(CloudCrmCatalogServiceContractsModule).Assembly);
 }
 ```
+
+{{end}}
+
+{{if UI == "NG"}}
+### Generating the UI Proxy
+
+ABP Suite automatically generates the UI proxy for the `Angular` project. If you want to create manually, run this command under the `Angular` project folder:
+
+```bash
+abp generate-proxy -t ng -m catalog -u http://localhost:44384 --target catalog-service
+```
+
+For more information, please refer to the [Service Proxies](https://abp.io/docs/latest/framework/ui/angular/service-proxies) documentation.
+{{end}}
 
 ### Running the Application
 

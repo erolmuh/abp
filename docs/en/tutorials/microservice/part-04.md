@@ -1,6 +1,14 @@
 # Microservice Tutorial Part 04: Creating the initial Ordering service
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer", "BlazorWebApp", "NG"],
+    "DB": ["EF","Mongo"]
+}
+````
+
+````json
 //[doc-nav]
 {
   "Previous": {
@@ -34,13 +42,22 @@ Here, you can select the database provider to be used by the new microservice:
 
 ![abp-studio-add-new-microservice-dialog-database-step](images/abp-studio-add-new-microservice-dialog-database-step.png)
 
+{{if DB == "Mongo"}}
+Select *MongoDB* option and proceed the *Next* step.
+{{end}}
+{{if DB == "EF"}}
 Select *Entity Framework Core* option and proceed the *Next* step.
+{{end}}
 
 ### Integrating to the Solution
 
 In this step, we can select the options for integrating the new microservice to the rest of the solution components:
 
+{{if UI == "Angular"}}
+![abp-studio-add-new-microservice-dialog-integration-step](images/abp-studio-add-new-microservice-dialog-integration-step_angular.png)
+{{else}}
 ![abp-studio-add-new-microservice-dialog-integration-step](images/abp-studio-add-new-microservice-dialog-integration-step.png)
+{{end}}
 
 ABP Studio intelligently selects the right values for you, but you should still check them carefully since they directly affect what we will do in the next parts of this tutorial.
 

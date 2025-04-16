@@ -1,6 +1,14 @@
 # Microservice Tutorial Part 07: Integrating the services: Using Distributed Events
 
 ````json
+//[doc-params]
+{
+    "UI": ["MVC","Blazor","BlazorServer", "BlazorWebApp", "NG"],
+    "DB": ["EF","Mongo"]
+}
+````
+
+````json
 //[doc-nav]
 {
   "Previous": {
