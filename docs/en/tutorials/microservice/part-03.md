@@ -42,7 +42,19 @@ The `CloudCrm` microservice solution contains more than one .NET solution. Typic
 
 Select the `CloudCrm.CatalogService` module and click the *OK* button. It will open ABP Suite as shown below:
 
+{{if UI == "MVC"}}
+
 ![abp-studio-abp-suite-inside](images/abp-studio-abp-suite-inside.png)
+
+{{else if UI == "NG"}}
+
+![abp-studio-abp-suite-inside-ng](images/abp-studio-abp-suite-inside-ng.png)
+
+{{else if UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
+
+![abp-studio-abp-suite-inside-blazor](images/abp-studio-abp-suite-inside-blazor.png)
+
+{{end }}
 
 ## Generating a Products Page
 
@@ -79,42 +91,25 @@ That's all. You can click the *Save and generate* button to start the code gener
 
 ABP Suite will generate the necessary code for you. It will take some time to complete the process. After the process is completed, you will see a success message, click the *OK* button.
 
+{{if UI == "MVC"}}
+
 ![abp-studio-catalog-service-build-and-start](images/abp-studio-catalog-service-start.png)
+
+{{else if UI == "NG"}}
+
+![abp-studio-catalog-service-build-and-start](images/abp-studio-catalog-service-start-ng.png)
+
+{{else if UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
+
+![abp-studio-catalog-service-build-and-start](images/abp-studio-catalog-service-start-blazor.png)
+
+{{end}}
 
 We can now start the `CloudCrm.CatalogService` application by clicking the *Start* button (or alternatively, directly clicking the *run* icon) in the *Solution Runner* panel.
 
 ![abp-studio-browse-catalog-service-2](images/abp-studio-browse-catalog-service-2.png)
 
 After the application is started, you can right-click and [Browse](../../studio/running-applications.md#monitoring) on the `CloudCrm.CatalogService` application to open it in the ABP Studio's pre-integrated browser. You can see the *Products* controller in the Swagger UI.
-
-{{if UI == "Mvc"}}
-### Generating the UI Proxy
-
-Now, we need to generate the [Static API Proxy](../../framework/api-development/static-csharp-clients.md) for the *Web* project. Right-click the *CloudCrm.Web* [package](../../studio/concepts.md#package) and select the *ABP CLI* -> *Generate Proxy* -> *C#* command:
-
-![abp-studio-generate-proxy](images/abp-studio-generate-proxy.png)
-
-It will open the *Generate C# Proxies* window. Select the `CloudCrm.CatalogService` application, and it will automatically populate the *URL* field. Select the *catalog* module, set the service type to *application*, and check the *Without contracts* checkbox, as the `CloudCrm.Web` project already depends on the `CloudCrm.CatalogService.Contracts` package:
-
-![abp-studio-generate-proxy-window](images/abp-studio-generate-proxy-window.png)
-
-> To be able to select the *Application*, you must *Start* the related application beforehand. You can start the application using [Solution Runner](../../studio/running-applications.md) as explained in the previous parts.
-
-Lastly, we need to configure the use of a static HTTP client for the `CatalogService` in the `CloudCrm.Web` project. Open the `CloudCrmWebModule.cs` file in the `Web` project and add the following line to the `ConfigureServices` method:
-
-```csharp
-//...
-using CloudCrm.CatalogService;
-
-public override void ConfigureServices(ServiceConfigurationContext context)
-{
-    // Code omitted for brevity
-    context.Services.AddStaticHttpClientProxies(
-      typeof(CloudCrmCatalogServiceContractsModule).Assembly);
-}
-```
-
-{{end}}
 
 {{if UI == "NG"}}
 ### Generating the UI Proxy
@@ -128,13 +123,45 @@ abp generate-proxy -t ng -m catalog -u http://localhost:44384 --target catalog-s
 For more information, please refer to the [Service Proxies](https://abp.io/docs/latest/framework/ui/angular/service-proxies) documentation.
 {{end}}
 
+{{if UI == "MVC" || UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
+### Generating the UI Proxy
+
+Now, we need to generate the [Static API Proxy](../../framework/api-development/static-csharp-clients.md) for the *Web* project. Right-click the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} [package](../../studio/concepts.md#package) and select the *ABP CLI* -> *Generate Proxy* -> *C#* command:
+
+{{if UI == "MVC"}}
+![abp-studio-generate-proxy](images/abp-studio-generate-proxy.png)
+{{else}}
+![abp-studio-generate-proxy-blazor](images/abp-studio-generate-proxy-blazor.png)
+{{end}}
+
+It will open the *Generate C# Proxies* window. Select the `CloudCrm.CatalogService` application, and it will automatically populate the *URL* field. Select the *catalog* module, set the service type to *application*, and check the *Without contracts* checkbox, as the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}}  project already depends on the `CloudCrm.CatalogService.Contracts` package:
+
+![abp-studio-generate-proxy-window](images/abp-studio-generate-proxy-window.png)
+
+> To be able to select the *Application*, you must *Start* the related application beforehand. You can start the application using [Solution Runner](../../studio/running-applications.md) as explained in the previous parts.
+
+Lastly, we need to configure the use of a static HTTP client for the `CatalogService` in the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} project. Open the {{if UI == "MVC"}} `CloudCrmWebModule.cs` {{else}} `CloudCrmBlazorModule` {{end}} file in the {{if UI == "MVC"}} `Web` {{else}} `Blazor` {{end}}project and add the following line to the `ConfigureServices` method:
+
+```csharp
+//...
+using CloudCrm.CatalogService;
+
+public override void ConfigureServices(ServiceConfigurationContext context)
+{
+    // Code omitted for brevity
+    context.Services.AddStaticHttpClientProxies(
+      typeof(CloudCrmCatalogServiceContractsModule).Assembly);
+}
+```
+{{end}}
+
 ### Running the Application
 
 Now, stop any application running in the *Solution Runner* panel, and then run the applications by clicking the *Start All* button on the root item in the *Solution Runner* panel:
 
 ![abp-studio-run-build-and-start-all](images/abp-studio-run-start-all.png)
 
-After the application is started, you can right-click and [Browse](../../studio/running-applications.md#monitoring) on the `CloudCrm.Web` application to open it in the ABP Studio's pre-integrated browser:
+After the application is started, you can right-click and [Browse](../../studio/running-applications.md#monitoring) on the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} application to open it in the ABP Studio's pre-integrated browser:
 
 ![abp-studio-browse-cloud-crm-products](images/abp-studio-browse-cloud-crm-products.png)
 

@@ -292,7 +292,6 @@ If you check the database, you should see the entities created in the `Orders` t
 ## Creating the User Interface
 
 {{if UI == "MVC"}}
-
 Now, we will create the user interface for the Ordering module. We will use the `CloudCrm.Web` project to create the user interface. Open the `CloudCrm.Web` .NET solution in your favorite IDE.
 
 ### Creating the Orders Page
@@ -349,20 +348,86 @@ Here, we inject the `IOrderAppService` into the `Index` Razor Page. We use this 
 ```
 
 This page shows a list of orders on the UI. We haven't created a UI to create new orders, and we will not do it to keep this tutorial simple. If you want to learn how to create advanced UIs with ABP, please follow the [Book Store tutorial](../../tutorials/book-store/index.md).
+{{end}}
 
+{{if UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
+
+Now, we will create the user interface for the Ordering module. We will use the `CloudCrm.Blazor` project to create the user interface. Open the `CloudCrm.Blazor` .NET solution in your favorite IDE.
+
+### Creating the Orders Page
+
+```html
+@page "/orders"
+@using CloudCrm.OrderingService.Services
+@inject IOrderAppService OrderAppService
+
+<h1>Orders</h1>
+
+<div class="card">
+    <div class="card-body">
+        @if (OrderList == null)
+        {
+            <p><em>Loading orders...</em></p>
+        }
+        else if (!OrderList.Any())
+        {
+            <p><em>No orders found.</em></p>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var order in OrderList)
+                {
+                    <li class="list-group-item">
+                        <strong>Customer:</strong> @order.CustomerName <br />
+                        <strong>Product:</strong> @order.ProductId <br />
+                        <strong>State:</strong> @order.State
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>
+
+@code {
+    private List<OrderDto> OrderList { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await OrderAppService.GetListAsync();
+            OrderList = result;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading orders: {ex.Message}");
+            OrderList = new List<OrderDto>();
+        }
+    }
+}
+```
+
+{{end}}
+
+{{if UI == "MVC" || UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
 ### Generating the UI Proxy
 
 To select the *Application* during proxy generation, ensure that the `CloudCrm.OrderingService` is *Started* beforehand. You can start the application using [Solution Runner](../../studio/running-applications.md).  
 
-Now, we need to generate the [Static API Proxy](../../framework/api-development/static-csharp-clients.md) for the *Web* project. Right-click the *CloudCrm.Web* [package](../../studio/concepts.md#package) and select the *ABP CLI* -> *Generate Proxy* -> *C#* command:
+Now, we need to generate the [Static API Proxy](../../framework/api-development/static-csharp-clients.md) for the *Web* project. Right-click the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} [package](../../studio/concepts.md#package) and select the *ABP CLI* -> *Generate Proxy* -> *C#* command:
 
+{{if UI == "MVC"}}
 ![abp-studio-generate-proxy-2](images/abp-studio-generate-proxy-2.png)
+{{else}}
+![abp-studio-generate-proxy-blazor-2](images/abp-studio-generate-proxy-blazor-2.png)
+{{end}}
 
-It will open the *Generate C# Proxies* window. Select the `CloudCrm.OrderingService` application, and it will automatically populate the *URL* field. Choose the *ordering* module and service type is *application* lastly check the *Without contracts* checkbox, since we already have a dependency on the `CloudCrm.OrderingService.Contracts` package in the `CloudCrm.Web` project:
+It will open the *Generate C# Proxies* window. Select the `CloudCrm.OrderingService` application, and it will automatically populate the *URL* field. Choose the *ordering* module and service type is *application* lastly check the *Without contracts* checkbox, since we already have a dependency on the `CloudCrm.OrderingService.Contracts` package in the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} project:
 
 ![abp-studio-generate-proxy-window-ordering-module](images/abp-studio-generate-proxy-window-ordering-module.png)
 
-Lastly, we need to configure the use of a static HTTP client for the `OrderingService` in the `CloudCrm.Web` project. Open the `CloudCrmWebModule.cs` file in the `Web` project and add the following line to the `ConfigureServices` method:
+Lastly, we need to configure the use of a static HTTP client for the `OrderingService` in the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} project. Open the `CloudCrmWebModule.cs` file in the `Web` project and add the following line to the `ConfigureServices` method:
 
 ```csharp
 //...
@@ -380,7 +445,7 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 
 > ABP provides a modular navigation [menu system](../../framework/ui/mvc-razor-pages/navigation-menu.md) that allows you to define the menu items in a modular way.
 
-Finally, we need to add a menu item to the sidebar to navigate to the `Orders` page. Open the `CloudCrmMenus` file in the `Navigation` folder of the `CloudCrm.Web` project and edit with the following code:
+Finally, we need to add a menu item to the sidebar to navigate to the `Orders` page. Open the `CloudCrmMenus` file in the `Navigation` folder of the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} project and edit with the following code:
 
 ```csharp
 namespace CloudCrm.Web.Navigation;
@@ -401,7 +466,7 @@ public class CloudCrmMenus
 }
 ```
 
-Then, open the `CloudCrmMenuContributor` class in the `CloudCrm.Web` project, located in the `Navigation` folder, and add the following code to `ConfigureMainMenuAsync` method:
+Then, open the `CloudCrmMenuContributor` class in the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} project, located in the `Navigation` folder, and add the following code to `ConfigureMainMenuAsync` method:
 
 ```csharp
 private static async Task ConfigureMainMenuAsync(MenuConfigurationContext context)
@@ -418,6 +483,7 @@ private static async Task ConfigureMainMenuAsync(MenuConfigurationContext contex
         );
 }
 ```
+
 {{else if UI == "NG"}}
 
 ### Generating the Proxies
@@ -539,17 +605,15 @@ export class OrderComponent {
                     <th>Customer Name</th>
                 </tr>
                 <tr *ngFor="let item of items">
-                    <td>{{item.id}}</td>
-                    <td>{{item.productId}}</td>
-                    <td>{{item.customerName}}</td>
+                    <td>{%{{{item.id}}}%}</td>
+                    <td>{%{{{item.productId}}}%}</td>
+                    <td>{%{{{item.customerName}}}%}</td>
                 </tr>
             </thead>
         </table>
     </div>
 </div>
 ```
-
-{{else if UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
 
 {{end}}
 

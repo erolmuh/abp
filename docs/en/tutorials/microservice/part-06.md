@@ -307,28 +307,41 @@ Open the `Index.cshtml` file (the `Index.cshtml` file under the `Pages/Orders` f
 
 {{else if UI == "NG"}}
 
+```html
 <div class="card">
     <div class="card-body">
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>Order ID</th>
-                    <th>Product Id</th>
                     <th>Product Name</th>
                     <th>Customer Name</th>
                 </tr>
                 <tr *ngFor="let item of items">
-                    <td>{{item.id}}</td>
-                    <td>{{item.productId}}</td>
-                    <td>{{item.productName}}</td>
-                    <td>{{item.customerName}}</td>
+                    <td>{%{{{item.id}}}%}</td>
+                    <td>{%{{{item.productName}}}%}</td>
+                    <td>{%{{{item.customerName}}}%}</td>
                 </tr>
             </thead>
         </table>
     </div>
 </div>
+```
 
 {{else if UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
+
+```html
+<ul class="list-group">
+    @foreach (var order in OrderList)
+    {
+        <li class="list-group-item">
+            <strong>Customer:</strong> @order.CustomerName <br />
+            <strong>Product Name:</strong> @order.ProductName <br />
+            <strong>State:</strong> @order.State
+        </li>
+    }
+</ul>
+```
 
 {{end}}
 

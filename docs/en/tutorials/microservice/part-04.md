@@ -53,7 +53,7 @@ Select *Entity Framework Core* option and proceed the *Next* step.
 
 In this step, we can select the options for integrating the new microservice to the rest of the solution components:
 
-{{if UI == "Angular"}}
+{{if UI == "NG"}}
 ![abp-studio-add-new-microservice-dialog-integration-step](images/abp-studio-add-new-microservice-dialog-integration-step_angular.png)
 {{else}}
 ![abp-studio-add-new-microservice-dialog-integration-step](images/abp-studio-add-new-microservice-dialog-integration-step.png)
