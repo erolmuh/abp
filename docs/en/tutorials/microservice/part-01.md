@@ -21,16 +21,16 @@
 Follow the *[Get Started](../../get-started/microservice.md)* guide to create a new layered web application with the following configurations:
 
 * **Solution name**: `CloudCrm`
-{{if DB == "Mongo"}}
+{{if DB == "EF"}}
 * **Database Provider**: Entity Framework Core
 {{end}}
 {{if DB == "Mongo"}}
 * **Database Provider**: MongoDB
 {{end}}
-{{if UI == "Mvc"}}
+{{if UI == "MVC"}}
 * **UI Framework**: MVC / Razor Pages
 {{end}}
-{{if UI == "BlazorWebAssembly"}}
+{{if UI == "Blazor"}}
 * **UI Framework**: Blazor WebAssembly
 {{end}}
 {{if UI == "BlazorServer"}}
@@ -39,7 +39,7 @@ Follow the *[Get Started](../../get-started/microservice.md)* guide to create a 
 {{if UI == "BlazorWebApp"}}
 * **UI Framework**: Blazor Web App
 {{end}}
-{{if UI == "Angular"}}
+{{if UI == "NG"}}
 * **UI Framework**: Angular
 {{end}}
 * **Mobile framework**: None
@@ -51,7 +51,19 @@ You can select the other options based on your preference.
 
 The initial solution structure should be like the following in ABP Studio's *[Solution Explorer](../../studio/solution-explorer.md)*:
 
+{{if UI == "MVC"}}
+
 ![abp-studio-solution-explorer-initial-cloud-crm-microservice-solution](images/abp-studio-solution-explorer-initial-cloud-crm-microservice-solution.png)
+
+{{else if UI == "NG"}}
+
+![abp-studio-solution-explorer-initial-cloud-crm-microservice-solution-ng](images/abp-studio-solution-explorer-initial-cloud-crm-microservice-solution-ng.png)
+
+{{else}}
+
+![abp-studio-solution-explorer-initial-cloud-crm-microservice-solution-blazor](images/abp-studio-solution-explorer-initial-cloud-crm-microservice-solution-blazor.png)
+
+{{end}}
 
 > ABP Studio will perform a few additional steps after creating your solution. **Please wait until all the background tasks are completed** before going further.
 
