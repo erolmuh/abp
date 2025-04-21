@@ -40,20 +40,26 @@ When you click the *Next* button, you are redirected to the database provider se
 
 Here, you can select the database provider to be used by the new microservice:
 
-![abp-studio-add-new-microservice-dialog-database-step](images/abp-studio-add-new-microservice-dialog-database-step.png)
-
 {{if DB == "Mongo"}}
+
+![abp-studio-add-new-microservice-dialog-database-step-mongo](images/abp-studio-add-new-microservice-dialog-database-step-mongo.png)
+
 Select *MongoDB* option and proceed the *Next* step.
 {{end}}
+
 {{if DB == "EF"}}
+
+![abp-studio-add-new-microservice-dialog-database-step](images/abp-studio-add-new-microservice-dialog-database-step.png)
+
 Select *Entity Framework Core* option and proceed the *Next* step.
+
 {{end}}
 
 ### Integrating to the Solution
 
 In this step, we can select the options for integrating the new microservice to the rest of the solution components:
 
-{{if UI == "Angular"}}
+{{if UI == "NG"}}
 ![abp-studio-add-new-microservice-dialog-integration-step](images/abp-studio-add-new-microservice-dialog-integration-step_angular.png)
 {{else}}
 ![abp-studio-add-new-microservice-dialog-integration-step](images/abp-studio-add-new-microservice-dialog-integration-step.png)
@@ -80,7 +86,19 @@ In this section, we will investigate the new microservice in overall.
 
 The new microservice is added under the `services` folder in the `CloudCrm` ABP Studio solution:
 
+{{if UI == "MVC"}}
+
 ![abp-studio-new-catalog-service-in-solution-explorer](images/abp-studio-new-catalog-service-in-solution-explorer.png)
+
+{{else if UI == "NG"}}
+
+![abp-studio-new-catalog-service-in-solution-explorer-ng](images/abp-studio-new-catalog-service-in-solution-explorer-ng.png)
+
+{{else}}
+
+![abp-studio-new-catalog-service-in-solution-explorer-blazor](images/abp-studio-new-catalog-service-in-solution-explorer-blazor.png)
+
+{{end}}
 
 The new microservice has its own separate .NET solution that includes three packages (.NET projects):
 
@@ -106,7 +124,19 @@ You can run the solution using ABP Studio's *Solution Runner*. It will also run 
 
 Click the *Play* button near to the solution root:
 
+{{if UI == "MVC"}}
+
 ![abp-studio-solution-runner-play-all](images/abp-studio-solution-runner-play-all.png)
+
+{{else if UI == "NG"}}
+
+![abp-studio-solution-runner-play-all-ng](images/abp-studio-solution-runner-play-all-ng.png)
+
+{{else}}
+
+![abp-studio-solution-runner-play-all-blazor](images/abp-studio-solution-runner-play-all-blazor.png)
+
+{{end}}
 
 ### Browsing the Catalog Service
 
@@ -116,7 +146,19 @@ Once all of the applications have started, right-click the Catalog service and s
 
 It will open the built-in browser and you will see the Swagger UI for the Catalog service:
 
+{{if UI == "MVC"}}
+
 ![abp-studio-browser-catalog-service-swagger-ui](images/abp-studio-browser-catalog-service-swagger-ui.png)
+
+{{else if UI == "NG"}}
+
+![abp-studio-browser-catalog-service-swagger-ui-ng](images/abp-studio-browser-catalog-service-swagger-ui-ng.png)
+
+{{else}}
+
+![abp-studio-browser-catalog-service-swagger-ui-blazor](images/abp-studio-browser-catalog-service-swagger-ui-blazor.png)
+
+{{end}}
 
 You can test the APIs on the Swagger UI to see if the new microservice is properly working.
 
