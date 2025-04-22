@@ -978,7 +978,7 @@ export class BookComponent implements OnInit {
       return;
     }
 
-    const request = this.selectedBook.id
+      const request: Observable<any> = this.selectedBook.id
       ? this.bookService.update(this.selectedBook.id, this.form.value)
       : this.bookService.create(this.form.value);
 
