@@ -62,7 +62,7 @@ This module adds some initial data (see [the data seed system](../framework/infr
 
 * Creates language records configured using `AbpLocalizationOptions`.
 
-If you want to change the seeded language list, see the next section.
+If you want to change the seeded language list, see the [Localization](../framework/fundamentals/localization.md#Supported-Languages) document.
 
 ## Internals
 

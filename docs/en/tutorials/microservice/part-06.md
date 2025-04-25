@@ -115,9 +115,9 @@ public class ProductIntegrationService : ApplicationService, IProductIntegration
 
 Now that we have created the `IProductIntegrationService` interface and the `ProductIntegrationService` class, we can consume this service from the Ordering service.
 
-### Adding a Reference to the `CloudCrm.CatalogService.Contracts` Package
+### Adding a Reference to the `CloudCrm.OrderingService` Package
 
-First, we need to add a reference to the `CloudCrm.CatalogService.Contracts` package in the Ordering service. Open the ABP Studio, and stop the application(s) if it is running. Then, open the *Solution Explorer* and right-click on the `CloudCrm.OrderingService` package. Select *Add* -> *Package Reference* command:
+First, we need to add a reference to the `CloudCrm.OrderingService` package in the Ordering service. Open the ABP Studio, and stop the application(s) if it is running. Then, open the *Solution Explorer* and right-click on the `CloudCrm.OrderingService` package. Select *Add* -> *Package Reference* command:
 
 ![add-package-reference-ordering-service](images/add-package-reference-ordering-service.png)
 

@@ -260,9 +260,11 @@ If you want to override the texts in the Cookie Consent component, you just need
 
 > Refer to the [Localization documentation](../framework/fundamentals/localization.md) for more info about defining localization resources and overriding existing localization entries that comes from pre-built modules.
 
-### Configuring the Cookie Consent
+### Configuring Cookie Consent
 
-You can add Cookie Consent to your application by configuring the `AddAbpCookieConsent` in your module class as below:
+To enable cookie consent in your application, follow these two steps:
+
+**1. Configure the service in your module class (inside the `ConfigureServices` method):**
 
 ```csharp
 context.Services.AddAbpCookieConsent(options =>
@@ -273,4 +275,23 @@ context.Services.AddAbpCookieConsent(options =>
 });
 ```
 
-After configuring the `AddAbpCookieConsent` and setting it enabled, a cookie consent text will be prepared according to the options and a cookie consent banner will be seen at the bottom of the page. Thus, the users of the application will be informed about the Cookie Policy and Privacy Policy of the company/application.
+**2. Add the middleware (`UseAbpCookieConsent`) to the request pipeline (in the `OnApplicationInitialization` method):**
+
+```diff
+public override void OnApplicationInitialization(ApplicationInitializationContenxt context)
+{
+        var app = context.GetApplicationBuilder();
+        //...
+ 
++       app.UseAbpCookieConsent();
+        app.UseCorrelationId();
+        app.UseRouting();
+        app.MapAbpStaticAssets();
+        app.UseAbpSecurityHeaders();
+        app.UseAuthentication();
+
+        //...
+}
+```
+
+Once configured, a cookie consent banner will be shown at the bottom of the page. It includes links to your _Cookie Policy_ and _Privacy Policy_, helping inform users and support GDPR compliance.

@@ -28,7 +28,7 @@
     <ngx-datatable-column
       *abpVisible="prop.columnVisible(getInjected)"
       [width]="columnWidths[i + 1] || 200"
-      [name]="prop.displayName | abpLocalization"
+      [name]="(prop.isExtra ? '::' + prop.displayName : prop.displayName) | abpLocalization"
       [prop]="prop.name"
       [sortable]="prop.sortable"
     >

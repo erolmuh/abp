@@ -436,7 +436,7 @@ Open the `ModularCrm.Products` .NET solution in your IDE, and find the `Pages/Pr
 
 ![visual-studio-products-cshtml](images/visual-studio-products-cshtml.png)
 
-Replace the `IndexModel.cshtml.cs` file with the following content:
+Replace the `Index.cshtml.cs` file with the following content:
 
 ````csharp
 using System.Collections.Generic;

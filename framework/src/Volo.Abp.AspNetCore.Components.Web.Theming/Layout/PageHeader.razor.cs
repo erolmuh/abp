@@ -111,8 +111,7 @@ public partial class PageHeader : ComponentBase, IDisposable
     
     public void Dispose()
     {
-        PageLayout.ToolbarItems.Clear();
-        PageLayout.BreadcrumbItems.Clear();
+        PageLayout.Reset();
         ToolbarItemRenders.Clear();
     }
 }

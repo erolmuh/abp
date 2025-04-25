@@ -347,8 +347,43 @@ namespace LeptonX.DemoApp.Blazor.MyComponents
 
 > Don't forget to remove repeated attributes from the razor page!
 
----
+#### Customizing the Footer Section
 
+You can add a new `LeptonXFooter.razor` file and override the `Footer` component as follows:
+
+```cs
+@using Volo.Abp.DependencyInjection
+@using Volo.Abp.AspNetCore.Components.Web.LeptonXTheme.Components.ApplicationLayout.SideMenu
+
+@inherits Footer
+@attribute [ExposeServices(typeof(Footer))]
+@attribute [Dependency(ReplaceServices = true)]
+
+<div class="lpx-footbar-container">
+    <div class="lpx-footbar">
+        <div class="lpx-footbar-copyright">
+            <span>@DateTime.UtcNow.Year©</span>
+            <a href="https://leptontheme.com/" target="_blank">Lepton ThemeXXX</a>
+            <span>by</span>
+            <a href="https://volosoft.com/" target="_blank">Volosoft</a>
+        </div>
+        <div class="lpx-footbar-solo-links">
+            <a href="#">About</a>
+            <a href="#">Privacy</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+</div>
+```
+
+If you are using **Top Menu Layout**, then you can change the namespace as follows:
+
+```diff
+- @using Volo.Abp.AspNetCore.Components.Web.LeptonXTheme.Components.ApplicationLayout.SideMenu
++ @using Volo.Abp.AspNetCore.Components.Web.LeptonXTheme.Components.ApplicationLayout.TopMenu
+```
+
+> You can use the same approach customize the other components always.
 
 
 ## Common Components
