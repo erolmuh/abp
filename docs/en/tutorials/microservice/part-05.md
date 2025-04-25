@@ -132,7 +132,7 @@ Right-click the `CloudCrm.OrderingService` package and select the *EF Core CLI* 
 
 ![abp-studio-add-entity-framework-core-migration](images/abp-studio-add-entity-framework-core-migration.png)
 
-The *Add Migration* command opens a new dialog to get a migration name:
+The *Add Migration* command opens a new dialog to get a migration name `Added_Order_Entity`:
 
 ![abp-studio-entity-framework-core-add-migration-order](images/abp-studio-entity-framework-core-add-migration-order.png)
 
@@ -419,6 +419,8 @@ Now, we need to generate the [Static API Proxy](../../framework/api-development/
 
 {{if UI == "MVC"}}
 ![abp-studio-generate-proxy-2](images/abp-studio-generate-proxy-2.png)
+{{else if UI == "BlazorServer"}}
+![abp-studio-generate-proxy-blazor-server-2](images/abp-studio-generate-proxy-blazor-server-2.png)
 {{else}}
 ![abp-studio-generate-proxy-blazor-2](images/abp-studio-generate-proxy-blazor-2.png)
 {{end}}

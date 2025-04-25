@@ -99,9 +99,13 @@ ABP Suite will generate the necessary code for you. It will take some time to co
 
 ![abp-studio-catalog-service-build-and-start](images/abp-studio-catalog-service-start-ng.png)
 
-{{else if UI == "Blazor" || UI == "BlazorServer" || UI == "BlazorWebApp"}}
+{{else if UI == "BlazorServer"}}
 
-![abp-studio-catalog-service-build-and-start](images/abp-studio-catalog-service-start-blazor.png)
+![abp-studio-catalog-service-build-and-start-blazor-server](images/abp-studio-catalog-service-start-blazor-server.png)
+
+{{else}}
+
+![abp-studio-catalog-service-build-and-start-blazor](images/abp-studio-catalog-service-start-blazor.png)
 
 {{end}}
 
@@ -130,6 +134,8 @@ Now, we need to generate the [Static API Proxy](../../framework/api-development/
 
 {{if UI == "MVC"}}
 ![abp-studio-generate-proxy](images/abp-studio-generate-proxy.png)
+{{else if UI == "BlazorServer"}}
+![abp-studio-generate-proxy-blazor-server](images/abp-studio-generate-proxy-blazor-server.png)
 {{else}}
 ![abp-studio-generate-proxy-blazor](images/abp-studio-generate-proxy-blazor.png)
 {{end}}

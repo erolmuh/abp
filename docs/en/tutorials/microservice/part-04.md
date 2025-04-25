@@ -40,13 +40,19 @@ When you click the *Next* button, you are redirected to the database provider se
 
 Here, you can select the database provider to be used by the new microservice:
 
-![abp-studio-add-new-microservice-dialog-database-step](images/abp-studio-add-new-microservice-dialog-database-step.png)
-
 {{if DB == "Mongo"}}
+
+![abp-studio-add-new-microservice-dialog-database-step-mongo](images/abp-studio-add-new-microservice-dialog-database-step-mongo.png)
+
 Select *MongoDB* option and proceed the *Next* step.
 {{end}}
+
 {{if DB == "EF"}}
+
+![abp-studio-add-new-microservice-dialog-database-step](images/abp-studio-add-new-microservice-dialog-database-step.png)
+
 Select *Entity Framework Core* option and proceed the *Next* step.
+
 {{end}}
 
 ### Integrating to the Solution
