@@ -12,7 +12,7 @@
 @inject Volo.Abp.Settings.ISettingProvider SettingProvider
 
 @{
-    Layout = ThemeManager.CurrentTheme.GetAccountLayout();
+    Layout = await ThemeManager.GetCurrentAccountLayoutAsync();
 }
 
 @section scripts

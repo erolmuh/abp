@@ -6,14 +6,14 @@
 @using Volo.CmsKit.Public.Web.Pages.CmsKit.Shared.Layouts
 @using Volo.CmsKit.Web.Pages.CmsKit.Components.Contents
 @model Volo.CmsKit.Public.Web.Pages.Public.CmsKit.Pages.IndexModel
-@inject ITheme ThemeManager
+@inject ITheme Theme
 
 @{
-    Layout = ThemeManager.GetLayoutByKey(Model.ViewModel.LayoutName);
+    Layout = await Theme.GetLayoutByKeyAsync(Model.ViewModel.LayoutName);
 }
 
 @section styles{
-    
+
     <abp-style src="/Pages/Public/CmsKit/Pages/index.css" />
     @if (!Model.ViewModel.Style.IsNullOrEmpty())
     {
@@ -42,4 +42,3 @@
         }))
     </abp-card-body>
 </abp-card>
-

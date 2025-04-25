@@ -29,7 +29,7 @@
 @model IndexModel
 @{
     ViewBag.FluidLayout = true;
-    Layout = ThemeManager.CurrentTheme.GetEmptyLayout();
+    Layout = await ThemeManager.GetCurrentEmptyLayoutAsync();
     PageLayout.Content.Title = Model.DocumentPageTitle;
     ViewBag.Description = Model.GetDescription();
     ViewBag.CanonicalUrl = Model.IsLatestVersion ? null : Model.GetFullUrlOfTheLatestDocument(); //issue #12355

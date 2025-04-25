@@ -5,7 +5,7 @@
 
 @inject IThemeManager ThemeManager
 @{
-    Layout = ThemeManager.CurrentTheme.GetEmptyLayout();
+    Layout = await ThemeManager.GetCurrentEmptyLayoutAsync();
 }
 
 <div class="mt-3">@await Component.InvokeAsync(typeof(ContentFragmentViewComponent), Model)</div>

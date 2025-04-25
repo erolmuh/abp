@@ -468,10 +468,10 @@ ABP uses the `ITheme` service to get the layout location by the layout name. You
 @using Volo.Abp.AspNetCore.Mvc.UI.Theming
 @inject IThemeManager ThemeManager
 @{
-    Layout = ThemeManager.CurrentTheme.GetLayout(StandardLayouts.Empty);
+    Layout = await ThemeManager.GetCurrentEmptyLayoutAsync();
 }
 ````
 
-This page will use the empty layout. You use `ThemeManager.CurrentTheme.GetEmptyLayout();` extension method as a shortcut.
+This page will use the empty layout. You use `ThemeManager.GetCurrentEmptyLayoutAsync` extension method as a shortcut.
 
 If you want to set the layout for all the pages under a specific folder, then write the code above in a `_ViewStart.cshtml` file under that folder.
