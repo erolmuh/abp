@@ -8,8 +8,9 @@ namespace Volo.Abp.AspNetCore.Components.Web.Theming.Theming;
 public class DefaultThemeManager : IThemeManager, IScopedDependency, IServiceProviderAccessor
 {
     public IServiceProvider ServiceProvider { get; }
-    private ITheme? _currentTheme;
     protected IThemeSelector ThemeSelector { get; }
+
+    private ITheme? _currentTheme;
 
     public DefaultThemeManager(
         IServiceProvider serviceProvider,
