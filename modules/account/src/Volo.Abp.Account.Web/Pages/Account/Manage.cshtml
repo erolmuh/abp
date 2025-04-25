@@ -7,7 +7,7 @@
 @inject IHtmlLocalizer<AccountResource> L
 @model ManageModel
 @{
-    Layout = await ThemeManager.GetCurrentApplicationLayoutAsync();
+    Layout = await ThemeManager.GetCurrentThemeApplicationLayoutAsync();
 }
 @section scripts {
     <abp-script-bundle name="@typeof(ManageModel).FullName"/>

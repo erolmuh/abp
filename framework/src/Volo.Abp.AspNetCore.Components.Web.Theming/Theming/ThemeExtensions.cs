@@ -50,22 +50,27 @@ public static class ThemeExtensions
         return await theme.GetLayoutAsync(StandardLayouts.Empty, fallbackToDefault);
     }
 
-    public async static Task<Type> GetCurrentApplicationLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
+    public async static Task<Type> GetCurrentThemeLayoutAsync(this IThemeManager themeManager, string name, bool fallbackToDefault = true)
+    {
+        return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(name, fallbackToDefault);
+    }
+
+    public async static Task<Type> GetCurrentThemeApplicationLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
     {
         return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(StandardLayouts.Application, fallbackToDefault);
     }
 
-    public async static Task<Type> GetCurrentAccountLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
+    public async static Task<Type> GetCurrentThemeAccountLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
     {
         return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(StandardLayouts.Account, fallbackToDefault);
     }
 
-    public async static Task<Type> GetCurrentPublicLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
+    public async static Task<Type> GetCurrentThemePublicLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
     {
         return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(StandardLayouts.Public, fallbackToDefault);
     }
 
-    public async static Task<Type> GetCurrentEmptyLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
+    public async static Task<Type> GetCurrentThemeEmptyLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
     {
         return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(StandardLayouts.Empty, fallbackToDefault);
     }

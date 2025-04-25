@@ -1,5 +1,5 @@
 ﻿@using Volo.Abp.AspNetCore.Mvc.UI.Theming
 @inject IThemeManager ThemeManager
 @{
-    Layout = await ThemeManager.GetCurrentAccountLayoutAsync();
+    Layout = await ThemeManager.GetCurrentThemeAccountLayoutAsync();
 }

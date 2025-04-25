@@ -49,22 +49,27 @@ public static class ThemeExtensions
         return await theme.GetLayoutAsync(StandardLayouts.Empty, fallbackToDefault);
     }
 
-    public async static Task<string> GetCurrentApplicationLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
+    public async static Task<string> GetCurrentThemeLayoutAsync(this IThemeManager themeManager, string name, bool fallbackToDefault = true)
+    {
+        return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(name, fallbackToDefault);
+    }
+
+    public async static Task<string> GetCurrentThemeApplicationLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
     {
         return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(StandardLayouts.Application, fallbackToDefault);
     }
 
-    public async static Task<string> GetCurrentAccountLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
+    public async static Task<string> GetCurrentThemeAccountLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
     {
         return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(StandardLayouts.Account, fallbackToDefault);
     }
 
-    public async static Task<string> GetCurrentPublicLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
+    public async static Task<string> GetCurrentThemePublicLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
     {
         return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(StandardLayouts.Public, fallbackToDefault);
     }
 
-    public async static Task<string> GetCurrentEmptyLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
+    public async static Task<string> GetCurrentThemeEmptyLayoutAsync(this IThemeManager themeManager, bool fallbackToDefault = true)
     {
         return await (await themeManager.GetCurrentThemeAsync()).GetLayoutAsync(StandardLayouts.Empty, fallbackToDefault);
     }

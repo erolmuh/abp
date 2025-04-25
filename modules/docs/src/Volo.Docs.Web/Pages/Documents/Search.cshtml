@@ -9,7 +9,7 @@
 @inject IPageLayout PageLayout
 @model SearchModel
 @{
-    Layout = await ThemeManager.GetCurrentEmptyLayoutAsync();
+    Layout = await ThemeManager.GetCurrentThemeEmptyLayoutAsync();
 }
 @section styles {
     <style>
