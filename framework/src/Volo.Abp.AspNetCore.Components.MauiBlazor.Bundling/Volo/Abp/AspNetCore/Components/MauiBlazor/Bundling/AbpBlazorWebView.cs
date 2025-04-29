@@ -8,6 +8,6 @@ public class AbpBlazorWebView : BlazorWebView
 {
     public override IFileProvider CreateFileProvider(string contentRootDir)
     {
-        return new CompositeFileProvider(Handler!.GetRequiredService<IMauiBlazorContentFileProvider>(), base.CreateFileProvider(contentRootDir));
+        return new CompositeFileProvider(base.CreateFileProvider(contentRootDir), Handler!.GetRequiredService<IMauiBlazorContentFileProvider>());
     }
 }

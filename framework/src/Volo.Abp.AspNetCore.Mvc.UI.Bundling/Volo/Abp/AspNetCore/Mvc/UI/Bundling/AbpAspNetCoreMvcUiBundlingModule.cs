@@ -1,29 +1,22 @@
-using System;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Volo.Abp.AspNetCore.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap;
 using Volo.Abp.AspNetCore.VirtualFileSystem;
-using Volo.Abp.Bundling.Styles;
 using Volo.Abp.AspNetCore.Mvc.Libs;
-using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap;
 using Volo.Abp.Data;
-using Volo.Abp.Minify;
 using Volo.Abp.Modularity;
-using Volo.Abp.VirtualFileSystem;
 
 namespace Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 
 [DependsOn(
     typeof(AbpAspNetCoreMvcUiBootstrapModule),
     typeof(AbpAspNetCoreBundlingModule)
-    )]
+)]
 public class AbpAspNetCoreMvcUiBundlingModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
@@ -35,9 +28,38 @@ public class AbpAspNetCoreMvcUiBundlingModule : AbpModule
                 options.CheckLibs = true;
             });
         }
+
+        context.Services.AddSingleton<IValidateOptions<AbpBundlingOptions>, AbpBundlingGlobalAssetsOptionsValidation>();
+        Configure<AbpEndpointRouterOptions>(options =>
+        {
+            options.EndpointConfigureActions.Add(endpointContext =>
+            {
+                var abpBundlingOptions = endpointContext.ScopeServiceProvider.GetRequiredService<IOptions<AbpBundlingOptions>>().Value;
+                if (!abpBundlingOptions.GlobalAssets.Enabled)
+                {
+                    return;
+                }
+
+                endpointContext.Endpoints.MapGet(abpBundlingOptions.GlobalAssets.CssFileName, async httpContext =>
+                {
+                    var abpGlobalAssetsBundleService = httpContext.RequestServices.GetRequiredService<IAbpGlobalAssetsBundleService>();
+                    var styles = await abpGlobalAssetsBundleService.GetStylesAsync();
+                    httpContext.Response.ContentType = "text/css";
+                    await httpContext.Response.WriteAsync(styles);
+                });
+
+                endpointContext.Endpoints.MapGet(abpBundlingOptions.GlobalAssets.JavaScriptFileName, async httpContext =>
+                {
+                    var abpGlobalAssetsBundleService = httpContext.RequestServices.GetRequiredService<IAbpGlobalAssetsBundleService>();
+                    var scripts = await abpGlobalAssetsBundleService.GetScriptsAsync();
+                    httpContext.Response.ContentType = "text/javascript";
+                    await httpContext.Response.WriteAsync(scripts);
+                });
+            });
+        });
     }
 
-    public async override Task OnApplicationInitializationAsync(ApplicationInitializationContext context)
+    public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var environment = context.GetEnvironmentOrNull();
         if (environment != null)
@@ -47,85 +69,6 @@ public class AbpAspNetCoreMvcUiBundlingModule : AbpModule
                     context.GetEnvironment().WebRootFileProvider,
                     context.ServiceProvider.GetRequiredService<IWebContentFileProvider>()
                 );
-        }
-
-        await InitialGlobalAssetsAsync(context);
-    }
-
-    protected virtual async Task InitialGlobalAssetsAsync(ApplicationInitializationContext context)
-    {
-        var bundlingOptions = context.ServiceProvider.GetRequiredService<IOptions<AbpBundlingOptions>>().Value;
-        var logger = context.ServiceProvider.GetRequiredService<ILogger<AbpAspNetCoreMvcUiBundlingModule>>();
-        if (!bundlingOptions.GlobalAssets.Enabled)
-        {
-            return;
-        }
-
-        var bundleManager = context.ServiceProvider.GetRequiredService<BundleManager>();
-        var webHostEnvironment = context.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-        var dynamicFileProvider = context.ServiceProvider.GetRequiredService<IDynamicFileProvider>();
-        if (!bundlingOptions.GlobalAssets.GlobalStyleBundleName.IsNullOrWhiteSpace())
-        {
-            var styleFiles = await bundleManager.GetStyleBundleFilesAsync(bundlingOptions.GlobalAssets.GlobalStyleBundleName);
-            var styles = string.Empty;
-            foreach (var file in styleFiles)
-            {
-                var fileInfo = webHostEnvironment.WebRootFileProvider?.GetFileInfo(file.FileName);
-                if (fileInfo == null || !fileInfo.Exists)
-                {
-                    logger.LogError($"Could not find the file: {file.FileName}");
-                    continue;
-                }
-
-                var fileContent = await fileInfo.ReadAsStringAsync();
-                if (!bundleManager.IsBundlingEnabled())
-                {
-                    fileContent = CssRelativePath.Adjust(fileContent,
-                        file.FileName,
-                        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"));
-
-                    styles += $"/*{file.FileName}*/{Environment.NewLine}{fileContent}{Environment.NewLine}{Environment.NewLine}";
-                }
-                else
-                {
-                    styles += $"{fileContent}{Environment.NewLine}{Environment.NewLine}";
-                }
-            }
-
-            dynamicFileProvider.AddOrUpdate(
-                new InMemoryFileInfo("/wwwroot/" + bundlingOptions.GlobalAssets.CssFileName,
-                    Encoding.UTF8.GetBytes(styles),
-                    bundlingOptions.GlobalAssets.CssFileName));
-        }
-
-        if (!bundlingOptions.GlobalAssets.GlobalScriptBundleName.IsNullOrWhiteSpace())
-        {
-            var scriptFiles = await bundleManager.GetScriptBundleFilesAsync(bundlingOptions.GlobalAssets.GlobalScriptBundleName);
-            var scripts = string.Empty;
-            foreach (var file in scriptFiles)
-            {
-                var fileInfo = webHostEnvironment.WebRootFileProvider?.GetFileInfo(file.FileName);
-                if (fileInfo == null || !fileInfo.Exists)
-                {
-                    logger.LogError($"Could not find the file: {file.FileName}");
-                    continue;
-                }
-
-                var fileContent = await fileInfo.ReadAsStringAsync();
-                if (!bundleManager.IsBundlingEnabled())
-                {
-                    scripts += $"{fileContent.EnsureEndsWith(';')}{Environment.NewLine}{Environment.NewLine}";
-                }
-                else
-                {
-                    scripts += $"//{file.FileName}{Environment.NewLine}{fileContent.EnsureEndsWith(';')}{Environment.NewLine}{Environment.NewLine}";
-                }
-            }
-
-            dynamicFileProvider.AddOrUpdate(
-                new InMemoryFileInfo("/wwwroot/" + bundlingOptions.GlobalAssets.JavaScriptFileName,
-                    Encoding.UTF8.GetBytes(scripts),
-                    bundlingOptions.GlobalAssets.JavaScriptFileName));
         }
     }
 }
