@@ -6,7 +6,7 @@ using Volo.Abp.DependencyInjection;
 namespace Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic;
 
 [ThemeName(Name)]
-public abstract class BasicTheme : ITheme, ITransientDependency
+public class BasicTheme : ITheme, ITransientDependency
 {
     public const string Name = "Basic";
 
