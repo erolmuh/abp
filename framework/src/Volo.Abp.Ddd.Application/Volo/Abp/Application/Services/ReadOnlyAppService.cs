@@ -42,7 +42,17 @@ public abstract class ReadOnlyAppService<TEntity, TGetOutputDto, TGetListOutputD
         Repository = repository;
     }
 
-    protected override async Task<TEntity> GetEntityByIdAsync(TKey id)
+    protected override Task<bool> ExistAsync(TKey id)
+    {
+        return Repository.AnyAsync(x => x.Id!.Equals(id));
+    }
+
+    protected override Task<TEntity?> FindEntityByIdAsync(TKey id)
+    {
+        return Repository.FindAsync(id);
+    }
+
+    protected async override Task<TEntity > GetEntityByIdAsync(TKey id)
     {
         return await Repository.GetAsync(id);
     }

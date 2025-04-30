@@ -49,6 +49,22 @@ public abstract class AbstractKeyReadOnlyAppService<TEntity, TGetOutputDto, TGet
         ReadOnlyRepository = repository;
     }
 
+    public virtual async Task<bool> ExistsAsync(TKey id)
+    {
+        await CheckGetPolicyAsync();
+
+        return await ExistAsync(id);
+    }
+
+    public virtual async Task<TGetListOutputDto?> FindAsync(TKey id)
+    {
+        await CheckGetPolicyAsync();
+
+        var entity = await FindEntityByIdAsync(id);
+
+        return entity == null ? default : await MapToGetListOutputDtoAsync(entity);
+    }
+
     public virtual async Task<TGetOutputDto> GetAsync(TKey id)
     {
         await CheckGetPolicyAsync();
@@ -82,6 +98,10 @@ public abstract class AbstractKeyReadOnlyAppService<TEntity, TGetOutputDto, TGet
             entityDtos
         );
     }
+
+    protected abstract Task<bool> ExistAsync(TKey id);
+
+    protected abstract Task<TEntity?> FindEntityByIdAsync(TKey id);
 
     protected abstract Task<TEntity> GetEntityByIdAsync(TKey id);
 

@@ -74,12 +74,22 @@ public abstract class CrudAppService<TEntity, TGetOutputDto, TGetListOutputDto, 
         Repository = repository;
     }
 
-    protected override async Task DeleteByIdAsync(TKey id)
+    protected async override Task<bool> ExistAsync(TKey id)
+    {
+        return await Repository.AnyAsync(x => x.Id!.Equals(id));
+    }
+
+    protected async override Task<TEntity?> FindEntityByIdAsync(TKey id)
+    {
+        return await Repository.FindAsync(id);
+    }
+
+    protected async override Task DeleteByIdAsync(TKey id)
     {
         await Repository.DeleteAsync(id);
     }
 
-    protected override async Task<TEntity> GetEntityByIdAsync(TKey id)
+    protected async override Task<TEntity> GetEntityByIdAsync(TKey id)
     {
         return await Repository.GetAsync(id);
     }
