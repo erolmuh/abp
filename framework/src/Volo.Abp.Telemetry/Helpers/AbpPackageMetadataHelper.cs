@@ -1,7 +1,11 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 
-namespace Volo.Abp.Telemetry.Helpers;
+namespace Helpers;
 
 public static class AbpPackageMetadataHelper
 {
@@ -57,7 +61,7 @@ public static class AbpPackageMetadataHelper
 
 public class AbpPackageMetadata
 {
-    public string ProjectId { get; set; }
-    public string Role { get; set; }
+    public string? ProjectId { get; set; }
+    public string? Role { get; set; }
 
 }

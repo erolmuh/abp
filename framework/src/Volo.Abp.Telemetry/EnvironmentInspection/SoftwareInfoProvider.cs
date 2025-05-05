@@ -1,6 +1,9 @@
-﻿using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection;
+namespace EnvironmentInspection;
 
 internal class SoftwareInfoProvider : ISoftwareInfoProvider
 {

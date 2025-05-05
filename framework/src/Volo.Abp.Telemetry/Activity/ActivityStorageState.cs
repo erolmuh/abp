@@ -1,4 +1,7 @@
-﻿namespace Volo.Abp.Telemetry.Activity;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Activity;
 
 public class ActivityStorageState
 {

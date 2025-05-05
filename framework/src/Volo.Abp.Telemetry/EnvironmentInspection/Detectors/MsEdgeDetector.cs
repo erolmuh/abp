@@ -1,16 +1,20 @@
-﻿using System.Runtime.InteropServices;
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
+using EnvironmentInspection.Enums;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
+namespace EnvironmentInspection.Detectors;
 
 internal class MsEdgeDetector : SoftwareDetector, ISoftwareDetector
 {
     public override string Name => "MsEdge";
-    public override async Task<SoftwareInfo?> DetectAsync()
+    public async override Task<SoftwareInfo?> DetectAsync()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            string firefoxPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+            var firefoxPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                 "Microsoft", "Edge", "Application", "msedge.exe");
             
             if (File.Exists(firefoxPath))
@@ -20,7 +24,7 @@ internal class MsEdgeDetector : SoftwareDetector, ISoftwareDetector
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            string edgePath = "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge";
+            var edgePath = "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge";
             if (File.Exists(edgePath))
             {
                 var version = await ExecuteCommandAsync(edgePath, "--version");
@@ -29,7 +33,7 @@ internal class MsEdgeDetector : SoftwareDetector, ISoftwareDetector
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            string edgePath = "/usr/bin/microsoft-edge";
+            var edgePath = "/usr/bin/microsoft-edge";
             if (File.Exists(edgePath))
             {
                 var version = await ExecuteCommandAsync(edgePath, "--version");

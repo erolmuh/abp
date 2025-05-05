@@ -1,129 +1,16 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using EnvironmentInspection.Enums;
 using Volo.Abp.Cli;
 using Volo.Abp.DependencyInjection;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection;
-
-
-public enum MobileApp
-{
-    Unknown = 0,
-    None = 1,
-    Maui = 2,
-    ReactNative = 3
-    
-}
-
-
-public enum SolutionTemplate
-{
-    Unknown,
-    AppNoLayers,
-    AppLayered,
-    Microservice
-}
-
-public enum UiFramework
-{
-    Unknown = 0,
-    None = 1,
-    MvcRazorPages = 2,
-    Angular = 3,
-    BlazorWasm = 4,
-    BlazorServer = 5,
-    BlazorWebApp = 6,
-    BlazorMaUI = 7,
-}
-
-public enum LicenseType
-{
-    Unknown,
-    Free,
-    Team,
-    Business,
-    Enterprise
-}
-public enum DatabaseProvider
-{
-    Unknown = 0,
-    None = 1,
-    EfCore = 2,
-    MongoDb = 3
-}
-
-public enum Dbms
-{
-    Unknown = 0,
-    None = 1,
-    SqlServer = 2,
-    PostgreSql = 3,
-    Oracle = 4,
-    OracleDevart = 5,
-    MySql = 6,
-    Sqlite = 7,
-}
-public enum UiTheme
-{
-    Unknown = 0,
-    None = 1,
-    Basic = 2,
-    LeptonX = 3,
-    LeptonXLite = 4
-}
-
-public enum UiThemeStyle
-{
-    Unknown = 0,
-    System = 1,
-    Dim = 2,
-    Dark = 3,
-    Light = 4
-}
-
-
-public enum AbpTool : byte
-{
-    Unknown = 0,
-    StudioUI = 1,
-    StudioCli = 2,
-    OldCli = 3
-}
-public enum SoftwareType : byte
-{
-    Others = 0,
-    AbpStudio = 1,
-    DotnetSdk = 2,
-    OperatingSystem = 3,
-    Ide = 4,
-    Browser = 5
-}
-
-public enum OperationSystem
-{
-    Unknown = 0,
-    Windows = 1,
-    MacOS = 2,
-    Linux = 3,
-}
-
-public enum DeviceType
-{
-    Unknown = 0,
-    Desktop = 1,
-    Laptop = 2
-}
-
-public interface IDeviceInfoProvider 
-{
-    Task<Guid> GetDeviceIdAsync();
-    OperationSystem GetOperatingSystem();
-    DeviceType GetDeviceType();
-    string GetLanguage(); 
-    string? GetCountry();
-}
+namespace EnvironmentInspection;
 
 public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
 {
@@ -136,9 +23,21 @@ public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
 
     public OperationSystem GetOperatingSystem()
     {
-        if (OperatingSystem.IsWindows()) return OperationSystem.Windows;
-        if (OperatingSystem.IsLinux()) return OperationSystem.Linux;
-        if (OperatingSystem.IsMacOS()) return OperationSystem.MacOS;
+        if (OperatingSystem.IsWindows())
+        {
+            return OperationSystem.Windows;
+        }
+
+        if (OperatingSystem.IsLinux())
+        {
+            return OperationSystem.Linux;
+        }
+
+        if (OperatingSystem.IsMacOS())
+        {
+            return OperationSystem.MacOS;
+        }
+
         return OperationSystem.Unknown;
     }
 
@@ -172,17 +71,10 @@ public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
         return CultureInfo.CurrentUICulture.Name;
     }
 
-    public string? GetCountry()
+    public string GetCountry()
     {
-        try
-        {
-            var region = new RegionInfo(CultureInfo.CurrentUICulture.Name);
-            return region.TwoLetterISORegionName;
-        }
-        catch
-        {
-            return null;
-        }
+        var region = new RegionInfo(CultureInfo.CurrentUICulture.Name);
+        return region.TwoLetterISORegionName;
     }
 
     private DeviceType DetectDeviceTypeOnWindows()
@@ -194,7 +86,9 @@ public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
             {
                 var chassisTypes = obj["ChassisTypes"] as ushort[];
                 if (chassisTypes != null && chassisTypes.Any(t => t is 8 or 9 or 10 or 14))
+                {
                     return DeviceType.Laptop;
+                }
             }
         }
         catch { }
@@ -208,7 +102,9 @@ public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
         {
             var type =  File.ReadAllText("/sys/class/dmi/id/chassis_type");
             if (int.TryParse(type.Trim(), out var code) && code is 8 or 9 or 10 or 14)
+            {
                 return DeviceType.Laptop;
+            }
         }
         catch
         {
@@ -238,8 +134,15 @@ public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
             var output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
 
-            if (output.Contains("MacBook")) return DeviceType.Laptop;
-            if (output.Contains("iMac") || output.Contains("Mac Pro")) return DeviceType.Desktop;
+            if (output.Contains("MacBook"))
+            {
+                return DeviceType.Laptop;
+            }
+
+            if (output.Contains("iMac") || output.Contains("Mac Pro"))
+            {
+                return DeviceType.Desktop;
+            }
         }
         catch
         {

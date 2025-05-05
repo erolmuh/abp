@@ -1,11 +1,12 @@
-﻿using System.Diagnostics;
-using Volo.Abp.Application.Services;
+﻿using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using Activity;
+using Volo.Abp;
 using Volo.Abp.EventBus.Local;
-using Volo.Abp.Telemetry.Activity;
 
-namespace Volo.Abp.Telemetry;
-
-public class TelemetryService : ApplicationService, ITelemetryService
+public class TelemetryService :  ITelemetryService
 {
 
     private readonly ILocalEventBus _localEventBus;

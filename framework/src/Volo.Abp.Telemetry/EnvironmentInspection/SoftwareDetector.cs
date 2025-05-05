@@ -1,26 +1,67 @@
 ﻿using System.Diagnostics;
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
-using CliWrap;
-using CliWrap.Buffered;
+using System.Text;
+using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection;
+namespace EnvironmentInspection;
 
 abstract internal class SoftwareDetector : ISoftwareDetector
 {
     public abstract string Name { get; }
     public abstract Task<SoftwareInfo?> DetectAsync();
 
-    protected async Task<string?> ExecuteCommandAsync(string command, string? arg)
+    public virtual async Task<string?> ExecuteCommandAsync(string command, string? arg)
     {
-        var result = await CliWrap.Cli.Wrap(command)
-            .WithArguments(arg) 
-            .WithValidation(CommandResultValidation.None) 
-            .ExecuteBufferedAsync();
+        var outputBuilder = new StringBuilder();
 
-        return result.StandardOutput.IsNullOrEmpty() ? null : result.StandardOutput.Trim();
+        var processStartInfo = new ProcessStartInfo
+        {
+            FileName = command,
+            Arguments = arg ?? "",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using var process = new Process();
+        process.StartInfo = processStartInfo;
+        process.EnableRaisingEvents = true;
+
+        var tcs = new TaskCompletionSource<bool>();
+
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (e.Data != null)
+            {
+                outputBuilder.AppendLine(e.Data);
+            }
+        };
+
+        process.ErrorDataReceived += (sender, e) =>
+        {
+            if (e.Data != null)
+            {
+                outputBuilder.AppendLine(e.Data);
+            }
+        };
+
+        process.Exited += (sender, e) =>
+        {
+            tcs.TrySetResult(true);
+        };
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        await tcs.Task;
+
+        var output = outputBuilder.ToString().Trim();
+        return string.IsNullOrWhiteSpace(output) ? null : output;
     }
     
-    protected static string? GetFileVersion(string filePath)
+    public string? GetFileVersion(string filePath)
     {
         try
         {

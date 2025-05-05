@@ -1,6 +1,5 @@
-﻿using Volo.Abp.DependencyInjection;
-
-namespace Volo.Abp.Telemetry;
+﻿using System.Threading.Tasks;
+using Volo.Abp.DependencyInjection;
 
 public interface ITelemetryDataSender : IScopedDependency
 {

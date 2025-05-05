@@ -1,6 +1,4 @@
-﻿namespace Volo.Abp.Telemetry;
-
-public interface IApplicationScanner
+﻿public interface IApplicationScanner
 {
     ApplicationInfo Scan();
 }

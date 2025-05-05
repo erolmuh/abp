@@ -1,8 +1,13 @@
+using System;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Xml.Linq;
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+using EnvironmentInspection.Contracts;
+using EnvironmentInspection.Enums;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
+namespace EnvironmentInspection.Detectors;
 
 internal class RiderDetector : SoftwareDetector, ISoftwareDetector
 {
@@ -59,8 +64,8 @@ internal class RiderDetector : SoftwareDetector, ISoftwareDetector
                 .OrderByDescending(x => x.Version)
                 .First();
 
-            var theme = "Unknown";
-            var colorsFile = Path.Combine(latest.Path, "options", "colors.scheme.xml");
+            var theme = string.Empty;
+            var colorsFile = Path.Combine(latest.Path!, "options", "colors.scheme.xml");
             if (File.Exists(colorsFile))
             {
                 try
@@ -79,7 +84,7 @@ internal class RiderDetector : SoftwareDetector, ISoftwareDetector
                 }
                 catch
                 {
-                    // Hata olursa Unknown bırakılsın
+                    //ignored
                 }
             }
 

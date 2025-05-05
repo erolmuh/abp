@@ -1,19 +1,24 @@
-﻿using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+﻿using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
+using EnvironmentInspection.Enums;
+using System;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
+namespace EnvironmentInspection.Detectors;
 
 internal class NodeJsDetector : SoftwareDetector, ISoftwareDetector
 {
     public override string Name => "Node.js";
 
-    public override async Task<SoftwareInfo?> DetectAsync()
+    public async override Task<SoftwareInfo?> DetectAsync()
     {
         try
         {
             var output = await ExecuteCommandAsync("node", "-v");
 
             if (output.IsNullOrWhiteSpace())
+            {
                 return null;
+            }
 
             var version = output.Trim().TrimStart('v');
 

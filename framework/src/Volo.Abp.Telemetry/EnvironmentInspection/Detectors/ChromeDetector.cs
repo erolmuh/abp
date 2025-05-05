@@ -1,17 +1,21 @@
-﻿using System.Runtime.InteropServices;
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
+using EnvironmentInspection.Enums;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
+namespace EnvironmentInspection.Detectors;
 
 internal class ChromeDetector : SoftwareDetector, ISoftwareDetector
 {
     public override string Name => "Chrome";
 
-    public override async Task<SoftwareInfo?> DetectAsync()
+    public async override Task<SoftwareInfo?> DetectAsync()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            string chromePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application", "chrome.exe");
+            var chromePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application", "chrome.exe");
             if (File.Exists(chromePath))
             {
                 return new SoftwareInfo(Name, GetFileVersion(chromePath), null, SoftwareType.Browser);
@@ -19,7 +23,7 @@ internal class ChromeDetector : SoftwareDetector, ISoftwareDetector
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            string chromePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+            var chromePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
             if (File.Exists(chromePath))
             {
                 var version = await ExecuteCommandAsync(chromePath, "--version");
@@ -28,7 +32,7 @@ internal class ChromeDetector : SoftwareDetector, ISoftwareDetector
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            string chromePath = "/usr/bin/google-chrome";
+            var chromePath = "/usr/bin/google-chrome";
             if (File.Exists(chromePath))
             {
                 var version = await ExecuteCommandAsync(chromePath, "--version");

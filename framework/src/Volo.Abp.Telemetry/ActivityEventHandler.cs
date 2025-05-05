@@ -1,8 +1,8 @@
-﻿using Volo.Abp.DependencyInjection;
+﻿using System;
+using System.Threading.Tasks;
+using Activity;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.EventBus;
-using Volo.Abp.Telemetry.Activity;
-
-namespace Volo.Abp.Telemetry;
 
 public class ActivityEventHandler : ILocalEventHandler<ActivityData>, ITransientDependency
 {

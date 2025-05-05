@@ -1,11 +1,11 @@
-﻿using System.Net.Mime;
+﻿using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
+using Activity;
 using Volo.Abp.Cli;
 using Volo.Abp.Cli.Http;
-using Volo.Abp.Telemetry.Activity;
-
-namespace Volo.Abp.Telemetry;
 
 public class TelemetryDataSender : ITelemetryDataSender
 {
@@ -40,8 +40,6 @@ public class TelemetryDataSender : ITelemetryDataSender
 
             await _activityStorage.MarkActivitiesAsSentAsync();
         }
-        
-        
     }
     
 }

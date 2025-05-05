@@ -1,6 +1,7 @@
-﻿using Volo.Abp.DependencyInjection;
+﻿using System.Threading.Tasks;
+using Volo.Abp.DependencyInjection;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+namespace EnvironmentInspection.Contracts;
 
 internal interface ISoftwareDetector : IScopedDependency
 {

@@ -1,9 +1,15 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Volo.Abp.Cli;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Json;
 
-namespace Volo.Abp.Telemetry.Activity;
+namespace Activity;
 
 public class ActivityStorage : IActivityStorage, ISingletonDependency
 {
@@ -196,7 +202,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         {
             var directory = Path.GetDirectoryName(_filePath);
 
-            if (!Directory.Exists(directory))
+            if (!Directory.Exists(directory) && ! directory.IsNullOrEmpty())
             {
                 Directory.CreateDirectory(directory);
             }

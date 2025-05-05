@@ -1,4 +1,8 @@
-﻿namespace Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace EnvironmentInspection.Contracts;
 
 public interface ISoftwareInfoProvider
 {

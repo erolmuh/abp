@@ -1,4 +1,9 @@
-﻿namespace Volo.Abp.Telemetry.Activity;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Activity;
 
 public interface IActivityStorage
 {

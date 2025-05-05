@@ -1,8 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
+using EnvironmentInspection.Enums;
+using Newtonsoft.Json.Linq;
 using Volo.Abp.Cli;
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
+namespace EnvironmentInspection.Detectors;
 
 internal class AbpStudioDetector : SoftwareDetector, ISoftwareDetector
 {
@@ -23,7 +27,7 @@ internal class AbpStudioDetector : SoftwareDetector, ISoftwareDetector
         }
     }
 
-    private async Task<string?> GetAbpStudioUiThemeAsync()
+    public async Task<string?> GetAbpStudioUiThemeAsync()
     {
         var ideStateJsonPath = Path.Combine(
             CliPaths.AbpRootPath,
@@ -36,7 +40,7 @@ internal class AbpStudioDetector : SoftwareDetector, ISoftwareDetector
         return jObject["theme"]?.Value<string>();
     }
 
-    private async Task<string?> GetAbpStudioVersionAsync()
+    public async Task<string?> GetAbpStudioVersionAsync()
     {
         var extensionsFilePath = Path.Combine(
             CliPaths.AbpRootPath,
@@ -49,3 +53,4 @@ internal class AbpStudioDetector : SoftwareDetector, ISoftwareDetector
         return jObject["version"]?.Value<string>();
     }
 }
+

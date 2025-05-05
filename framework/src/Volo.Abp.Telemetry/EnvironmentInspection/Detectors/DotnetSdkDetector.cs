@@ -1,12 +1,15 @@
-﻿using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+﻿using System;
+using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
+using EnvironmentInspection.Enums;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
+namespace EnvironmentInspection.Detectors;
 
 internal class DotnetSdkDetector : SoftwareDetector, ISoftwareDetector
 {
     public override string Name => "DotnetSdk";
 
-    public override async Task<SoftwareInfo?> DetectAsync()
+    public async override Task<SoftwareInfo?> DetectAsync()
     {
         var output = await ExecuteCommandAsync("dotnet", "--version");
         if (output.IsNullOrWhiteSpace())

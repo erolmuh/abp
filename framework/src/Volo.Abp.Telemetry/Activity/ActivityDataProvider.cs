@@ -1,29 +1,45 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using EnvironmentInspection;
+using EnvironmentInspection.Contracts;
+using EnvironmentInspection.Enums;
 using Newtonsoft.Json.Linq;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Telemetry.EnvironmentInspection;
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
-using DatabaseProvider = Volo.Abp.Telemetry.EnvironmentInspection.DatabaseProvider;
-using MobileApp = Volo.Abp.Telemetry.EnvironmentInspection.MobileApp;
+using DatabaseProvider = EnvironmentInspection.Enums.DatabaseProvider;
+using MobileApp = EnvironmentInspection.Enums.MobileApp;
 
-namespace Volo.Abp.Telemetry.Activity;
+namespace Activity;
 
-public class ActivityDataProvider : IActivityDataProvider
+public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
 {
-    private IActivityStorage _activityStorage;
-    public IAbpLazyServiceProvider ServiceProvider { protected get; set; }
+    private readonly IActivityStorage _activityStorage;
+    private readonly IDeviceInfoProvider _deviceInfoProvider;
+    private readonly ISoftwareInfoProvider _softwareInfoProvider;
+    private readonly ApplicationInfoProvider _applicationInfoProvider;
+    
+    public ActivityDataProvider(IActivityStorage activityStorage, IDeviceInfoProvider deviceInfoProvider, ISoftwareInfoProvider softwareInfoProvider, ApplicationInfoProvider applicationInfoProvider)
+    {
+        _activityStorage = activityStorage;
+        _deviceInfoProvider = deviceInfoProvider;
+        _softwareInfoProvider = softwareInfoProvider;
+        _applicationInfoProvider = applicationInfoProvider;
+    }
 
     public virtual async Task<ActivityData> AddExtraInformationAsync(ActivityData activityData,
         CancellationToken cancellationToken = default)
     {
-        _activityStorage = ServiceProvider.LazyGetRequiredService<IActivityStorage>();
         try
         {
-
             var (isFirstSession, sessionId) = await _activityStorage.GetOrCreateSessionInfoAsync(cancellationToken);
             
             activityData.Add("SessionId", sessionId);
             activityData.Add("IsFirstSession", isFirstSession);
+            
             await AddDeviceInformationAsync(activityData);
 
             AddApplicationInformation(activityData);
@@ -40,20 +56,18 @@ public class ActivityDataProvider : IActivityDataProvider
     
       private async Task AddDeviceInformationAsync(ActivityData activityData)
     {
-        var deviceInfoProvider = ServiceProvider.LazyGetRequiredService<IDeviceInfoProvider>();
-        var softwareInfoProvider = ServiceProvider.LazyGetRequiredService<ISoftwareInfoProvider>();
-        
+      
         var lastDeviceInfoSendTime = await _activityStorage.GetLastDeviceInfoSendTimeAsync();
-        activityData.Add("DeviceId", await deviceInfoProvider.GetDeviceIdAsync());
+        activityData.Add("DeviceId", await _deviceInfoProvider.GetDeviceIdAsync());
 
         if (lastDeviceInfoSendTime is null || DateTimeOffset.UtcNow - lastDeviceInfoSendTime > TimeSpan.FromDays(7))
         {
-            activityData.Add("DeviceType", deviceInfoProvider.GetDeviceType());
-            activityData.Add("DeviceLanguage", deviceInfoProvider.GetLanguage());
-            activityData.Add("OperatingSystem", deviceInfoProvider.GetOperatingSystem());
-            activityData.Add("Country", deviceInfoProvider.GetCountry());
+            activityData.Add("DeviceType", _deviceInfoProvider.GetDeviceType());
+            activityData.Add("DeviceLanguage", _deviceInfoProvider.GetLanguage());
+            activityData.Add("OperatingSystem", _deviceInfoProvider.GetOperatingSystem());
+            activityData.Add("CountryIsoCode", _deviceInfoProvider.GetCountry());
 
-            var softwareList = await softwareInfoProvider.GetSoftwareInfoAsync();
+            var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
             activityData.Add("InstalledSoftwares" , softwareList);
             await _activityStorage.MarkDeviceInfoAsSentAsync();
         }
@@ -66,14 +80,13 @@ public class ActivityDataProvider : IActivityDataProvider
             var assembly = activityData["ProjectAssemblyForScan"] as Assembly;
             if (assembly != null)
             {
-                var applicationInfoProvider = ServiceProvider.LazyGetRequiredService<ApplicationInfoProvider>();
-                var info = applicationInfoProvider.Scan();
+                var info = _applicationInfoProvider.Scan(assembly);
 
-                activityData.Add(nameof(Telemetry.ApplicationInfo.ControllerCount), info.ControllerCount);
-                activityData.Add(nameof(Telemetry.ApplicationInfo.EntityCount), info.EntityCount);
-                activityData.Add(nameof(Telemetry.ApplicationInfo.AbpModuleCount), info.AbpModuleCount);
-                activityData.Add(nameof(Telemetry.ApplicationInfo.PermissionCount), info.PermissionCount);
-                activityData.Add(nameof(Telemetry.ApplicationInfo.AppServiceCount), info.AppServiceCount);
+                activityData.Add(nameof(ApplicationInfo.ControllerCount), info.ControllerCount);
+                activityData.Add(nameof(ApplicationInfo.EntityCount), info.EntityCount);
+                activityData.Add(nameof(ApplicationInfo.AbpModuleCount), info.AbpModuleCount);
+                activityData.Add(nameof(ApplicationInfo.PermissionCount), info.PermissionCount);
+                activityData.Add(nameof(ApplicationInfo.AppServiceCount), info.AppServiceCount);
                 activityData.Add("ProjectType", activityData["ProjectType"]);
                 activityData.Add("ProjectId", activityData["ProjectId"]);
 
@@ -88,7 +101,7 @@ public class ActivityDataProvider : IActivityDataProvider
         {
             var solutionPath = value as string;
 
-            var rootJObject = JObject.Parse(await File.ReadAllTextAsync(solutionPath));
+            var rootJObject = JObject.Parse(await File.ReadAllTextAsync(solutionPath!));
             var solutionId = rootJObject["id"]!.To<Guid>();
             var lastSolutionInfoSendTime =
                 await _activityStorage.GetLastSolutionInfoSendTimeAsync(solutionId);
@@ -99,7 +112,7 @@ public class ActivityDataProvider : IActivityDataProvider
             {
                 var infoJObject = (JObject) rootJObject["creatingStudioConfiguration"]!;
                 activityData.Add("Template", GetSolutionTemplate(infoJObject["template"]?.ToString()));
-                activityData.Add("CreatedAbpStudioVersion", infoJObject["createdAbpStudioVersion"]?.ToString());
+                activityData.Add("CreatedAbpStudioVersion", infoJObject["createdAbpStudioVersion"]!.ToString());
                 activityData.Add("IsTiered", infoJObject.Value<bool>("Tiered"));
                 activityData.Add("UiFramework", GetUiFramework(infoJObject["uiFramework"]?.ToString()));
                 activityData.Add("DatabaseProvider", GetDatabaseProvider(infoJObject["databaseProvider"]?.ToString()));
@@ -115,9 +128,51 @@ public class ActivityDataProvider : IActivityDataProvider
                 activityData.Add("KubernetesConfiguration", infoJObject.Value<bool>("kubernetesConfiguration"));
                 activityData.Add("GrafanaDashboard", infoJObject.Value<bool>("grafanaDashboard"));
                 activityData.Add("SocialLogins", infoJObject.Value<bool>("socialLogin"));
+
+
+                var modules = new List<SolutionModuleInstallationInfo>();
+                foreach (var module in rootJObject["modules"]!.Children<JProperty>())
+                {
+                    var name = module.Name;
+                    var path = (string?)module.Value["path"];
+                    if (!File.Exists(path))
+                    {
+                        continue;
+                    }
+                    var moduleJson = await File.ReadAllTextAsync(path);
+                    var moduleObj = JObject.Parse(moduleJson);
+                    var imports = moduleObj["imports"] as JObject;
+                    
+                    if (imports == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var import in imports.Properties())
+                    {
+                        var importValue = (JObject)import.Value;
+                        var version = (string)importValue["version"]!;
+                        var creationTime = importValue["creationTime"] != null ? (DateTimeOffset?)DateTimeOffset.Parse((string)importValue["creationTime"]!) : null;
+
+                        if (modules.Any(x=>x.ModuleName == name && x.Version == version))
+                        {
+                            continue;
+                        }
+
+                        modules.Add(new SolutionModuleInstallationInfo
+                        {
+                            ModuleName = name,
+                            Version = version,
+                            InstallationTime = creationTime
+                        });
+                    }
+                    
+                    activityData.Add("InstalledModules", modules);
+                }
             }
         }
     }
+    
     private Dbms GetDbms(string? databaseManagementSystem)
     {
         return databaseManagementSystem switch

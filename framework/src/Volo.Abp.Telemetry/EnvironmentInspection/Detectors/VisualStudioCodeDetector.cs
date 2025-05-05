@@ -1,8 +1,13 @@
+using System;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
+using EnvironmentInspection.Enums;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
+namespace EnvironmentInspection.Detectors;
 
 internal class VisualStudioCodeDetector : SoftwareDetector, ISoftwareDetector
 {
@@ -10,8 +15,8 @@ internal class VisualStudioCodeDetector : SoftwareDetector, ISoftwareDetector
 
     public async override Task<SoftwareInfo?> DetectAsync()
     {
-        string installDir = null;
-        string settingsPath = null;
+        string? installDir = null;
+        string? settingsPath = null;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -33,7 +38,9 @@ internal class VisualStudioCodeDetector : SoftwareDetector, ISoftwareDetector
         {
             var app = "/Applications/Visual Studio Code.app";
             if (Directory.Exists(app))
+            {
                 installDir = app;
+            }
 
             settingsPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.Personal),
@@ -60,7 +67,7 @@ internal class VisualStudioCodeDetector : SoftwareDetector, ISoftwareDetector
         }
 
 
-        Version version = null;
+        Version? version = null;
         var productJson = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
             ? Path.Combine(installDir, "Contents", "Resources", "app", "product.json")
             : Path.Combine(installDir, "resources", "app", "product.json");
@@ -87,7 +94,9 @@ internal class VisualStudioCodeDetector : SoftwareDetector, ISoftwareDetector
         }
 
         if (version == null)
+        {
             return null;
+        }
 
         var theme = "Unknown";
         
@@ -101,9 +110,13 @@ internal class VisualStudioCodeDetector : SoftwareDetector, ISoftwareDetector
                 {
                     var themeName = themeProp.GetString() ?? "";
                     if (themeName.IndexOf("dark", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
                         theme = "Dark";
+                    }
                     else if (themeName.IndexOf("light", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
                         theme = "Light";
+                    }
                 }
             }
             catch

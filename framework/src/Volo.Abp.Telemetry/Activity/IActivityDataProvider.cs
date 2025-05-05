@@ -1,8 +1,9 @@
-﻿using Volo.Abp.DependencyInjection;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
-namespace Volo.Abp.Telemetry.Activity;
+namespace Activity;
 
-public interface IActivityDataProvider : ITransientDependency
+public interface IActivityDataProvider
 {
     Task<ActivityData> AddExtraInformationAsync(ActivityData activityData, CancellationToken cancellationToken = default);
 }

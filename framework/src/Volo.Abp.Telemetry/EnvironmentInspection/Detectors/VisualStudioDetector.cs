@@ -1,6 +1,7 @@
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
+namespace EnvironmentInspection.Detectors;
 
 internal class VisualStudioDetector : SoftwareDetector, ISoftwareDetector
 {

@@ -1,7 +1,8 @@
-﻿using Volo.Abp.DependencyInjection;
-using Volo.Abp.Telemetry.Activity;
-
-namespace Volo.Abp.Telemetry;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Activity;
+using Volo.Abp.DependencyInjection;
 
 public interface ITelemetryService : IScopedDependency
 {

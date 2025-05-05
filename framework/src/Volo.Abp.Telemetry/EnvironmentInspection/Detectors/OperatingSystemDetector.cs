@@ -1,14 +1,17 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using EnvironmentInspection.Contracts;
+using EnvironmentInspection.Enums;
 using Microsoft.Win32;
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
+namespace EnvironmentInspection.Detectors;
 
 internal class OperatingSystemDetector : SoftwareDetector, ISoftwareDetector
 {
     public override string Name => OperatingSystem.IsWindows() ? "Windows" : OperatingSystem.IsMacOS() ? "macOS" : "Linux";
 
-    public override async Task<SoftwareInfo?> DetectAsync()
+    public async override Task<SoftwareInfo?> DetectAsync()
     {
         if (OperatingSystem.IsWindows())
         {
@@ -35,7 +38,9 @@ internal class OperatingSystemDetector : SoftwareDetector, ISoftwareDetector
         var output = await ExecuteCommandAsync("gsettings", "get org.gnome.desktop.interface gtk-theme");
 
         if (!output.IsNullOrWhiteSpace() && output.ToLowerInvariant().Contains("dark"))
+        {
             return "Dark";
+        }
 
         return "Light";
     }
