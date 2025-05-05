@@ -129,12 +129,12 @@ public partial class UserManagement
 
             if (await PermissionChecker.IsGrantedAsync(IdentityPermissions.Users.ManageRoles))
             {
-                var userRoleNames = (await AppService.GetRolesAsync(entity.Id)).Items.Select(r => r.Name).ToList();
+                var userRoleIds = (await AppService.GetRolesAsync(entity.Id)).Items.Select(r => r.Id).ToList();
 
                 EditUserRoles = Roles.Select(x => new AssignedRoleViewModel
                 {
                     Name = x.Name,
-                    IsAssigned = userRoleNames.Contains(x.Name)
+                    IsAssigned = userRoleIds.Contains(x.Id)
                 }).ToArray();
 
                 ChangePasswordTextRole(TextRole.Password);

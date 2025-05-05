@@ -1,6 +1,6 @@
 # ABP Penetration Test Report
 
-The ABP Commercial MVC `v9.0.0` application template has been tested against security vulnerabilities by the [OWASP ZAP v2.14.0](https://www.zaproxy.org/) tool. The demo web application was started on the `https://localhost:44349` address. The below alerts have been reported by the pentest tool. These alerts are sorted by the risk level as high, medium, and low. The informational alerts are not mentioned in this document. 
+The ABP Commercial MVC `v9.1.0` application template has been tested against security vulnerabilities by the [OWASP ZAP v2.14.0](https://www.zaproxy.org/) tool. The demo web application was started on the `https://localhost:44349` address. The below alerts have been reported by the pentest tool. These alerts are sorted by the risk level as high, medium, and low. The informational alerts are not mentioned in this document. 
 
 Many of these alerts are **false-positive**, meaning the vulnerability scanner detected these issues, but they are not exploitable. It's clearly explained for each false-positive alert why this alert is a false-positive. 
 
@@ -10,53 +10,23 @@ In the next sections, you will find the affected URLs, attack parameters (reques
 
 There are high _(red flag)_, medium _(orange flag)_, low _(yellow flag)_, and informational _(blue flag)_ alerts. 
 
-![penetration-test-9.0.0](../images/pen-test-alert-list-9.0.png)
+![penetration-test-9.1.0](../images/pen-test-alert-list-9.1.png)
 
 > The informational alerts are not mentioned in this document. These alerts are not raising any risks on your application and they are optional.
 
-### Path Traversal [Risk: High] - False Positive
+### Spring4Shell [Risk: High] - False Positive
 
-- *[POST] - https://localhost:44349/Account/Login* (attack: **\Login**)
-- *[POST] - https://localhost:44349/Account/LinkLogin* (attack: **\LinkLogin**)
-- *[POST] - https://localhost:44349/Account/Register* (attack: **\Register**)
-- *[POST] - https://localhost:44349/Account/SecurityLogs* (attack: **\SecurityLogs**)
-- *[POST] - https://localhost:44349/Identity/SecurityLogs* (attack: **\SecurityLogs**)
+- *[POST] - https://localhost:44349/Account/ForgotPassword* (attack: **class.module.classLoader.DefaultAssertionStatus=nonsense**)
+- *[POST] - https://localhost:44349/Account/Login* (attack: **class.module.classLoader.DefaultAssertionStatus=nonsense**)
+- *[POST] - https://localhost:44349/Account/Login?ReturnUrl=%2FSettingManagement* (attack: **class.module.classLoader.DefaultAssertionStatus=nonsense**)
 
 **Description**:
 
-The Path Traversal attack technique allows an attacker access to files, directories, and commands that potentially reside outside the web document root directory. An attacker may manipulate a URL in such a way that the website will execute or reveal the contents of arbitrary files anywhere on the web server. Any device that exposes an HTTP-based interface is potentially vulnerable to Path Traversal.
-
-**Solution**:
-
-This is a **false-positive** alert since ABP does all related checks for this kind of attacks on the backend side for these endpoints.
-
-### SQL Injection [Risk: High] - False Positive
-
-* *[POST] — https://localhost:44349/Account/Login* (attack: **1q2w3E* AND 1=1 --**)
-* *[POST] — https://localhost:44349/Account/ImpersonateUser* (attack: **CfDJ8Pyqeg0vtHtJpnK-9eLaft7-JxLJfJ6WHKPOdBZVxz14BDo061qpJ2NLplgAn2Hw16ec0IR38_wWAUkJGxP8hL6PcLfH0bh-ATNTspWyWYTGGbiH-zeKWiS5vWX-br2BA1hE7Dc45eWGUZNcVc_vm2s AND 1=1 --**)
-* *[POST] — https://localhost:44349/Abp/MultiTenancy/TenantSwitchModal* (attack: **CfDJ8Pyqeg0vtHtJpnK-9eLaft7-JxLJfJ6WHKPOdBZVxz14BDo061qpJ2NLplgAn2Hw16ec0IR38_wWAUkJGxP8hL6PcLfH0bh-ATNTspWyWYTGGbiH-zeKWiS5vWX-br2BA1hE7Dc45eWGUZNcVc_vm2s AND 1=1 --**)
-* *[POST] — https://localhost:44349/Identity/OrganizationUnits/\** (attack: **6f4cd0ab-f4eb-7ce0-8b26-3a138af1840d" AND '1'='1**) (also, several other URLs...)
-* *[POST] — https://localhost:44349/Identity/ClaimTypes/CreateModal* (attack: **aaaad AND '1'='1**)
-
-**Description**:
-
-SQL injection may be possible. SQL injection is a web security vulnerability that allows an attacker to interfere with the queries that an application makes to its database. It allows an attacker to view data that they are not normally able to retrieve and perform unauthorized actions.
+The application appears to be vulnerable to CVE-2022-22965 (otherwise known as Spring4Shell) - remote code execution (RCE) via data binding.
 
 **Explanation**:
 
-ABP uses Entity Framework Core and LINQ. **It's safe against SQL Injection because it passes all data to the database via SQL parameters.** LINQ queries are not composed by using string manipulation or concatenation, that's why they are not susceptible to traditional SQL injection attacks. Therefore, this is a **false-positive** alert.
-
-### SQL Injection - Authentication Bypass [Risk: High] - False Positive
-
-* *[POST] — https://localhost:44349/Account/Login* (attack: **false AND 1=1 --**)
-
-**Description**:
-
-SQL injection may be possible on a login page, potentially allowing the application's authentication mechanism to be bypassed.
-
-**Solution**:
-
-This alert indicates that we must not trust client side input (even if there is client side validation in place) and check all data on the server side. ABP Framework already does that and makes server-side validations while authenticating a user. Therefore this is a **false-positive** alert.
+ABP Framework is built on top of ASP.NET Core and does not use the Spring Framework. This application does not rely on Java-based technologies, making it immune to vulnerabilities like Spring4Shell. The detection is a false positive as there are no Spring dependencies in the project.
 
 ### Absence of Anti-CSRF Tokens [Risk: Medium] — False Positive
 
@@ -130,6 +100,10 @@ Configure<AbpSecurityHeadersOptions>(options =>
 
 - *[GET] — https://localhost:44349/Abp/Languages/Switch?culture=ZAP%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%0A&returnUrl=%2F&uiCulture=ar* (with combination of different parameters)
 - *[GET] — https://localhost:44349/Abp/ApplicationLocalizationScript?cultureName=ZAP%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%0A* (with combination of different parameters)
+- *[GET] — https://localhost:44349/api/language-management/language-texts?filter=aa&resourceName=&baseCultureName=es&targetCultureName=ZAP%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%0A&getOnlyEmptyValues=false&sorting=name+asc&skipCount=0&maxResultCount=10* (with combination of different parameters)
+- *[GET] — https://localhost:44349/LanguageManagement/Texts/Edit?name=IncorrectCaptchaAnswer&targetCultureName=sv&resourceName=AbpAccount&baseCultureName=ZAP%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%25n%25s%0A*  (with combination of different parameters)
+- *[POST] — https://localhost:44349/Account/Login?ReturnUrl=%2FSettingManagement*
+- *[POST] — https://localhost:44349/Account/Manage* (with combination of different parameters)
 
 **Description:**
 
@@ -149,14 +123,9 @@ The second URL is also a **false-positive** alert because there is no bad charac
 
 ### XSLT Injection [Risk: Medium] - False Positive
 
-- *[GET] — https://localhost:44349/Abp/Languages/Switch?culture=%3Cxsl%3Avalue-of+select%3D%22system-property%28%27xsl%3Avendor%27%29%22%2F%3E&returnUrl=%2F&uiCulture=ar*
-- *[POST] — https://localhost:44349/Account/Login _(same URL with different parameters...)_*
-- *[POST] — https://localhost:44349/Account/ImpersonateUser _(same URL with different parameters...)_*
-- *[POST] — https://localhost:44349/Account/Register _(same URL with different parameters...)_*
-- *[POST] — https://localhost:44349/Account/Manage _(same URL with different parameters...)_*
+- *[GET] — https://localhost:44349/Abp/Languages/Switch?culture=%3Cxsl%3Avalue-of+select%3D%22system-property%28%27xsl%3Avendor%27%29%22%2F%3E&returnUrl=%2F&uiCulture=tr _(same URL with different parameters...)_*
 - *[POST] — https://localhost:44349/Account/ForgotPassword _(same URL with different parameters...)_*
-- *[POST] — https://localhost:44349/SaasWidgets/LatestTenants _(same URL with different parameters...)_*
-- *[POST] — https://localhost:44349/AuditLogs*
+- *[GET] — https://localhost:44349/SaasWidgets/LatestTenants _(same URL with different parameters...)_*
   
 **Description**: 
 
@@ -168,10 +137,12 @@ This is a **false-positive** alert. v9.0 uses .NET 9 and the XSLT transformation
 
 ### Application Error Disclosure [Risk: Low] — False Positive
 
-- *[GET] — https://localhost:44349/Abp/Languages/Switch*  
 - *[POST] — https://localhost:44349/Account/ImpersonateUser*  
 - *[GET] — https://localhost:44349/Account/ExternalLogins*  
-- *[GET] — https://localhost:44349/Account/Logout*  
+- *[GET] — https://localhost:44349/OrganizationUnits*  
+- *[GET] — https://localhost:44349/HostDashboard*  
+- *[GET] — https://localhost:44349/Saas/Host/Editions*  
+- *[GET] — https://localhost:44349/Saas/Host/Tenants*  
 
 **Description:** 
 
@@ -326,7 +297,7 @@ This vulnerability was reported as a positive alert, because ABP uses the [zxcvb
 
 - *[GET] — https://localhost:44349/client-proxies/account-proxy.js?_v=638550091940000000 (and other client-proxies related URLs...)*
 - *[GET] — https://localhost:44349/favicon.svg*
-- *[GET] —    https://localhost:44349/images/getting-started/bg-01.png* (and other image URLs...)
+- *[GET] — https://localhost:44349/images/getting-started/bg-01.png* (and other image URLs...)
 - *[GET] — https://localhost:44349/global-styles.css?_v=638556076064360335*
 - *[GET] — https://localhost:44349/libs/@fortawesome/fontawesome-free/css/all.css?_v=%5CWEB-INF%5Cweb.xml (other several URLs...)*
 - other URLs...

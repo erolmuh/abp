@@ -4,6 +4,10 @@ In modern web development, integrating dynamic front-end frameworks with server-
 
 This article won't use any SPA approach. The goal of this article is to use Razor Pages with simple Vue components to eliminate jQuery while developing MVC application.
 
+> **🎉 Also video version is available!**
+>
+> [Watch on YouTube Now!](https://youtu.be/sZ8iSMovHZs?si=GynuJjsLEI1p2g6w)
+
 ## Creating the Solution
 
 Let's create a simple TODO list application to demonstrate how to use Vue components in Razor Pages. I'll build a really simple backend without a connection to a database for demonstration purposes. We will focus on the frontend part.
@@ -71,13 +75,13 @@ Let's create a simple Vue component to display the TODO list.
 
 ```html
 <div id="vue-app">
-    <todo-component :message="'Welcome, @CurrentUser.UserName !'"></todo-component>
+    <message-component :message="'Welcome, @CurrentUser.UserName !'"></message-component>
 </div>
 ```
 
 - Navigate to the `Index.cshtml.js` file and add the following code:
 ```js
-Vue.component('todo-component', {
+Vue.component('message-component', {
     template: '<div>Hello, {{ message }}</div>',
     props: ['message']
 });

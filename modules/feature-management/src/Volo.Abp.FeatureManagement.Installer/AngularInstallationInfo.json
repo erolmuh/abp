@@ -1,0 +1,40 @@
+{
+	"packages":[
+		{
+			"name": "@abp/ng.feature-management",
+			"appRoutingModuleConfiguration":{
+				"routes":[
+				]
+			},
+			"appModuleConfiguration":{
+				"imports":[
+					{
+						"names":[
+							"provideFeatureManagementConfig"
+						],
+						"namespace": "@abp/ng.feature-management"
+					}
+				],
+				"ngModuleImports":[
+				],
+				"providerNames":[
+					"provideFeatureManagementConfig()"
+				]
+			},
+			"tsJsonPathRecordConfigurations":[
+				{
+					"name": "@abp/ng.feature-management",
+					"paths": [
+						"angular/projects/feature-management/src/public-api.ts"
+					]
+				},
+				{
+					"name": "@abp/ng.feature-management/proxy",
+					"paths": [
+						"angular/projects/feature-management/proxy/src/public-api.ts"
+					]
+				}
+			]
+		}
+	]
+}

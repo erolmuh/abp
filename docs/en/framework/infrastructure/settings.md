@@ -24,6 +24,8 @@ public class EmailSettingProvider : SettingDefinitionProvider
 }
 ````
 
+> If you're developing a [DDD module](../architecture/domain-driven-design), you usually create this class in the `Domain` layer, of course, that's not mandatory.
+
 ABP automatically discovers this class and registers the setting definitions.
 
 ### SettingDefinition

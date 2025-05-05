@@ -256,7 +256,7 @@ Let's see what we've changed:
   * In the last line, we are converting the product list to a dictionary, where the key is `Guid Id` and the value is `string Name`. That way, we can easily find a product's name with its ID.
   * Finally, we are mapping the orders to `OrderDto` objects and setting the product name by looking up the product ID in the dictionary.
 
-Open the `Index.cshtml` file, and change the `@order.ProductId` part by `@Model.ProductName` to write the product name instead of the product ID. The final `Index.cshtml` content should be the following:
+Open the `Index.cshtml` file, and change the `@order.ProductId` part by `@Order.ProductName` to write the product name instead of the product ID. The final `Index.cshtml` content should be the following:
 
 ````html
 @page

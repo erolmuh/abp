@@ -24,12 +24,14 @@ export function configureRoutes() {
       path: '/account/login',
       name: eAccountRouteNames.Login,
       parentName: eAccountRouteNames.Account,
+      layout: eLayoutType.account,
       order: 1,
     },
     {
       path: '/account/register',
       name: eAccountRouteNames.Register,
       parentName: eAccountRouteNames.Account,
+      layout: eLayoutType.account,
       order: 2,
     },
     {
@@ -45,12 +47,14 @@ export function configureRoutes() {
       path: '/account/forgot-password',
       parentName: eAccountRouteNames.Account,
       name: eAccountRouteNames.ForgotPassword,
+      layout: eLayoutType.account,
       invisible: true,
     },
     {
       path: '/account/reset-password',
       parentName: eAccountRouteNames.Account,
       name: eAccountRouteNames.ResetPassword,
+      layout: eLayoutType.account,
       invisible: true,
     },
   ]);

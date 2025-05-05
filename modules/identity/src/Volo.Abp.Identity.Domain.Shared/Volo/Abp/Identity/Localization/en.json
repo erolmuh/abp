@@ -77,6 +77,8 @@
     "Volo.Abp.Identity:010008": "It's not allowed to change two factor setting.",
     "Volo.Abp.Identity:010009": "You can not delegate yourself.",
     "Volo.Abp.Identity:010021": "Name exist: '{0}'.",
+    "Volo.Abp.Identity:010022": "Can not update a static ClaimType.",
+    "Volo.Abp.Identity:010023": "Can not delete a static ClaimType.",
     "Identity.OrganizationUnit.MaxUserMembershipCount": "Maximum allowed organization unit membership count for a user",
     "ThisUserIsNotActiveMessage": "This user is not active.",
     "Permission:IdentityManagement": "Identity management",

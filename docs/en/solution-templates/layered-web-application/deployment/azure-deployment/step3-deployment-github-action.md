@@ -480,7 +480,7 @@ push:
 workflow_dispatch:
 
 jobs:
-build:
+  build:
     runs-on: ubuntu-latest
 
     steps:

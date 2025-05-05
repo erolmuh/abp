@@ -107,6 +107,9 @@ public class SuiteCommand : IConsoleCommand, ITransientDependency
                 Logger.LogInformation("Removing ABP Suite...");
                 RemoveSuite();
                 break;
+
+            default:
+                throw new CliUsageException("Invalid Suite command! Run \"abp help suite\" command to see available Suite commands.");
         }
     }
 

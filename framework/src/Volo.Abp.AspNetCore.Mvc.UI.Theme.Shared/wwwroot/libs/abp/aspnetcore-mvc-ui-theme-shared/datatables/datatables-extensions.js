@@ -511,22 +511,19 @@ var abp = abp || {};
         }
     };
 
-    var ISOStringToDateTimeLocaleString = function (format) {
-        return function (data) {
-            var date = luxon
-                .DateTime
-                .fromISO(data, {
-                    locale: abp.localization.currentCulture.name
-                });
-            return format ? date.toLocaleString(format) : date.toLocaleString();
-        };
-    };
-
     datatables.defaultRenderers['date'] = function (value) {
         if (!value) {
             return value;
         } else {
-            return (ISOStringToDateTimeLocaleString())(value);
+            return abp.clock.normalizeToLocaleString(value, { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+    };
+
+    datatables.defaultRenderers['time'] = function (value) {
+        if (!value) {
+            return value;
+        } else {
+            return abp.clock.normalizeToLocaleString(value, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
     };
 
@@ -534,7 +531,7 @@ var abp = abp || {};
         if (!value) {
             return value;
         } else {
-            return (ISOStringToDateTimeLocaleString(luxon.DateTime.DATETIME_SHORT))(value);
+            return abp.clock.normalizeToLocaleString(value);
         }
     };
 

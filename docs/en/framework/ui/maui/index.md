@@ -37,10 +37,15 @@ Open a command line terminal and run the `adb reverse` command to expose a port 
 
 `adb reverse tcp:44305 tcp:44305`
 
-> You should replace "44305" with the real port.
-> You should run the command after starting the emulator.
+> Replace `44305` with the port number your backend application is running on.
+>
+> Run this command **after** the Android emulator has started.
 
-> If you don't have a separate installation of Android Debug Bridge, you can open it from **Visual Studio** by following toolbar menu `Tools` > `Android` > `Android Adb Command Prompt`. Android emulator has to be running for this operation.
+> [!IMPORTANT]
+> If your project uses a **tiered** or **microservice** architecture, ensure that both the **auth server** and all **remote service ports** are properly proxied using the `adb reverse` command. You can find all the required remote service ports and AuthServer configurations in your `YourProjectName.Maui/appsettings.json` file.
+
+> [!NOTE]
+> If you don't have a separate installation of **Android Debug Bridge** _(adb)_, you can open it from **Visual Studio** by following toolbar menu `Tools` > `Android` > `Android Adb Command Prompt`. Android emulator has to be running for this operation.
 
 
 ### iOS

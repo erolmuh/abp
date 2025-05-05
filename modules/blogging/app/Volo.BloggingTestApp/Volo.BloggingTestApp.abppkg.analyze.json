@@ -36,9 +36,9 @@
           "name": "BloggingAdminApplicationModule"
         },
         {
-          "declaringAssemblyName": "Volo.BloggingTestApp.EntityFrameworkCore",
-          "namespace": "Volo.BloggingTestApp.EntityFrameworkCore",
-          "name": "BloggingTestAppEntityFrameworkCoreModule"
+          "declaringAssemblyName": "Volo.BloggingTestApp.MongoDB",
+          "namespace": "Volo.BloggingTestApp.MongoDB",
+          "name": "BloggingTestAppMongoDbModule"
         },
         {
           "declaringAssemblyName": "Volo.Abp.Account.Web",

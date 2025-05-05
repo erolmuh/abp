@@ -755,7 +755,17 @@ public static class QADbContextModelCreatingExtensions
 
 > The `Object Extension` feature need the `Change Tracking`, which means you can't use the read-only repositories for the entities that have `extension properties(MapEfCoreProperty)`, Please see the [Repositories documentation](../../architecture/domain-driven-design/repositories.md) to learn the change tracking behavior.
 
-See the "*ConfigureByConvention Method*" section above for more information.
+See the **ConfigureByConvention Method** section above for more information.
+
+### Accessing Extra Properties(Shadow Properties)
+
+Extra properties stored in separate fields in the database are known as **Shadow Properties**. These properties are not defined in the entity class, but are part of the EF Core model and can be referenced in LINQ queries using the EF.Property static method
+
+```csharp
+var query = (await GetQueryableAsync()).Where(x => EF.Property<string>(x, "Title") == "MyTitle");
+```
+
+See the [EF Core Shadow and Indexer Properties document](https://learn.microsoft.com/en-us/ef/core/modeling/shadow-properties) for more information.
 
 ## Advanced Topics
 

@@ -1,30 +1,36 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Volo.Abp.Caching;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.Features;
+using Volo.Abp.MultiTenancy;
 using Volo.CmsKit.Features;
 using Volo.CmsKit.Pages;
 using Volo.CmsKit.Public.Pages;
+using Volo.CmsKit.Public.Web.Pages.Public;
 
 namespace Volo.CmsKit.Public.Web.Pages;
 
-public class CmsKitPageRouteValueTransformer : DynamicRouteValueTransformer, ITransientDependency
+public class CmsKitPageRouteValueTransformer : CmsKitDynamicRouteValueTransformerBase
 {
     protected IFeatureChecker FeatureChecker { get; }
     protected IPagePublicAppService PagePublicAppService { get; }
     protected IDistributedCache<PageCacheItem> PageCache { get; }
 
-    public CmsKitPageRouteValueTransformer(IFeatureChecker featureChecker, IPagePublicAppService pagePublicAppService, IDistributedCache<PageCacheItem> pageCache)
+    public CmsKitPageRouteValueTransformer(
+        ICurrentTenant currentTenant,
+        ITenantConfigurationProvider tenantConfigurationProvider,
+        IFeatureChecker featureChecker,
+        IPagePublicAppService pagePublicAppService,
+        IDistributedCache<PageCacheItem> pageCache)
+        : base(currentTenant, tenantConfigurationProvider)
     {
         FeatureChecker = featureChecker;
         PagePublicAppService = pagePublicAppService;
         PageCache = pageCache;
     }
 
-    public async override ValueTask<RouteValueDictionary> TransformAsync(HttpContext httpContext, RouteValueDictionary values)
+    protected async override ValueTask<RouteValueDictionary> DoTransformAsync(HttpContext httpContext, RouteValueDictionary values)
     {
         if (values.TryGetValue("slug", out var slugParameter) && slugParameter is not null)
         {

@@ -1,7 +1,5 @@
 # Modularity
 
-## Introduction
-
 ABP was designed to support to build fully modular applications and systems where every module may have entities, services, database integration, APIs, UI components and so on;
 
 * This document introduces the basics of the module system.

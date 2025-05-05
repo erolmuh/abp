@@ -13,7 +13,7 @@ import {
   ToasterService,
 } from '@abp/ng.theme.shared';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { finalize } from 'rxjs/operators';
@@ -31,6 +31,7 @@ enum ValueTypes {
   templateUrl: './feature-management.component.html',
   exportAs: 'abpFeatureManagement',
   imports: [
+    CommonModule,
     ThemeSharedModule,
     LocalizationModule,
     FormsModule,

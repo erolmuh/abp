@@ -25,7 +25,7 @@ If you want to manually install;
 1. Add the [Volo.Abp.BackgroundJobs.HangFire](https://www.nuget.org/packages/Volo.Abp.BackgroundJobs.HangFire) NuGet package to your project:
 
    ````
-   Install-Package Volo.Abp.BackgroundJobs.HangFire
+   dotnet add package Volo.Abp.BackgroundJobs.HangFire
    ````
 
 2. Add the `AbpBackgroundJobsHangfireModule` to the dependency list of your module:
@@ -83,6 +83,24 @@ After you have installed these NuGet packages, you need to configure your projec
     app.UseConfiguredEndpoints();
  }
 ````
+
+### AbpHangfireOptions
+
+You can configure the [BackgroundJobServerOptions](https://api.hangfire.io/html/T_Hangfire_BackgroundJobServerOptions.htm) of `AbpHangfireOptions` to customize the server.
+
+````csharp
+Configure<AbpHangfireOptions>(options =>
+{
+    // If no ServerOptions is set, ABP will use the default BackgroundJobServerOptions instance.
+    options.ServerOptions = new BackgroundJobServerOptions
+    {
+        Queues = ["default", "alpha"],
+        //... other properties
+    };
+});
+````
+
+> You don't need to call `AddHangfireServer` method, ABP will use AbpHangfireOptions's `ServerOptions` to create a server.
 
 ### Specifying Queue
 

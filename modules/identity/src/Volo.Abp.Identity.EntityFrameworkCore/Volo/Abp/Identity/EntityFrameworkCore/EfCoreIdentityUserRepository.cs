@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -424,9 +425,20 @@ public class EfCoreIdentityUserRepository : EfCoreRepository<IIdentityDbContext,
     {
         if (targetOrganizationId != null)
         {
+            var sourceOrganization = await (await GetDbContextAsync()).Set<OrganizationUnit>().FirstOrDefaultAsync(x => x.Id == sourceOrganizationId, cancellationToken: cancellationToken);
+            if (sourceOrganization == null)
+            {
+                throw new EntityNotFoundException(typeof(OrganizationUnit), sourceOrganizationId);
+            }
+
+            var allSourceOrganizationIds = await (await GetDbContextAsync()).Set<OrganizationUnit>()
+                .Where(x => x.Code.StartsWith(sourceOrganization.Code))
+                .Select(x => x.Id).ToArrayAsync(cancellationToken: cancellationToken);
+
             var users = await (await GetDbContextAsync()).Set<IdentityUserOrganizationUnit>().Where(x => x.OrganizationUnitId == targetOrganizationId).Select(x => x.UserId).ToArrayAsync(cancellationToken: cancellationToken);
-            await (await GetDbContextAsync()).Set<IdentityUserOrganizationUnit>().Where(x => x.OrganizationUnitId == sourceOrganizationId && !users.Contains(x.UserId)).ExecuteUpdateAsync(t => t.SetProperty(e => e.OrganizationUnitId, targetOrganizationId), GetCancellationToken(cancellationToken));
-            await (await GetDbContextAsync()).Set<IdentityUserOrganizationUnit>().Where(x => x.OrganizationUnitId == sourceOrganizationId).ExecuteDeleteAsync(GetCancellationToken(cancellationToken));
+
+            await (await GetDbContextAsync()).Set<IdentityUserOrganizationUnit>().Where(x => allSourceOrganizationIds.Contains(x.OrganizationUnitId) && !users.Contains(x.UserId)).ExecuteUpdateAsync(t => t.SetProperty(e => e.OrganizationUnitId, targetOrganizationId), GetCancellationToken(cancellationToken));
+            await (await GetDbContextAsync()).Set<IdentityUserOrganizationUnit>().Where(x => allSourceOrganizationIds.Contains(x.OrganizationUnitId)).ExecuteDeleteAsync(GetCancellationToken(cancellationToken));
         }
         else
         {

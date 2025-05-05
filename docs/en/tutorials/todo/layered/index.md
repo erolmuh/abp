@@ -528,7 +528,7 @@ The interesting part here is how we communicate with the server. See the *Dynami
 
 ### Index.css
 
-As the final touch, Create a file named `Index.css` in the `Pages` folder of the *TodoApp.Web* project and replace it with the following content:
+As the final touch, Create a file named `Index.css` in the `Pages` folder of the *TodoApp.Web* project and add the following content:
 
 ```css
 #TodoList{
@@ -664,7 +664,7 @@ Open the `Index.razor` file in the `Pages` folder of the {{if UI=="Blazor" || UI
 
 ### Index.razor.css
 
-As the final touch, open the `Index.razor.css` file in the `Pages` folder of the {{if UI=="Blazor" || UI=="BlazorWebApp"}}*TodoApp.Blazor.Client*{{else if UI=="BlazorServer"}} *TodoApp.Blazor* {{else if UI=="MAUIBlazor"}} *TodoApp.MauiBlazor* {{end}} project and replace it with the following content:
+As the final touch, open the `Index.razor.css` file in the `Pages` folder of the {{if UI=="Blazor" || UI=="BlazorWebApp"}}*TodoApp.Blazor.Client*{{else if UI=="BlazorServer"}} *TodoApp.Blazor* {{else if UI=="MAUIBlazor"}} *TodoApp.MauiBlazor* {{end}} project and add the following content:
 
 ```css
 #TodoList{
@@ -827,7 +827,7 @@ Open the `/angular/src/app/home/home.component.html` file and replace its conten
 
 ### home.component.scss
 
-As the final touch, open the `/angular/src/app/home/home.component.scss` file and replace its content with the following code block:
+As the final touch, open the `/angular/src/app/home/home.component.scss` file and add the following code block:
 
 ```css
 #TodoList{

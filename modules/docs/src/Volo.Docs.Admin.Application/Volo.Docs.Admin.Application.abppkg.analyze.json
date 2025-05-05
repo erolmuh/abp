@@ -455,6 +455,17 @@
           "isPrivate": false,
           "isStatic": false,
           "parameters": []
+        },
+        {
+          "returnType": "List<ProjectWithoutDetailsDto>",
+          "namespace": "Volo.Docs.Admin.Documents",
+          "name": "GetProjectsAsync",
+          "summary": null,
+          "isAsync": true,
+          "isPublic": true,
+          "isPrivate": false,
+          "isStatic": false,
+          "parameters": []
         }
       ],
       "contentType": "applicationService",

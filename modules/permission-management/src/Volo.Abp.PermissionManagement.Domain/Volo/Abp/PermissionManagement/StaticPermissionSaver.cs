@@ -141,15 +141,15 @@ public class StaticPermissionSaver : IStaticPermissionSaver, ITransientDependenc
                     throw;
                 }
 
-                await unitOfWork.CompleteAsync();
-            }
-
-            if (newOrChangedPermissions.Any())
-            {
-                await DistributedEventBus.PublishAsync(new DynamicPermissionDefinitionsChangedEto
+                if (newOrChangedPermissions.Any())
                 {
-                    Permissions = newOrChangedPermissions.Distinct().ToList()
-                });
+                    await DistributedEventBus.PublishAsync(new DynamicPermissionDefinitionsChangedEto
+                    {
+                        Permissions = newOrChangedPermissions.Distinct().ToList()
+                    });
+                }
+
+                await unitOfWork.CompleteAsync();
             }
         }
 

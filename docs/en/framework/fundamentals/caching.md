@@ -270,7 +270,7 @@ Distributed cache service provides an interesting feature. Assume that you've up
 
 ### IDistributedCacheSerializer
 
-`IDistributedCacheSerializer` service is used to serialize and deserialize the cache items. The default implementation is the `Utf8JsonDistributedCacheSerializer` class that uses `IJsonSerializer` service to convert objects to [JSON](../../json-serialization.md) and vice verse. Then it uses UTC8 encoding to convert the JSON string to a byte array which is accepted by the distributed cache.
+`IDistributedCacheSerializer` service is used to serialize and deserialize the cache items. The default implementation is the `Utf8JsonDistributedCacheSerializer` class that uses `IJsonSerializer` service to convert objects to [JSON](../../json-serialization.md) and vice verse. Then it uses UTF8 encoding to convert the JSON string to a byte array which is accepted by the distributed cache.
 
 You can [replace](./dependency-injection.md) this service with your own implementation if you want to implement your own serialization logic.
 

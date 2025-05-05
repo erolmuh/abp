@@ -172,8 +172,7 @@ public abstract class AbpComponentBase : OwningComponentBase
         {
             return;
         }
-       
-        Logger.LogException(exception);
+
         await InvokeAsync(async () =>
         {
             await UserExceptionInformer.InformAsync(new UserExceptionInformerContext(exception));

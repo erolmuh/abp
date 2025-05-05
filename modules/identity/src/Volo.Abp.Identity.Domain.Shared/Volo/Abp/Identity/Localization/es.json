@@ -77,6 +77,8 @@
     "Volo.Abp.Identity:010008": "No está permitido cambiar la configuración de autenticación de dos pasos.",
     "Volo.Abp.Identity:010009": "No puedes delegar tu propia cuenta!",
     "Volo.Abp.Identity:010021": "Ya existe un con el nombre '{0}'",
+    "Volo.Abp.Identity:010022": "No se puede actualizar un tipo de reclamación estática.",
+    "Volo.Abp.Identity:010023": "No se puede borrar un tipo de reclamación estática.",
     "Identity.OrganizationUnit.MaxUserMembershipCount": "Número máximo de unidades organizativas por usuario",
     "ThisUserIsNotActiveMessage": "Este usuario no está activo.",
     "Permission:IdentityManagement": "Gestión de identidades",

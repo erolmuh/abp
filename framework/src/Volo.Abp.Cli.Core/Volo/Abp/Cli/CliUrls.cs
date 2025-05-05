@@ -5,22 +5,18 @@ namespace Volo.Abp.Cli;
 
 public static class CliUrls
 {
-    public const string WwwAbpIo = WwwAbpIoProduction;
-    public const string AccountAbpIo = AccountAbpIoProduction;
-    public const string TelemetryAbpIo = TelemetryAbpIoDevelopment;
-    public const string NuGetRootPath = NuGetRootPathProduction;
-    public const string LatestVersionCheckFullPath =
-        "https://raw.githubusercontent.com/abpframework/abp/dev/latest-versions.json";
+    public static string WwwAbpIo = WwwAbpIoProduction;
+    public static string AccountAbpIo = AccountAbpIoProduction;
+    public static string NuGetRootPath = NuGetRootPathProduction;
+    public static string LatestVersionCheckFullPath = "https://raw.githubusercontent.com/abpframework/abp/dev/latest-versions.json";
 
-    public const string WwwAbpIoProduction = "https://abp.io/";
-    public const string AccountAbpIoProduction = "https://account.abp.io/";
-    public const string NuGetRootPathProduction = "https://nuget.abp.io/";
-    public const string TelemetryAbpIoProduction = "https://telemetry.abp.io/";
+    public static string WwwAbpIoProduction = "https://abp.io/";
+    public static string AccountAbpIoProduction = "https://account.abp.io/";
+    public static string NuGetRootPathProduction = "https://nuget.abp.io/";
 
-    public const string WwwAbpIoDevelopment = "https://localhost:44328/";
-    public const string AccountAbpIoDevelopment = "https://localhost:44333/";
-    public const string NuGetRootPathDevelopment = "https://localhost:44373/";
-    public const string TelemetryAbpIoDevelopment = "https://localhost:44393/";
+    public static string WwwAbpIoDevelopment = "https://localhost:44328/";
+    public static string AccountAbpIoDevelopment = "https://localhost:44333/";
+    public static string NuGetRootPathDevelopment = "https://localhost:44373/";
 
     public static string GetNuGetServiceIndexUrl(string apiKey)
     {

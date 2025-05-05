@@ -98,18 +98,21 @@ public interface IOrganizationUnitRepository : IBasicRepository<OrganizationUnit
         int maxResultCount = int.MaxValue,
         int skipCount = 0,
         string filter = null,
+        bool includeChildren = false,
         bool includeDetails = false,
         CancellationToken cancellationToken = default
     );
 
     Task<List<Guid>> GetMemberIdsAsync(
         Guid id,
+        bool includeChildren = false,
         CancellationToken cancellationToken = default
     );
 
     Task<int> GetMembersCountAsync(
         OrganizationUnit organizationUnit,
         string filter = null,
+        bool includeChildren = false,
         CancellationToken cancellationToken = default
     );
 

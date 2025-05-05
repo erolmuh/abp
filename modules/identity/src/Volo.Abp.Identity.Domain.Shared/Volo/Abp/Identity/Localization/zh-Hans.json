@@ -77,6 +77,8 @@
     "Volo.Abp.Identity:010008": "不允许修改双因素身份验证设置。",
     "Volo.Abp.Identity:010009": "你不能委托给自己。",
     "Volo.Abp.Identity:010021": "名称：'{0}' 已存在",
+    "Volo.Abp.Identity:010022": "不能更改静态声明的类型。",
+    "Volo.Abp.Identity:010023": "不能删除静态声明的类型。",
     "Identity.OrganizationUnit.MaxUserMembershipCount": "组织单位最大允许的成员资格计数",
     "ThisUserIsNotActiveMessage": "该用户不可用。",
     "Permission:IdentityManagement": "身份标识管理",

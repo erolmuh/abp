@@ -14,6 +14,7 @@ using Volo.Abp.Http.Client.Proxying;
 using Volo.Abp.Http.Modeling;
 using Volo.Abp.Http.ProxyScripting.Generators;
 using Volo.Abp.Localization;
+using Volo.Abp.Timing;
 
 namespace Volo.Abp.Http.Client.ClientProxying;
 
@@ -36,11 +37,16 @@ public class ClientProxyUrlBuilder : ITransientDependency
 
     protected IServiceScopeFactory ServiceScopeFactory { get; }
     protected AbpHttpClientProxyingOptions HttpClientProxyingOptions { get; }
+    protected IClock Clock { get; }
 
-    public ClientProxyUrlBuilder(IServiceScopeFactory serviceScopeFactory, IOptions<AbpHttpClientProxyingOptions> httpClientProxyingOptions)
+    public ClientProxyUrlBuilder(
+        IServiceScopeFactory serviceScopeFactory,
+        IOptions<AbpHttpClientProxyingOptions> httpClientProxyingOptions,
+        IClock clock)
     {
         ServiceScopeFactory = serviceScopeFactory;
         HttpClientProxyingOptions = httpClientProxyingOptions.Value;
+        Clock = clock;
     }
 
     public async Task<string> GenerateUrlWithParametersAsync(ActionApiDescriptionModel action, IReadOnlyDictionary<string, object> methodArguments, ApiVersionInfo apiVersion)
@@ -218,13 +224,18 @@ public class ClientProxyUrlBuilder : ITransientDependency
         return true;
     }
 
-    protected virtual Task<string?> ConvertValueToStringAsync(object? value)
+    protected virtual Task<string> ConvertValueToStringAsync(object value)
     {
         if (value is DateTime dateTimeValue)
         {
-            return Task.FromResult(dateTimeValue.ToUniversalTime().ToString("O"))!;
+            if (Clock.SupportsMultipleTimezone || dateTimeValue.Kind == DateTimeKind.Utc)
+            {
+                return Task.FromResult(dateTimeValue.ToUniversalTime().ToString("O"));
+            }
+
+            return Task.FromResult(dateTimeValue.ToString("yyyy-MM-ddTHH:mm:ss.fffffff").TrimEnd('0').TrimEnd('.'));
         }
 
-        return Task.FromResult(value?.ToString());
+        return Task.FromResult(value.ToString()!);
     }
 }

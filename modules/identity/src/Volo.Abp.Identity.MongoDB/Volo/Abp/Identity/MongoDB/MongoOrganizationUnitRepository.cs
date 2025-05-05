@@ -184,18 +184,19 @@ public class MongoOrganizationUnitRepository
         int maxResultCount = int.MaxValue,
         int skipCount = 0,
         string filter = null,
+        bool includeChildren = false,
         bool includeDetails = false,
         CancellationToken cancellationToken = default)
     {
         cancellationToken = GetCancellationToken(cancellationToken);
-        var query = await CreateGetMembersFilteredQueryAsync(organizationUnit, filter, cancellationToken);
+        var query = await CreateGetMembersFilteredQueryAsync(organizationUnit, filter, includeChildren, cancellationToken);
         return await query
             .OrderBy(sorting.IsNullOrEmpty() ? nameof(IdentityUser.UserName) : sorting)
             .PageBy(skipCount, maxResultCount)
             .ToListAsync(cancellationToken);
     }
 
-    public virtual async Task<List<Guid>> GetMemberIdsAsync(Guid id, CancellationToken cancellationToken = default)
+    public virtual async Task<List<Guid>> GetMemberIdsAsync(Guid id, bool includeChildren = false, CancellationToken cancellationToken = default)
     {
         cancellationToken = GetCancellationToken(cancellationToken);
         return await (await GetQueryableAsync<IdentityUser>(cancellationToken))
@@ -206,10 +207,11 @@ public class MongoOrganizationUnitRepository
     public virtual async Task<int> GetMembersCountAsync(
         OrganizationUnit organizationUnit,
         string filter = null,
+        bool includeChildren = false,
         CancellationToken cancellationToken = default)
     {
         cancellationToken = GetCancellationToken(cancellationToken);
-        var query = await CreateGetMembersFilteredQueryAsync(organizationUnit, filter, cancellationToken);
+        var query = await CreateGetMembersFilteredQueryAsync(organizationUnit, filter, includeChildren, cancellationToken);
         return await query.CountAsync(cancellationToken);
     }
 
@@ -277,6 +279,7 @@ public class MongoOrganizationUnitRepository
     protected virtual async Task<IQueryable<IdentityUser>> CreateGetMembersFilteredQueryAsync(
         OrganizationUnit organizationUnit,
         string filter = null,
+        bool includeChildren = false,
         CancellationToken cancellationToken = default)
     {
         return (await GetQueryableAsync<IdentityUser>(cancellationToken))

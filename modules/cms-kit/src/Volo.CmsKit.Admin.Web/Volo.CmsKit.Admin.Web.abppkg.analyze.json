@@ -162,6 +162,12 @@
     {
       "namespace": "Volo.CmsKit.Admin.Web.Pages.CmsKit.Blogs",
       "contentType": "webPage",
+      "name": "DeleteBlogModal",
+      "summary": null
+    },
+    {
+      "namespace": "Volo.CmsKit.Admin.Web.Pages.CmsKit.Blogs",
+      "contentType": "webPage",
       "name": "FeaturesModalModel",
       "summary": null
     },

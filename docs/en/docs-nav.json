@@ -614,6 +614,10 @@
                       "path": "framework/infrastructure/blob-storing/google.md"
                     },
                     {
+                      "text": "Bunny.Net Provider",
+                      "path": "framework/infrastructure/blob-storing/bunny.md"
+                    },
+                    {
                       "text": "Create a Custom Provider",
                       "path": "framework/infrastructure/blob-storing/custom-provider.md"
                     }
