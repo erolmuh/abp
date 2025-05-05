@@ -15,14 +15,15 @@ using MobileApp = EnvironmentInspection.Enums.MobileApp;
 
 namespace Activity;
 
-public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
+public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
 {
     private readonly IActivityStorage _activityStorage;
     private readonly IDeviceInfoProvider _deviceInfoProvider;
     private readonly ISoftwareInfoProvider _softwareInfoProvider;
     private readonly ApplicationInfoProvider _applicationInfoProvider;
-    
-    public ActivityDataProvider(IActivityStorage activityStorage, IDeviceInfoProvider deviceInfoProvider, ISoftwareInfoProvider softwareInfoProvider, ApplicationInfoProvider applicationInfoProvider)
+
+    public ActivityDataProvider(IActivityStorage activityStorage, IDeviceInfoProvider deviceInfoProvider,
+        ISoftwareInfoProvider softwareInfoProvider, ApplicationInfoProvider applicationInfoProvider)
     {
         _activityStorage = activityStorage;
         _deviceInfoProvider = deviceInfoProvider;
@@ -36,13 +37,26 @@ public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
         try
         {
             var (isFirstSession, sessionId) = await _activityStorage.GetOrCreateSessionInfoAsync(cancellationToken);
-            
+
             activityData.Add("SessionId", sessionId);
             activityData.Add("IsFirstSession", isFirstSession);
             
-            await AddDeviceInformationAsync(activityData);
+            var lastDeviceInfoSendTime = await _activityStorage.GetLastDeviceInfoSendTimeAsync(cancellationToken);
+            activityData.Add("DeviceId", await _deviceInfoProvider.GetDeviceIdAsync());
 
-            AddApplicationInformation(activityData);
+            if (lastDeviceInfoSendTime is null || DateTimeOffset.UtcNow - lastDeviceInfoSendTime > TimeSpan.FromDays(7))
+            {
+                await AddDeviceInformationAsync(activityData);
+            }
+
+            if (activityData.TryGetValue("ProjectAssemblyForScan", out var value))
+            {
+                var assembly = value as Assembly;
+                if (assembly != null)
+                {
+                    AddApplicationInformation(activityData, assembly);
+                }
+            }
 
             await AddSolutionInformationAsync(activityData);
 
@@ -53,46 +67,32 @@ public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
             return activityData;
         }
     }
-    
-      private async Task AddDeviceInformationAsync(ActivityData activityData)
+
+    private async Task AddDeviceInformationAsync(ActivityData activityData)
     {
-      
-        var lastDeviceInfoSendTime = await _activityStorage.GetLastDeviceInfoSendTimeAsync();
-        activityData.Add("DeviceId", await _deviceInfoProvider.GetDeviceIdAsync());
+        activityData.Add("DeviceType", _deviceInfoProvider.GetDeviceType());
+        activityData.Add("DeviceLanguage", _deviceInfoProvider.GetLanguage());
+        activityData.Add("OperatingSystem", _deviceInfoProvider.GetOperatingSystem());
+        activityData.Add("CountryIsoCode", _deviceInfoProvider.GetCountry());
 
-        if (lastDeviceInfoSendTime is null || DateTimeOffset.UtcNow - lastDeviceInfoSendTime > TimeSpan.FromDays(7))
-        {
-            activityData.Add("DeviceType", _deviceInfoProvider.GetDeviceType());
-            activityData.Add("DeviceLanguage", _deviceInfoProvider.GetLanguage());
-            activityData.Add("OperatingSystem", _deviceInfoProvider.GetOperatingSystem());
-            activityData.Add("CountryIsoCode", _deviceInfoProvider.GetCountry());
-
-            var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
-            activityData.Add("InstalledSoftwares" , softwareList);
-            await _activityStorage.MarkDeviceInfoAsSentAsync();
-        }
+        var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
+        activityData.Add("InstalledSoftwares", softwareList);
+        await _activityStorage.MarkDeviceInfoAsSentAsync();
     }
 
-    private void AddApplicationInformation(ActivityData activityData)
+    private void AddApplicationInformation(ActivityData activityData, Assembly assembly)
     {
-        if (activityData.ContainsKey("ProjectAssemblyForScan"))
-        {
-            var assembly = activityData["ProjectAssemblyForScan"] as Assembly;
-            if (assembly != null)
-            {
-                var info = _applicationInfoProvider.Scan(assembly);
+        var info = _applicationInfoProvider.Scan(assembly);
 
-                activityData.Add(nameof(ApplicationInfo.ControllerCount), info.ControllerCount);
-                activityData.Add(nameof(ApplicationInfo.EntityCount), info.EntityCount);
-                activityData.Add(nameof(ApplicationInfo.AbpModuleCount), info.AbpModuleCount);
-                activityData.Add(nameof(ApplicationInfo.PermissionCount), info.PermissionCount);
-                activityData.Add(nameof(ApplicationInfo.AppServiceCount), info.AppServiceCount);
-                activityData.Add("ProjectType", activityData["ProjectType"]);
-                activityData.Add("ProjectId", activityData["ProjectId"]);
+        activityData.Add(nameof(ApplicationInfo.ControllerCount), info.ControllerCount);
+        activityData.Add(nameof(ApplicationInfo.EntityCount), info.EntityCount);
+        activityData.Add(nameof(ApplicationInfo.AbpModuleCount), info.AbpModuleCount);
+        activityData.Add(nameof(ApplicationInfo.PermissionCount), info.PermissionCount);
+        activityData.Add(nameof(ApplicationInfo.AppServiceCount), info.AppServiceCount);
+        activityData.Add("ProjectType", activityData["ProjectType"]);
+        activityData.Add("ProjectId", activityData["ProjectId"]);
 
-                activityData.Remove("ProjectAssemblyForScan");
-            }
-        }
+        activityData.Remove("ProjectAssemblyForScan");
     }
 
     private async Task AddSolutionInformationAsync(ActivityData activityData)
@@ -110,13 +110,13 @@ public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
             if (lastSolutionInfoSendTime is null ||
                 DateTimeOffset.UtcNow - lastSolutionInfoSendTime > TimeSpan.FromDays(7))
             {
-                var infoJObject = (JObject) rootJObject["creatingStudioConfiguration"]!;
+                var infoJObject = (JObject)rootJObject["creatingStudioConfiguration"]!;
                 activityData.Add("Template", GetSolutionTemplate(infoJObject["template"]?.ToString()));
                 activityData.Add("CreatedAbpStudioVersion", infoJObject["createdAbpStudioVersion"]!.ToString());
                 activityData.Add("IsTiered", infoJObject.Value<bool>("Tiered"));
                 activityData.Add("UiFramework", GetUiFramework(infoJObject["uiFramework"]?.ToString()));
                 activityData.Add("DatabaseProvider", GetDatabaseProvider(infoJObject["databaseProvider"]?.ToString()));
-                activityData.Add("DatabaseManagementSystem", GetDbms(infoJObject["databaseManagementSystem"]?.ToString()));
+                activityData.Add("DatabaseManagementSystem",GetDbms(infoJObject["databaseManagementSystem"]?.ToString()));
                 activityData.Add("IsSeparateTenantSchema", infoJObject.Value<bool>("separateTenantSchema"));
                 activityData.Add("Theme", GetUiTheme(infoJObject["theme"]?.ToString()));
                 activityData.Add("ThemeStyle", GetUiThemeStyle(infoJObject["themeStyle"]?.ToString()));
@@ -139,10 +139,11 @@ public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
                     {
                         continue;
                     }
+
                     var moduleJson = await File.ReadAllTextAsync(path);
                     var moduleObj = JObject.Parse(moduleJson);
                     var imports = moduleObj["imports"] as JObject;
-                    
+
                     if (imports == null)
                     {
                         continue;
@@ -152,27 +153,27 @@ public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
                     {
                         var importValue = (JObject)import.Value;
                         var version = (string)importValue["version"]!;
-                        var creationTime = importValue["creationTime"] != null ? (DateTimeOffset?)DateTimeOffset.Parse((string)importValue["creationTime"]!) : null;
+                        var creationTime = importValue["creationTime"] != null
+                            ? (DateTimeOffset?)DateTimeOffset.Parse((string)importValue["creationTime"]!)
+                            : null;
 
-                        if (modules.Any(x=>x.ModuleName == name && x.Version == version))
+                        if (modules.Any(x => x.ModuleName == name && x.Version == version))
                         {
                             continue;
                         }
 
                         modules.Add(new SolutionModuleInstallationInfo
                         {
-                            ModuleName = name,
-                            Version = version,
-                            InstallationTime = creationTime
+                            ModuleName = name, Version = version, InstallationTime = creationTime
                         });
                     }
-                    
+
                     activityData.Add("InstalledModules", modules);
                 }
             }
         }
     }
-    
+
     private Dbms GetDbms(string? databaseManagementSystem)
     {
         return databaseManagementSystem switch
@@ -198,7 +199,7 @@ public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
             _ => UiTheme.Unknown
         };
     }
-   
+
     private MobileApp GetMobileApp(string? mobileFramework)
     {
         return mobileFramework switch
@@ -209,7 +210,7 @@ public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
             _ => MobileApp.Unknown
         };
     }
-    
+
     private UiThemeStyle GetUiThemeStyle(string? themeStyle)
     {
         return themeStyle switch
@@ -221,6 +222,7 @@ public class ActivityDataProvider : IActivityDataProvider , IScopedDependency
             _ => UiThemeStyle.Unknown
         };
     }
+
     private SolutionTemplate GetSolutionTemplate(string? templateName)
     {
         return templateName switch
