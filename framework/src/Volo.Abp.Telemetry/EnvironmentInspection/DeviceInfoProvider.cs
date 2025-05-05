@@ -7,7 +7,6 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using EnvironmentInspection.Enums;
-using Volo.Abp.Cli;
 using Volo.Abp.DependencyInjection;
 
 namespace EnvironmentInspection;
@@ -16,8 +15,7 @@ public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
 {
     public async Task<Guid> GetDeviceIdAsync()
     {
-        var  deviceId =
-            await File.ReadAllTextAsync(Path.Combine(CliPaths.AbpRootPath, "cli", "computer-id.bin"));
+        var  deviceId =  await File.ReadAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".abp", "cli", "computer-id.bin"));
         return deviceId.To<Guid>();
     }
 

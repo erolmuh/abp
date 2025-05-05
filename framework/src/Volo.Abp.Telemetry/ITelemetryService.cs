@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Activity;
 using Volo.Abp.DependencyInjection;
 
-public interface ITelemetryService : IScopedDependency
+public interface ITelemetryService
 {
     IAsyncDisposable TrackActivity(string activityName, Action<ActivityData>? configure = null);
     IAsyncDisposable TrackActivity(ActivityData activityData);

@@ -4,17 +4,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Activity;
 using Volo.Abp;
-using Volo.Abp.EventBus.Local;
+using Volo.Abp.DependencyInjection;
 
-public class TelemetryService :  ITelemetryService
+public class TelemetryService :  ITelemetryService ,  IScopedDependency
 {
+    private readonly IActivityStorage _activityStorage;
+    private readonly IActivityDataProvider _activityDataProvider;
+    private readonly ITelemetryDataSender _telemetryDataSender;
 
-    private readonly ILocalEventBus _localEventBus;
-    public TelemetryService( ILocalEventBus localEventBus)
+    public TelemetryService(IActivityStorage activityStorage, IActivityDataProvider activityDataProvider, ITelemetryDataSender telemetryDataSender)
     {
-        _localEventBus = localEventBus;
+        _activityStorage = activityStorage;
+        _activityDataProvider = activityDataProvider;
+        _telemetryDataSender = telemetryDataSender;
     }
-
 
     public IAsyncDisposable TrackActivity(string activityName, Action<ActivityData>? configure = null)
     {
@@ -48,11 +51,25 @@ public class TelemetryService :  ITelemetryService
         });
     }
 
-  
-
+    private async Task CheckIfActivitySendTimeIsDueAsync()
+    {
+        var lastActivitySendTime = await _activityStorage.GetLastActivitySendTimeAsync();
+        if (lastActivitySendTime is null)
+        {
+            await _telemetryDataSender.SendAsync();
+        }
+        
+        if (lastActivitySendTime is not null && lastActivitySendTime > DateTimeOffset.UtcNow.AddDays(7) )
+        {
+            await _telemetryDataSender.SendAsync();
+        }
+    }
     public async Task AddActivityAsync(ActivityData data, CancellationToken cancellationToken = default)
     {
-        await _localEventBus.PublishAsync(data);
+        var build = await _activityDataProvider.AddExtraInformationAsync(data, cancellationToken);
+        await _activityStorage.BufferActivityAsync(build, cancellationToken);
+
+        await CheckIfActivitySendTimeIsDueAsync();
     }
 
     public async Task AddActivityAsync(string activityName, string? details = null, CancellationToken cancellationToken = default)

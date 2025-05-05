@@ -3,25 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Volo.Abp.Cli;
+using Shared;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Json;
 
 namespace Activity;
 
 public class ActivityStorage : IActivityStorage, ISingletonDependency
 {
-    private readonly IJsonSerializer _jsonSerializer;
-    private readonly string _filePath;
+     
     private ActivityStorageState? _cachedState;
 
-    public ActivityStorage(IJsonSerializer jsonSerializer)
-    {
-        _jsonSerializer = jsonSerializer;
-        _filePath = Path.Combine(CliPaths.AbpRootPath, "activity-storage.json");
-    }
+   
 
     public async Task BufferActivityAsync(ActivityData activityData, CancellationToken cancellationToken = default)
     {
@@ -154,7 +149,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         {
             using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
             var json = await reader.ReadToEndAsync();
-            return _jsonSerializer.Deserialize<ActivityStorageState?>(json) ?? new ActivityStorageState();
+            return JsonSerializer.Deserialize<ActivityStorageState?>(json) ?? new ActivityStorageState();
         });
         return _cachedState;
     }
@@ -169,7 +164,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
             try
             {
                 await using var stream = new FileStream(
-                    _filePath,
+                    AbpTelemetryPaths.ActivityStorage,
                     FileMode.OpenOrCreate,
                     FileAccess.ReadWrite,
                     FileShare.None
@@ -191,8 +186,11 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
 
     private async Task SaveAsync()
     {
-        var json = _jsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(), indented: true);
-        await File.WriteAllTextAsync(_filePath, json, Encoding.UTF8);
+        var json = JsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(), new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+        await File.WriteAllTextAsync(AbpTelemetryPaths.ActivityStorage, json, Encoding.UTF8);
     }
 
 
@@ -200,17 +198,20 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
     {
         try
         {
-            var directory = Path.GetDirectoryName(_filePath);
+            var directory = Path.GetDirectoryName(AbpTelemetryPaths.ActivityStorage);
 
             if (!Directory.Exists(directory) && ! directory.IsNullOrEmpty())
             {
                 Directory.CreateDirectory(directory);
             }
 
-            if (!File.Exists(_filePath))
+            if (!File.Exists(AbpTelemetryPaths.ActivityStorage))
             {
-                var json = _jsonSerializer.Serialize(new ActivityStorageState(), indented: true);
-                await File.WriteAllTextAsync(_filePath, json, Encoding.UTF8);
+                var json = JsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(), new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+                await File.WriteAllTextAsync(AbpTelemetryPaths.ActivityStorage, json, Encoding.UTF8);
             }
         }
         catch

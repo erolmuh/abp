@@ -70,13 +70,13 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
 
     private async Task AddDeviceInformationAsync(ActivityData activityData)
     {
-        activityData.Add("DeviceType", _deviceInfoProvider.GetDeviceType());
-        activityData.Add("DeviceLanguage", _deviceInfoProvider.GetLanguage());
-        activityData.Add("OperatingSystem", _deviceInfoProvider.GetOperatingSystem());
-        activityData.Add("CountryIsoCode", _deviceInfoProvider.GetCountry());
+        activityData.Add(ActivityPropertyNameConstants.DeviceType , _deviceInfoProvider.GetDeviceType());
+        activityData.Add(ActivityPropertyNameConstants.DeviceLanguage, _deviceInfoProvider.GetLanguage());
+        activityData.Add(ActivityPropertyNameConstants.OperatingSystem, _deviceInfoProvider.GetOperatingSystem());
+        activityData.Add(ActivityPropertyNameConstants.CountryIsoCode, _deviceInfoProvider.GetCountry());
 
         var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
-        activityData.Add("InstalledSoftwares", softwareList);
+        activityData.Add(ActivityPropertyNameConstants.InstalledSoftwares, softwareList);
         await _activityStorage.MarkDeviceInfoAsSentAsync();
     }
 
@@ -89,8 +89,8 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         activityData.Add(nameof(ApplicationInfo.AbpModuleCount), info.AbpModuleCount);
         activityData.Add(nameof(ApplicationInfo.PermissionCount), info.PermissionCount);
         activityData.Add(nameof(ApplicationInfo.AppServiceCount), info.AppServiceCount);
-        activityData.Add("ProjectType", activityData["ProjectType"]);
-        activityData.Add("ProjectId", activityData["ProjectId"]);
+        activityData.Add(ActivityPropertyNameConstants.ProjectType, activityData["ProjectType"]);
+        activityData.Add(ActivityPropertyNameConstants.ProjectId, activityData["ProjectId"]);
 
         activityData.Remove("ProjectAssemblyForScan");
     }
@@ -105,30 +105,29 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
             var solutionId = rootJObject["id"]!.To<Guid>();
             var lastSolutionInfoSendTime =
                 await _activityStorage.GetLastSolutionInfoSendTimeAsync(solutionId);
-            activityData.Add("SolutionId", solutionId);
+            activityData.Add(ActivityPropertyNameConstants.SolutionId, solutionId);
 
             if (lastSolutionInfoSendTime is null ||
                 DateTimeOffset.UtcNow - lastSolutionInfoSendTime > TimeSpan.FromDays(7))
             {
                 var infoJObject = (JObject)rootJObject["creatingStudioConfiguration"]!;
-                activityData.Add("Template", GetSolutionTemplate(infoJObject["template"]?.ToString()));
-                activityData.Add("CreatedAbpStudioVersion", infoJObject["createdAbpStudioVersion"]!.ToString());
-                activityData.Add("IsTiered", infoJObject.Value<bool>("Tiered"));
-                activityData.Add("UiFramework", GetUiFramework(infoJObject["uiFramework"]?.ToString()));
-                activityData.Add("DatabaseProvider", GetDatabaseProvider(infoJObject["databaseProvider"]?.ToString()));
-                activityData.Add("DatabaseManagementSystem",GetDbms(infoJObject["databaseManagementSystem"]?.ToString()));
-                activityData.Add("IsSeparateTenantSchema", infoJObject.Value<bool>("separateTenantSchema"));
-                activityData.Add("Theme", GetUiTheme(infoJObject["theme"]?.ToString()));
-                activityData.Add("ThemeStyle", GetUiThemeStyle(infoJObject["themeStyle"]?.ToString()));
-                activityData.Add("MobileFramework", GetMobileApp(infoJObject["mobileFramework"]?.ToString()));
-                activityData.Add("HasPublicWebsite", infoJObject.Value<bool>("publicWebsite"));
-                activityData.Add("IncludeTests", infoJObject.Value<bool>("includeTests"));
-                activityData.Add("MultiTenancy", infoJObject.Value<bool>("multiTenancy"));
-                activityData.Add("DynamicLocalization", infoJObject.Value<bool>("dynamicLocalization"));
-                activityData.Add("KubernetesConfiguration", infoJObject.Value<bool>("kubernetesConfiguration"));
-                activityData.Add("GrafanaDashboard", infoJObject.Value<bool>("grafanaDashboard"));
-                activityData.Add("SocialLogins", infoJObject.Value<bool>("socialLogin"));
-
+                activityData.Add(ActivityPropertyNameConstants.Template, GetSolutionTemplate(infoJObject["template"]?.ToString()));
+                activityData.Add(ActivityPropertyNameConstants.CreatedAbpStudioVersion, infoJObject["createdAbpStudioVersion"]!.ToString());
+                activityData.Add(ActivityPropertyNameConstants.IsTiered, infoJObject.Value<bool>("Tiered"));
+                activityData.Add(ActivityPropertyNameConstants.UiFramework, GetUiFramework(infoJObject["uiFramework"]?.ToString()));
+                activityData.Add(ActivityPropertyNameConstants.DatabaseProvider, GetDatabaseProvider(infoJObject["databaseProvider"]?.ToString()));
+                activityData.Add(ActivityPropertyNameConstants.DatabaseManagementSystem, GetDbms(infoJObject["databaseManagementSystem"]?.ToString()));
+                activityData.Add(ActivityPropertyNameConstants.IsSeparateTenantSchema, infoJObject.Value<bool>("separateTenantSchema"));
+                activityData.Add(ActivityPropertyNameConstants.Theme, GetUiTheme(infoJObject["theme"]?.ToString()));
+                activityData.Add(ActivityPropertyNameConstants.ThemeStyle, GetUiThemeStyle(infoJObject["themeStyle"]?.ToString()));
+                activityData.Add(ActivityPropertyNameConstants.MobileFramework, GetMobileApp(infoJObject["mobileFramework"]?.ToString()));
+                activityData.Add(ActivityPropertyNameConstants.HasPublicWebsite, infoJObject.Value<bool>("publicWebsite"));
+                activityData.Add(ActivityPropertyNameConstants.IncludeTests, infoJObject.Value<bool>("includeTests"));
+                activityData.Add(ActivityPropertyNameConstants.MultiTenancy, infoJObject.Value<bool>("multiTenancy"));
+                activityData.Add(ActivityPropertyNameConstants.DynamicLocalization, infoJObject.Value<bool>("dynamicLocalization"));
+                activityData.Add(ActivityPropertyNameConstants.KubernetesConfiguration, infoJObject.Value<bool>("kubernetesConfiguration"));
+                activityData.Add(ActivityPropertyNameConstants.GrafanaDashboard, infoJObject.Value<bool>("grafanaDashboard"));
+                activityData.Add(ActivityPropertyNameConstants.SocialLogins, infoJObject.Value<bool>("socialLogin"));
 
                 var modules = new List<SolutionModuleInstallationInfo>();
                 foreach (var module in rootJObject["modules"]!.Children<JProperty>())
@@ -168,7 +167,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
                         });
                     }
 
-                    activityData.Add("InstalledModules", modules);
+                    activityData.Add(ActivityPropertyNameConstants.InstalledModules, modules);
                 }
             }
         }

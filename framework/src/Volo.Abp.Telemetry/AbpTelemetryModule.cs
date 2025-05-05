@@ -5,12 +5,9 @@ using Activity;
 using Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp;
-using Volo.Abp.Autofac;
 using Volo.Abp.Modularity;
 
-[DependsOn(
-    typeof(AbpAutofacModule)
-)]
+
 public class AbpTelemetryModule : AbpModule
 {
 

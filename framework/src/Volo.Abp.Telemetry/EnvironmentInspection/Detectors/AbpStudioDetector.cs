@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using EnvironmentInspection.Contracts;
 using EnvironmentInspection.Enums;
 using Newtonsoft.Json.Linq;
-using Volo.Abp.Cli;
 
 namespace EnvironmentInspection.Detectors;
 
@@ -30,7 +29,8 @@ internal class AbpStudioDetector : SoftwareDetector, ISoftwareDetector
     public async Task<string?> GetAbpStudioUiThemeAsync()
     {
         var ideStateJsonPath = Path.Combine(
-            CliPaths.AbpRootPath,
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
+            ".abp",
             "studio",
             "ui",
             "ide-state.json"
@@ -43,7 +43,8 @@ internal class AbpStudioDetector : SoftwareDetector, ISoftwareDetector
     public async Task<string?> GetAbpStudioVersionAsync()
     {
         var extensionsFilePath = Path.Combine(
-            CliPaths.AbpRootPath,
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
+            ".abp",
             "studio",
             "extensions.json"
         );

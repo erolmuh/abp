@@ -16,8 +16,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Volo.Abp.Autofac\Volo.Abp.Autofac.csproj"/>
-        <ProjectReference Include="..\Volo.Abp.Cli.Core\Volo.Abp.Cli.Core.csproj"/>
         <ProjectReference Include="..\Volo.Abp.Core\Volo.Abp.Core.csproj"/>
         <ProjectReference Include="..\Volo.Abp.EventBus.Abstractions\Volo.Abp.EventBus.Abstractions.csproj"/>
     </ItemGroup>
