@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Volo.Abp.Telemetry;
+using Volo.Abp.Telemetry.Activity;
 
 namespace Volo.Abp.Modularity;
 
@@ -86,10 +89,39 @@ public abstract class AbpModule :
 
     }
 
-    public virtual Task OnPostApplicationInitializationAsync(ApplicationInitializationContext context)
+    public virtual async Task OnPostApplicationInitializationAsync(ApplicationInitializationContext context)
     {
         OnPostApplicationInitialization(context);
-        return Task.CompletedTask;
+        await ConfigureTelemetry(context);
+    }
+
+    private async Task ConfigureTelemetry(ApplicationInitializationContext context)
+    {
+        var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+        if (configuration.GetValue<bool>("Abp:Telemetry:Disable"))
+        {
+            return;
+        }
+        var packageMetadata = AbpPackageMetadataHelper.GetMetaData(Assembly.GetCallingAssembly());
+        
+        if (packageMetadata != null)
+        {
+            var activityStorage = context.ServiceProvider.GetRequiredService<IActivityStorage>();
+            var lastApplicationInfoSendTime = await activityStorage.GetApplicationInfoLastActivitySendTimeAsync(packageMetadata.ProjectId!.To<Guid>());
+            if (lastApplicationInfoSendTime is null ||
+                DateTimeOffset.UtcNow - lastApplicationInfoSendTime > TimeSpan.FromDays(7))
+            {
+                var telemetryService = context.ServiceProvider.GetRequiredService<ITelemetryService>();
+                
+                await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, c =>
+                {
+                    c.Add("ProjectAssemblyForScan", Assembly.GetCallingAssembly());
+                    c.Add("ProjectId", packageMetadata.ProjectId!);
+                    c.Add("ProjectType", packageMetadata.Role!);
+                });
+            }
+           
+        }
     }
 
     public virtual void OnPostApplicationInitialization(ApplicationInitializationContext context)

@@ -186,5 +186,6 @@
     <PackageVersion Include="Fody" Version="6.8.2" />
 	<PackageVersion Include="CliWrap" Version="3.8.2"/>
 	<PackageVersion Include="System.IO.Abstractions" Version="22.0.14"/>
+	<PackageVersion Include="Microsoft.Win32.Registry" Version="4.0.0"/>
   </ItemGroup>
 </Project>
