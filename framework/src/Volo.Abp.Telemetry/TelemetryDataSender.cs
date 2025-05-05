@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using Activity;
 using Volo.Abp.Cli;
 using Volo.Abp.Cli.Http;
+using Volo.Abp.DependencyInjection;
 
-public class TelemetryDataSender : ITelemetryDataSender
+public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
 {
     private readonly CliHttpClientFactory _cliHttpClientFactory;
     private readonly IActivityStorage _activityStorage;
@@ -41,5 +42,4 @@ public class TelemetryDataSender : ITelemetryDataSender
             await _activityStorage.MarkActivitiesAsSentAsync();
         }
     }
-    
 }
