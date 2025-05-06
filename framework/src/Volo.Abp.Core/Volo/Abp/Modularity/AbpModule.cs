@@ -102,25 +102,22 @@ public abstract class AbpModule :
         {
             return;
         }
-        var packageMetadata = AbpPackageMetadataHelper.GetMetaData(Assembly.GetCallingAssembly());
+
+        var assembly = Assembly.GetEntryAssembly()!;
+        
+        var packageMetadata = AbpPackageMetadataHelper.GetMetaData(assembly);
         
         if (packageMetadata != null)
         {
-            var activityStorage = context.ServiceProvider.GetRequiredService<IActivityStorage>();
-            var lastApplicationInfoSendTime = await activityStorage.GetApplicationInfoLastActivitySendTimeAsync(packageMetadata.ProjectId!.To<Guid>());
-            if (lastApplicationInfoSendTime is null ||
-                DateTimeOffset.UtcNow - lastApplicationInfoSendTime > TimeSpan.FromDays(7))
-            {
-                var telemetryService = context.ServiceProvider.GetRequiredService<ITelemetryService>();
+            var telemetryService = context.ServiceProvider.GetRequiredService<ITelemetryService>();
                 
-                await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
-                {
-                    activity.Add(ActivityPropertyNameConstants.Assembly, Assembly.GetCallingAssembly());
-                    activity.Add(ActivityPropertyNameConstants.ProjectId, packageMetadata.ProjectId!);
-                    activity.Add(ActivityPropertyNameConstants.ProjectType, packageMetadata.Role!);
-                    activity.Add(ActivityPropertyNameConstants.SolutionPath, packageMetadata.AbpSlnPath ?? string.Empty);
-                });
-            }
+            await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
+            {
+                activity.Add(ActivityPropertyNameConstants.Assembly, assembly);
+                activity.Add(ActivityPropertyNameConstants.ProjectId, packageMetadata.ProjectId!);
+                activity.Add(ActivityPropertyNameConstants.ProjectType, packageMetadata.Role!);
+                activity.Add(ActivityPropertyNameConstants.SolutionPath, packageMetadata.AbpSlnPath ?? string.Empty);
+            });
            
         }
     }

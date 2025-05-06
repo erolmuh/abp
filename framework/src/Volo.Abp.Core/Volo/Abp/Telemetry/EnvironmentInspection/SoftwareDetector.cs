@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection;
 
-abstract internal class SoftwareDetector : ISoftwareDetector
+abstract internal class SoftwareDetector : ISoftwareDetector , ISingletonDependency
 {
     public abstract string Name { get; }
     public abstract Task<SoftwareInfo?> DetectAsync();

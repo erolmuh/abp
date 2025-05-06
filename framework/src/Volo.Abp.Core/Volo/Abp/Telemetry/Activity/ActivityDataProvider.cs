@@ -89,8 +89,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         activityData.Add(ActivityPropertyNameConstants.AbpModuleCount, info.AbpModuleCount);
         activityData.Add(ActivityPropertyNameConstants.PermissionCount, info.PermissionCount);
         activityData.Add(ActivityPropertyNameConstants.AppServiceCount, info.AppServiceCount);
-        activityData.Add(ActivityPropertyNameConstants.ProjectId, activityData[ActivityPropertyNameConstants.ProjectId]);
-
+  
         activityData.Remove(ActivityPropertyNameConstants.Assembly);
     }
 

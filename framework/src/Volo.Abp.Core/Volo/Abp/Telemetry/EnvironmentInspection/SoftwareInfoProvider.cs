@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection;
 
-internal class SoftwareInfoProvider : ISoftwareInfoProvider
+internal class SoftwareInfoProvider : ISoftwareInfoProvider , ISingletonDependency
 {
     private readonly IEnumerable<ISoftwareDetector> _softwareDetectors;
 
