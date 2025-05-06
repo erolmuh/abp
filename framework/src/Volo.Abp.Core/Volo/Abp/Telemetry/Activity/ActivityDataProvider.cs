@@ -38,18 +38,18 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         {
             var (isFirstSession, sessionId) = await _activityStorage.GetOrCreateSessionInfoAsync(cancellationToken);
 
-            activityData.Add("SessionId", sessionId);
-            activityData.Add("IsFirstSession", isFirstSession);
-            
+            activityData.Add(ActivityPropertyNameConstants.SessionId, sessionId);
+            activityData.Add(ActivityPropertyNameConstants.IsFirstSession, isFirstSession);
+
             var lastDeviceInfoSendTime = await _activityStorage.GetLastDeviceInfoSendTimeAsync(cancellationToken);
-            activityData.Add("DeviceId", await _deviceInfoProvider.GetDeviceIdAsync());
+            activityData.Add(ActivityPropertyNameConstants.DeviceId, await _deviceInfoProvider.GetDeviceIdAsync());
 
             if (lastDeviceInfoSendTime is null || DateTimeOffset.UtcNow - lastDeviceInfoSendTime > TimeSpan.FromDays(7))
             {
                 await AddDeviceInformationAsync(activityData);
             }
 
-            if (activityData.TryGetValue("ProjectAssemblyForScan", out var value))
+            if (activityData.TryGetValue(ActivityPropertyNameConstants.Assembly, out var value))
             {
                 var assembly = value as Assembly;
                 if (assembly != null)
@@ -70,7 +70,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
 
     private async Task AddDeviceInformationAsync(ActivityData activityData)
     {
-        activityData.Add(ActivityPropertyNameConstants.DeviceType , _deviceInfoProvider.GetDeviceType());
+        activityData.Add(ActivityPropertyNameConstants.DeviceType, _deviceInfoProvider.GetDeviceType());
         activityData.Add(ActivityPropertyNameConstants.DeviceLanguage, _deviceInfoProvider.GetLanguage());
         activityData.Add(ActivityPropertyNameConstants.OperatingSystem, _deviceInfoProvider.GetOperatingSystem());
         activityData.Add(ActivityPropertyNameConstants.CountryIsoCode, _deviceInfoProvider.GetCountry());
@@ -84,121 +84,138 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
     {
         var info = _applicationInfoProvider.Scan(assembly);
 
-        activityData.Add(nameof(ApplicationInfo.ControllerCount), info.ControllerCount);
-        activityData.Add(nameof(ApplicationInfo.EntityCount), info.EntityCount);
-        activityData.Add(nameof(ApplicationInfo.AbpModuleCount), info.AbpModuleCount);
-        activityData.Add(nameof(ApplicationInfo.PermissionCount), info.PermissionCount);
-        activityData.Add(nameof(ApplicationInfo.AppServiceCount), info.AppServiceCount);
-        activityData.Add(ActivityPropertyNameConstants.ProjectType, activityData["ProjectType"]);
-        activityData.Add(ActivityPropertyNameConstants.ProjectId, activityData["ProjectId"]);
+        activityData.Add(ActivityPropertyNameConstants.ControllerCount, info.ControllerCount);
+        activityData.Add(ActivityPropertyNameConstants.EntityCount, info.EntityCount);
+        activityData.Add(ActivityPropertyNameConstants.AbpModuleCount, info.AbpModuleCount);
+        activityData.Add(ActivityPropertyNameConstants.PermissionCount, info.PermissionCount);
+        activityData.Add(ActivityPropertyNameConstants.AppServiceCount, info.AppServiceCount);
+        activityData.Add(ActivityPropertyNameConstants.ProjectId, activityData[ActivityPropertyNameConstants.ProjectId]);
 
-        activityData.Remove("ProjectAssemblyForScan");
+        activityData.Remove(ActivityPropertyNameConstants.Assembly);
     }
 
-  private async Task AddSolutionInformationAsync(ActivityData activityData)
-{
-    if (activityData.TryGetValue(ActivityPropertyNameConstants.SolutionPath, out var value))
+    private async Task AddSolutionInformationAsync(ActivityData activityData)
     {
-        var solutionPath = value as string;
-        if (string.IsNullOrEmpty(solutionPath) || !File.Exists(solutionPath))
+        if (activityData.TryGetValue(ActivityPropertyNameConstants.SolutionPath, out var value))
         {
-            return;
-        }
-
-        var solutionJson =  File.ReadAllText(solutionPath);
-        using var solutionDoc = JsonDocument.Parse(solutionJson);
-
-        var root = solutionDoc.RootElement;
-
-        if (!root.TryGetProperty("id", out var idElement) || !Guid.TryParse(idElement.GetString(), out var solutionId))
-        {
-            return;
-        }
-
-        activityData.Add(ActivityPropertyNameConstants.SolutionId, solutionId);
-
-        var lastSolutionInfoSendTime = await _activityStorage.GetLastSolutionInfoSendTimeAsync(solutionId);
-
-        if (lastSolutionInfoSendTime is null || DateTimeOffset.UtcNow - lastSolutionInfoSendTime > TimeSpan.FromDays(7))
-        {
-            if (root.TryGetProperty("creatingStudioConfiguration", out var config))
+            var solutionPath = value as string;
+            if (string.IsNullOrEmpty(solutionPath) || !File.Exists(solutionPath))
             {
-                activityData.Add(ActivityPropertyNameConstants.Template, GetSolutionTemplate(config.GetProperty("template").GetString()));
-                activityData.Add(ActivityPropertyNameConstants.CreatedAbpStudioVersion, config.GetProperty("createdAbpStudioVersion").GetString()!);
-                activityData.Add(ActivityPropertyNameConstants.IsTiered, config.GetProperty("Tiered").GetBoolean());
-                activityData.Add(ActivityPropertyNameConstants.UiFramework, GetUiFramework(config.GetProperty("uiFramework").GetString()));
-                activityData.Add(ActivityPropertyNameConstants.DatabaseProvider, GetDatabaseProvider(config.GetProperty("databaseProvider").GetString()));
-                activityData.Add(ActivityPropertyNameConstants.DatabaseManagementSystem, GetDbms(config.GetProperty("databaseManagementSystem").GetString()));
-                activityData.Add(ActivityPropertyNameConstants.IsSeparateTenantSchema, config.GetProperty("separateTenantSchema").GetBoolean());
-                activityData.Add(ActivityPropertyNameConstants.Theme, GetUiTheme(config.GetProperty("theme").GetString()));
-                activityData.Add(ActivityPropertyNameConstants.ThemeStyle, GetUiThemeStyle(config.GetProperty("themeStyle").GetString()));
-                activityData.Add(ActivityPropertyNameConstants.MobileFramework, GetMobileApp(config.GetProperty("mobileFramework").GetString()));
-                activityData.Add(ActivityPropertyNameConstants.HasPublicWebsite, config.GetProperty("publicWebsite").GetBoolean());
-                activityData.Add(ActivityPropertyNameConstants.IncludeTests, config.GetProperty("includeTests").GetBoolean());
-                activityData.Add(ActivityPropertyNameConstants.MultiTenancy, config.GetProperty("multiTenancy").GetBoolean());
-                activityData.Add(ActivityPropertyNameConstants.DynamicLocalization, config.GetProperty("dynamicLocalization").GetBoolean());
-                activityData.Add(ActivityPropertyNameConstants.KubernetesConfiguration, config.GetProperty("kubernetesConfiguration").GetBoolean());
-                activityData.Add(ActivityPropertyNameConstants.GrafanaDashboard, config.GetProperty("grafanaDashboard").GetBoolean());
-                activityData.Add(ActivityPropertyNameConstants.SocialLogins, config.GetProperty("socialLogin").GetBoolean());
+                return;
             }
 
-            var modules = new List<SolutionModuleInstallationInfo>();
+            var solutionJson = File.ReadAllText(solutionPath);
+            using var solutionDoc = JsonDocument.Parse(solutionJson);
 
-            if (root.TryGetProperty("modules", out var modulesElement) && modulesElement.ValueKind == JsonValueKind.Object)
+            var root = solutionDoc.RootElement;
+
+            if (!root.TryGetProperty("id", out var idElement) ||
+                !Guid.TryParse(idElement.GetString(), out var solutionId))
             {
-                foreach (var moduleProperty in modulesElement.EnumerateObject())
+                return;
+            }
+
+            activityData.Add(ActivityPropertyNameConstants.SolutionId, solutionId);
+
+            var lastSolutionInfoSendTime = await _activityStorage.GetLastSolutionInfoSendTimeAsync(solutionId);
+
+            if (lastSolutionInfoSendTime is null ||
+                DateTimeOffset.UtcNow - lastSolutionInfoSendTime > TimeSpan.FromDays(7))
+            {
+                if (root.TryGetProperty("creatingStudioConfiguration", out var config))
                 {
-                    var name = moduleProperty.Name;
-                    if (!moduleProperty.Value.TryGetProperty("path", out var pathElement))
+                    activityData.Add(ActivityPropertyNameConstants.Template,
+                        MapSolutionTemplate(config.GetProperty("template").GetString()));
+                    activityData.Add(ActivityPropertyNameConstants.CreatedAbpStudioVersion,
+                        config.GetProperty("createdAbpStudioVersion").GetString()!);
+                    activityData.Add(ActivityPropertyNameConstants.IsTiered, config.GetProperty("Tiered").GetBoolean());
+                    activityData.Add(ActivityPropertyNameConstants.UiFramework,
+                        MapUiFramework(config.GetProperty("uiFramework").GetString()));
+                    activityData.Add(ActivityPropertyNameConstants.DatabaseProvider,
+                        MapDatabaseProvider(config.GetProperty("databaseProvider").GetString()));
+                    activityData.Add(ActivityPropertyNameConstants.DatabaseManagementSystem,
+                        MapDbms(config.GetProperty("databaseManagementSystem").GetString()));
+                    activityData.Add(ActivityPropertyNameConstants.IsSeparateTenantSchema,
+                        config.GetProperty("separateTenantSchema").GetBoolean());
+                    activityData.Add(ActivityPropertyNameConstants.Theme,
+                        MapUiTheme(config.GetProperty("theme").GetString()));
+                    activityData.Add(ActivityPropertyNameConstants.ThemeStyle,
+                        MapUiThemeStyle(config.GetProperty("themeStyle").GetString()));
+                    activityData.Add(ActivityPropertyNameConstants.MobileFramework,
+                        MapMobileApp(config.GetProperty("mobileFramework").GetString()));
+                    activityData.Add(ActivityPropertyNameConstants.HasPublicWebsite,
+                        config.GetProperty("publicWebsite").GetBoolean());
+                    activityData.Add(ActivityPropertyNameConstants.IncludeTests,
+                        config.GetProperty("includeTests").GetBoolean());
+                    activityData.Add(ActivityPropertyNameConstants.MultiTenancy,
+                        config.GetProperty("multiTenancy").GetBoolean());
+                    activityData.Add(ActivityPropertyNameConstants.DynamicLocalization,
+                        config.GetProperty("dynamicLocalization").GetBoolean());
+                    activityData.Add(ActivityPropertyNameConstants.KubernetesConfiguration,
+                        config.GetProperty("kubernetesConfiguration").GetBoolean());
+                    activityData.Add(ActivityPropertyNameConstants.GrafanaDashboard,
+                        config.GetProperty("grafanaDashboard").GetBoolean());
+                    activityData.Add(ActivityPropertyNameConstants.SocialLogins,
+                        config.GetProperty("socialLogin").GetBoolean());
+                }
+
+                var modules = new List<SolutionModuleInstallationInfo>();
+
+                if (root.TryGetProperty("modules", out var modulesElement) &&
+                    modulesElement.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var moduleProperty in modulesElement.EnumerateObject())
                     {
-                        continue;
-                    }
-
-                    var path = pathElement.GetString();
-                    if (path.IsNullOrEmpty() || !File.Exists(path))
-                    {
-                        continue;
-                    }
-
-                    var moduleJson =  File.ReadAllText(path);
-                    using var moduleDoc = JsonDocument.Parse(moduleJson);
-
-                    if (!moduleDoc.RootElement.TryGetProperty("imports", out var importsElement) || importsElement.ValueKind != JsonValueKind.Object)
-                    {
-                        continue;
-                    }
-
-                    foreach (var importProperty in importsElement.EnumerateObject())
-                    {
-                        var importValue = importProperty.Value;
-
-                        var version = importValue.GetProperty("version").GetString();
-                        var creationTime = importValue.TryGetProperty("creationTime", out var ct)
-                            ? DateTimeOffset.Parse(ct.GetString()!)
-                            : (DateTimeOffset?)null;
-
-                        if (modules.Any(x => x.ModuleName == name && x.Version == version))
+                        var name = moduleProperty.Name;
+                        if (!moduleProperty.Value.TryGetProperty("path", out var pathElement))
                         {
                             continue;
                         }
 
-                        modules.Add(new SolutionModuleInstallationInfo
+                        var path = pathElement.GetString();
+                        if (path.IsNullOrEmpty() || !File.Exists(path))
                         {
-                            ModuleName = name,
-                            Version = version,
-                            InstallationTime = creationTime
-                        });
-                    }
-                }
+                            continue;
+                        }
 
-                activityData.Add(ActivityPropertyNameConstants.InstalledModules, modules);
+                        var moduleJson = File.ReadAllText(path);
+                        using var moduleDoc = JsonDocument.Parse(moduleJson);
+
+                        if (!moduleDoc.RootElement.TryGetProperty("imports", out var importsElement) ||
+                            importsElement.ValueKind != JsonValueKind.Object)
+                        {
+                            continue;
+                        }
+
+                        foreach (var importProperty in importsElement.EnumerateObject())
+                        {
+                            var importValue = importProperty.Value;
+
+                            var version = importValue.GetProperty("version").GetString();
+                            var creationTime = importValue.TryGetProperty("creationTime", out var ct)
+                                ? DateTimeOffset.Parse(ct.GetString()!)
+                                : (DateTimeOffset?)null;
+
+                            if (modules.Any(x => x.ModuleName == name && x.Version == version))
+                            {
+                                continue;
+                            }
+
+                            modules.Add(new SolutionModuleInstallationInfo
+                            {
+                                ModuleName = name, Version = version, InstallationTime = creationTime
+                            });
+                        }
+                    }
+
+                    activityData.Add(ActivityPropertyNameConstants.InstalledModules, modules);
+                }
             }
         }
     }
-}
 
 
-    private Dbms GetDbms(string? databaseManagementSystem)
+    private Dbms MapDbms(string? databaseManagementSystem)
     {
         return databaseManagementSystem switch
         {
@@ -212,7 +229,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         };
     }
 
-    private UiTheme GetUiTheme(string? theme)
+    private UiTheme MapUiTheme(string? theme)
     {
         return theme switch
         {
@@ -224,7 +241,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         };
     }
 
-    private MobileApp GetMobileApp(string? mobileFramework)
+    private MobileApp MapMobileApp(string? mobileFramework)
     {
         return mobileFramework switch
         {
@@ -235,7 +252,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         };
     }
 
-    private UiThemeStyle GetUiThemeStyle(string? themeStyle)
+    private UiThemeStyle MapUiThemeStyle(string? themeStyle)
     {
         return themeStyle switch
         {
@@ -247,7 +264,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         };
     }
 
-    private SolutionTemplate GetSolutionTemplate(string? templateName)
+    private SolutionTemplate MapSolutionTemplate(string? templateName)
     {
         return templateName switch
         {
@@ -258,7 +275,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         };
     }
 
-    private UiFramework GetUiFramework(string? uiFramework)
+    private UiFramework MapUiFramework(string? uiFramework)
     {
         return uiFramework switch
         {
@@ -273,7 +290,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         };
     }
 
-    private DatabaseProvider GetDatabaseProvider(string? databaseProvider)
+    private DatabaseProvider MapDatabaseProvider(string? databaseProvider)
     {
         return databaseProvider switch
         {

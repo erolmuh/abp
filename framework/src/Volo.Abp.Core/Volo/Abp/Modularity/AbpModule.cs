@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Telemetry;
 using Volo.Abp.Telemetry.Activity;
+using Volo.Abp.Telemetry.Helpers;
 
 namespace Volo.Abp.Modularity;
 
@@ -113,11 +113,12 @@ public abstract class AbpModule :
             {
                 var telemetryService = context.ServiceProvider.GetRequiredService<ITelemetryService>();
                 
-                await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, c =>
+                await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
                 {
-                    c.Add("ProjectAssemblyForScan", Assembly.GetCallingAssembly());
-                    c.Add("ProjectId", packageMetadata.ProjectId!);
-                    c.Add("ProjectType", packageMetadata.Role!);
+                    activity.Add(ActivityPropertyNameConstants.Assembly, Assembly.GetCallingAssembly());
+                    activity.Add(ActivityPropertyNameConstants.ProjectId, packageMetadata.ProjectId!);
+                    activity.Add(ActivityPropertyNameConstants.ProjectType, packageMetadata.Role!);
+                    activity.Add(ActivityPropertyNameConstants.SolutionPath, packageMetadata.AbpSlnPath ?? string.Empty);
                 });
             }
            

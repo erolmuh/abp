@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 
-namespace Helpers;
+namespace Volo.Abp.Telemetry.Helpers;
 
 public static class AbpPackageMetadataHelper
 {
@@ -22,9 +22,19 @@ public static class AbpPackageMetadataHelper
 
         var abppkgPath = Directory.GetFiles(dir, "*.abppkg").FirstOrDefault();
         if (abppkgPath == null)
+        {
             return null;
+        }
 
-        return ReadOrCreateMetadata(abppkgPath);
+        var metadata =  ReadOrCreateMetadata(abppkgPath);
+        var abpslnPath = FindAbpSlnFile(dir);
+        if (!abpslnPath.IsNullOrEmpty())
+        {
+            metadata.AbpSlnPath = abpslnPath;
+        }
+        
+        
+        return metadata;
     }
 
     private static AbpPackageMetadata ReadOrCreateMetadata(string path)
@@ -57,11 +67,29 @@ public static class AbpPackageMetadataHelper
 
         return metadata;
     }
+    
+    private static string? FindAbpSlnFile(string startingDir)
+    {
+        var currentDir = new DirectoryInfo(startingDir);
+
+        while (currentDir != null)
+        {
+            var abpslnFile = currentDir.GetFiles("*.abpsln").FirstOrDefault();
+            if (abpslnFile != null)
+            {
+                return abpslnFile.FullName;
+            }
+
+            currentDir = currentDir.Parent;
+        }
+
+        return null;
+    }
 }
 
 public class AbpPackageMetadata
 {
     public string? ProjectId { get; set; }
     public string? Role { get; set; }
-
+    public string? AbpSlnPath { get; set; }
 }
