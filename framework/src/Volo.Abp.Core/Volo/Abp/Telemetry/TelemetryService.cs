@@ -10,13 +10,11 @@ namespace Volo.Abp.Telemetry;
 public class TelemetryService :  ITelemetryService ,  IScopedDependency
 {
     private readonly IActivityStorage _activityStorage;
-    private readonly IActivityDataProvider _activityDataProvider;
     private readonly ITelemetryDataSender _telemetryDataSender;
 
-    public TelemetryService(IActivityStorage activityStorage, IActivityDataProvider activityDataProvider, ITelemetryDataSender telemetryDataSender)
+    public TelemetryService(IActivityStorage activityStorage, ITelemetryDataSender telemetryDataSender)
     {
         _activityStorage = activityStorage;
-        _activityDataProvider = activityDataProvider;
         _telemetryDataSender = telemetryDataSender;
     }
 
@@ -67,8 +65,8 @@ public class TelemetryService :  ITelemetryService ,  IScopedDependency
     }
     public async Task AddActivityAsync(ActivityData data, CancellationToken cancellationToken = default)
     {
-        var build = await _activityDataProvider.AddExtraInformationAsync(data, cancellationToken);
-        await _activityStorage.BufferActivityAsync(build, cancellationToken);
+       
+        await _activityStorage.BufferActivityAsync(data, cancellationToken);
 
         await CheckIfActivitySendTimeIsDueAsync();
     }

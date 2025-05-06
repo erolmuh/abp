@@ -38,12 +38,11 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
 
         if (activities.Count > 0)
         {
+            await _activityDataProvider.AddExtraInformationAsync(activities[0]);
             foreach (var activity in activities)
             {
-                await _activityDataProvider.AddExtraInformationAsync(activity);
                 await httpClient.PostAsync(ApiUrl,
                     new StringContent(JsonSerializer.Serialize(activity), Encoding.UTF8, "application/json"));
-              
             }
 
             await _activityStorage.MarkActivitiesAsSentAsync();
