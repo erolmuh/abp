@@ -7,7 +7,7 @@ namespace Volo.Abp.Telemetry;
 
 public class ApplicationInfoProvider : ISingletonDependency
 {
-    public ApplicationInfo Scan(Assembly assembly)
+    public ApplicationInfo ExtractApplicationInfo(Assembly assembly)
     {
         var types = assembly.GetTypes();
 

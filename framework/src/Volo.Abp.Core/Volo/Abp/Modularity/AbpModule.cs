@@ -113,7 +113,7 @@ public abstract class AbpModule :
                 
             await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
             {
-                activity.Add(ActivityPropertyNameConstants.Assembly, assembly);
+                activity.Add(ActivityPropertyNameConstants.Assembly, assembly.Location);
                 activity.Add(ActivityPropertyNameConstants.ProjectId, packageMetadata.ProjectId!);
                 activity.Add(ActivityPropertyNameConstants.ProjectType, packageMetadata.Role!);
                 activity.Add(ActivityPropertyNameConstants.SolutionPath, packageMetadata.AbpSlnPath ?? string.Empty);

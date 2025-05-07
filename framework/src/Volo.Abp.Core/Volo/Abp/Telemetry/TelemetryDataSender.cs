@@ -3,8 +3,10 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Shared;
 using Volo.Abp.DependencyInjection;
@@ -38,7 +40,7 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
 
         if (activities.Count > 0)
         {
-            await _activityDataProvider.AddExtraInformationAsync(activities[0]);
+            await AddExtraInformationAsync(activities[0]);
             foreach (var activity in activities)
             {
                 await httpClient.PostAsync(ApiUrl,
@@ -48,7 +50,47 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
             await _activityStorage.MarkActivitiesAsSentAsync();
         }
     }
-    
+
+    private async Task AddExtraInformationAsync(ActivityData activityData)
+    {
+        try
+        {
+            var (isFirstSession, sessionId) = await _activityStorage.GetOrCreateSessionInfoAsync();
+
+            activityData.Add(ActivityPropertyNameConstants.SessionId, sessionId);
+            activityData.Add(ActivityPropertyNameConstants.IsFirstSession, isFirstSession);
+
+            var lastDeviceInfoSendTime = await _activityStorage.GetLastDeviceInfoSendTimeAsync();
+
+            if (lastDeviceInfoSendTime is null || DateTimeOffset.UtcNow - lastDeviceInfoSendTime > TimeSpan.FromDays(7))
+            {
+                await _activityDataProvider.AddDeviceInformationAsync(activityData);
+                await _activityStorage.MarkDeviceInfoAsSentAsync();
+                
+            }
+
+            if (activityData.TryGetValue(ActivityPropertyNameConstants.Assembly, out var assemblyLocation))
+            {
+                _activityDataProvider.AddApplicationInformation(activityData, Assembly.LoadFrom((string) assemblyLocation));
+            }
+
+            if (activityData.TryGetValue(ActivityPropertyNameConstants.SolutionPath, out var path))
+            {
+                var solutionPath = path as string;
+                if (string.IsNullOrEmpty(solutionPath) || !File.Exists(solutionPath))
+                {
+                    return;
+                }
+
+                await _activityDataProvider.AddSolutionInformationAsync(activityData);
+            }
+
+        }
+        catch
+        {
+            //ignored
+        }
+    }
     private static void AddAbpAuthenticationTokenAsync(HttpClient httpClient)
     {
         if (!File.Exists(AbpTelemetryPaths.AccessToken))

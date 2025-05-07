@@ -36,7 +36,6 @@ public static class ActivityPropertyNameConstants
     public const string GrafanaDashboard = nameof(GrafanaDashboard);
     public const string SocialLogins = nameof(SocialLogins);
     public const string InstalledModules = nameof(InstalledModules);
-    public const string ProjectAssemblyForScan = nameof(ProjectAssemblyForScan);
     public const string SolutionPath = nameof(SolutionPath);
     public const string Assembly = nameof(Assembly);
 }
