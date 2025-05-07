@@ -14,11 +14,6 @@ public static class AbpPackageMetadataHelper
         var assemblyPath = assembly.Location;
         try
         {
-            if (string.IsNullOrWhiteSpace(assemblyPath))
-            {
-                return null;
-            }
-
             var dir = Path.GetDirectoryName(assemblyPath);
             if (dir == null)
             {

@@ -89,38 +89,13 @@ public abstract class AbpModule :
 
     }
 
-    public virtual async Task OnPostApplicationInitializationAsync(ApplicationInitializationContext context)
+    public virtual Task OnPostApplicationInitializationAsync(ApplicationInitializationContext context)
     {
         OnPostApplicationInitialization(context);
-        await ConfigureTelemetry(context);
+        return Task.CompletedTask;
     }
 
-    private async Task ConfigureTelemetry(ApplicationInitializationContext context)
-    {
-        var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
-        if (configuration.GetValue<bool>("Abp:Telemetry:Disable"))
-        {
-            return;
-        }
-
-        var assembly = Assembly.GetEntryAssembly()!;
-        
-        var packageMetadata = AbpPackageMetadataHelper.GetMetaData(assembly);
-        
-        if (packageMetadata != null)
-        {
-            var telemetryService = context.ServiceProvider.GetRequiredService<ITelemetryService>();
-                
-            await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
-            {
-                activity.Add(ActivityPropertyNameConstants.Assembly, assembly.Location);
-                activity.Add(ActivityPropertyNameConstants.ProjectId, packageMetadata.ProjectId!);
-                activity.Add(ActivityPropertyNameConstants.ProjectType, packageMetadata.Role!);
-                activity.Add(ActivityPropertyNameConstants.SolutionPath, packageMetadata.AbpSlnPath ?? string.Empty);
-            });
-           
-        }
-    }
+ 
 
     public virtual void OnPostApplicationInitialization(ApplicationInitializationContext context)
     {

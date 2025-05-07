@@ -1,4 +1,4 @@
-﻿namespace Volo.Abp.Telemetry.EnvironmentInspection.Enums;
+﻿namespace Volo.Abp.Telemetry.Shared.Enums;
 
 public enum DatabaseProvider
 {

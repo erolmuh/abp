@@ -63,16 +63,16 @@ public class TelemetryService :  ITelemetryService ,  IScopedDependency
             await _telemetryDataSender.SendAsync();
         }
     }
-    public async Task AddActivityAsync(ActivityData data, CancellationToken cancellationToken = default)
+    public async Task AddActivityAsync(ActivityData data)
     {
        
-        await _activityStorage.BufferActivityAsync(data, cancellationToken);
+        await _activityStorage.BufferActivityAsync(data);
 
         await CheckIfActivitySendTimeIsDueAsync();
     }
 
-    public async Task AddActivityAsync(string activityName, string? details = null, CancellationToken cancellationToken = default)
+    public async Task AddActivityAsync(string activityName, string? details = null)
     {
-        await AddActivityAsync(new ActivityData(activityName, details),cancellationToken);
+        await AddActivityAsync(new ActivityData(activityName, details));
     }
 }

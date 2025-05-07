@@ -1,7 +1,13 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Volo.Abp.Telemetry;
+using Volo.Abp.Telemetry.Activity;
+using Volo.Abp.Telemetry.Helpers;
 
 namespace Volo.Abp;
 
@@ -44,6 +50,8 @@ internal class AbpApplicationWithExternalServiceProvider : AbpApplicationBase, I
         SetServiceProvider(serviceProvider);
 
         await InitializeModulesAsync();
+
+        ConfigureTelemetry(serviceProvider);
     }
 
     public void Initialize([NotNull] IServiceProvider serviceProvider)
@@ -53,8 +61,49 @@ internal class AbpApplicationWithExternalServiceProvider : AbpApplicationBase, I
         SetServiceProvider(serviceProvider);
 
         InitializeModules();
+        
+        ConfigureTelemetry(serviceProvider);
+        
     }
+    private void ConfigureTelemetry(IServiceProvider serviceProvider)
+    {
+        Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = serviceProvider.CreateScope();
+                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                if (configuration.GetValue<bool>("Abp:Telemetry:Disable"))
+                {
+                    return;
+                }
 
+                var assembly = Assembly.GetEntryAssembly()!;
+
+                var packageMetadata = AbpPackageMetadataHelper.GetMetaData(assembly);
+
+                if (packageMetadata != null)
+                {
+                    var telemetryService = scope.ServiceProvider.GetRequiredService<ITelemetryService>();
+
+                    await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
+                    {
+                        activity.Add(ActivityPropertyNameConstants.Assembly, assembly.Location);
+                        activity.Add(ActivityPropertyNameConstants.ProjectId, packageMetadata.ProjectId!);
+                        activity.Add(ActivityPropertyNameConstants.ProjectType, packageMetadata.Role!);
+                        activity.Add(ActivityPropertyNameConstants.SolutionPath,
+                            packageMetadata.AbpSlnPath ?? string.Empty);
+                    });
+
+                }
+            }
+            catch (Exception e)
+            {
+                var logger = serviceProvider.GetRequiredService<ILogger<AbpApplicationWithExternalServiceProvider>>();
+                logger.LogError(e, "An error occurred while configuring telemetry.");
+            }
+        });
+    }
     public override void Dispose()
     {
         base.Dispose();

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
-using Volo.Abp.Telemetry.EnvironmentInspection.Enums;
+using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 

@@ -12,7 +12,8 @@ public static class ActivityPropertyNameConstants
     public const string InstalledSoftwares = nameof(InstalledSoftwares);
     public const string ControllerCount = nameof(ControllerCount);
     public const string EntityCount = nameof(EntityCount);
-    public const string AbpModuleCount = nameof(AbpModuleCount);
+    public const string ProjectCount = nameof(ProjectCount);
+    public const string ModuleCount = nameof(ModuleCount);
     public const string PermissionCount = nameof(PermissionCount);
     public const string AppServiceCount = nameof(AppServiceCount);
     public const string ProjectType = nameof(ProjectType);

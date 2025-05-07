@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -24,6 +25,7 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
 #endif
     private readonly IActivityStorage _activityStorage;
     private readonly IActivityDataProvider _activityDataProvider;
+    private const int ActivityBatchSize = 50;
 
     public TelemetryDataSender(IActivityStorage activityStorage, IActivityDataProvider activityDataProvider)
     {
@@ -41,10 +43,12 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
         if (activities.Count > 0)
         {
             await AddExtraInformationAsync(activities[0]);
-            foreach (var activity in activities)
+            for (var i = 0; i < activities.Count; i += ActivityBatchSize)
             {
+                var activityBatch = activities.Skip(i).Take(ActivityBatchSize).ToList();
+
                 await httpClient.PostAsync(ApiUrl,
-                    new StringContent(JsonSerializer.Serialize(activity), Encoding.UTF8, "application/json"));
+                    new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
             }
 
             await _activityStorage.MarkActivitiesAsSentAsync();
@@ -69,9 +73,9 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
                 
             }
 
-            if (activityData.TryGetValue(ActivityPropertyNameConstants.Assembly, out var assemblyLocation))
+            if (activityData.ContainsKey(ActivityPropertyNameConstants.Assembly))
             {
-                _activityDataProvider.AddApplicationInformation(activityData, Assembly.LoadFrom((string) assemblyLocation));
+                await _activityDataProvider.AddApplicationInformation(activityData);
             }
 
             if (activityData.TryGetValue(ActivityPropertyNameConstants.SolutionPath, out var path))

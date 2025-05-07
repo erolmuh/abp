@@ -6,8 +6,7 @@ namespace Volo.Abp.Telemetry.Activity;
 
 public interface IActivityDataProvider
 {
-    Task AddDeviceInformationAsync(ActivityData activityData, CancellationToken cancellationToken = default);
-    void AddApplicationInformation(ActivityData activityData, Assembly assembly);
-
-    Task AddSolutionInformationAsync(ActivityData activityData, CancellationToken cancellationToken = default);
+    Task AddDeviceInformationAsync(ActivityData activityData);
+    Task AddApplicationInformation(ActivityData activityData);
+    Task AddSolutionInformationAsync(ActivityData activityData);
 }

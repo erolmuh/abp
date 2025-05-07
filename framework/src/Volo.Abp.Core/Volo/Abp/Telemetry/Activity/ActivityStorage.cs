@@ -18,14 +18,14 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
 
    
 
-    public async Task BufferActivityAsync(ActivityData activityData, CancellationToken cancellationToken = default)
+    public async Task BufferActivityAsync(ActivityData activityData)
     {
         var state = await GetStateAsync();
         state.Activities.Add(activityData);
         await SaveAsync();
     }
 
-    public async Task<List<ActivityData>> GetBufferedActivitiesAsync(CancellationToken cancellationToken = default)
+    public async Task<List<ActivityData>> GetBufferedActivitiesAsync()
     {
         var state = await GetStateAsync();
         return state.Activities;
@@ -45,16 +45,14 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         }
     }
 
-    public async Task MarkApplicationInfoAsSentAsync(Guid applicationId,
-        CancellationToken cancellationToken = default)
+    public async Task MarkApplicationInfoAsSentAsync(Guid applicationId)
     {
         var state = await GetStateAsync();
         state.ApplicationInfos[applicationId] = DateTimeOffset.UtcNow;
         await SaveAsync();
     }
 
-    public async Task<DateTimeOffset?> GetApplicationInfoLastActivitySendTimeAsync(Guid applicationId,
-        CancellationToken cancellationToken = default)
+    public async Task<DateTimeOffset?> GetApplicationInfoLastActivitySendTimeAsync(Guid applicationId)
     {
         var state = await GetStateAsync();
         if (state.ApplicationInfos.TryGetValue(applicationId, out var lastActivitySendTime))
@@ -65,7 +63,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         return null;
     }
 
-    public async Task<DateTimeOffset?> GetLastActivitySendTimeAsync(CancellationToken cancellationToken = default)
+    public async Task<DateTimeOffset?> GetLastActivitySendTimeAsync()
     {
         var state = await GetStateAsync();
         return state.ActivitySendTime;
@@ -77,8 +75,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         return state.SessionId ?? null;
     }
 
-    public async Task<(bool isFirstSession, Guid sessionId)> GetOrCreateSessionInfoAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<(bool isFirstSession, Guid sessionId)> GetOrCreateSessionInfoAsync()
     {
         var state = await GetStateAsync();
         state.IsFirstSession ??= true;
@@ -96,7 +93,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         await SaveAsync();
     }
 
-    public async Task MarkActivitiesAsSentAsync(CancellationToken cancellationToken = default)
+    public async Task MarkActivitiesAsSentAsync()
     {
         var state = await GetStateAsync();
         state.ActivitySendTime = DateTimeOffset.UtcNow;
@@ -106,8 +103,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         await SaveAsync();
     }
 
-    public async Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid id,
-        CancellationToken cancellationToken = default)
+    public async Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid id)
     {
         var state = await GetStateAsync();
 
@@ -119,20 +115,20 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         return null;
     }
 
-    public async Task<DateTimeOffset?> GetLastDeviceInfoSendTimeAsync(CancellationToken cancellationToken = default)
+    public async Task<DateTimeOffset?> GetLastDeviceInfoSendTimeAsync()
     {
         var state = await GetStateAsync();
         return state.LastDeviceInfoSendTime;
     }
 
-    public async Task MarkSolutionInfoAsSentAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task MarkSolutionInfoAsSentAsync(Guid id)
     {
         var state = await GetStateAsync();
         state.Solutions[id] = DateTimeOffset.UtcNow;
         await SaveAsync();
     }
 
-    public async Task MarkDeviceInfoAsSentAsync(CancellationToken cancellationToken = default)
+    public async Task MarkDeviceInfoAsSentAsync()
     {
         var state = await GetStateAsync();
         state.LastDeviceInfoSendTime = DateTimeOffset.UtcNow;

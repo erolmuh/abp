@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
-using Volo.Abp.Telemetry.EnvironmentInspection.Enums;
-using DatabaseProvider = Volo.Abp.Telemetry.EnvironmentInspection.Enums.DatabaseProvider;
-using MobileApp = Volo.Abp.Telemetry.EnvironmentInspection.Enums.MobileApp;
+using Volo.Abp.Telemetry.Shared.Enums;
+using DatabaseProvider = Volo.Abp.Telemetry.Shared.Enums.DatabaseProvider;
+using MobileApp = Volo.Abp.Telemetry.Shared.Enums.MobileApp;
 
 namespace Volo.Abp.Telemetry.Activity;
 
@@ -19,19 +17,20 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
 {
     private readonly IDeviceInfoProvider _deviceInfoProvider;
     private readonly ISoftwareInfoProvider _softwareInfoProvider;
-    private readonly ApplicationInfoProvider _applicationInfoProvider;
+    private readonly IEnumerable<ITelemetryApplicationInfoContributor> _applicationInfoContributors;
+    private readonly ModuleInfoContributor _moduleInfoContributor;
 
     public ActivityDataProvider(IDeviceInfoProvider deviceInfoProvider,
-        ISoftwareInfoProvider softwareInfoProvider, ApplicationInfoProvider applicationInfoProvider)
+        ISoftwareInfoProvider softwareInfoProvider, IEnumerable<ITelemetryApplicationInfoContributor> applicationInfoContributors, ModuleInfoContributor moduleInfoContributor)
     {
         _deviceInfoProvider = deviceInfoProvider;
         _softwareInfoProvider = softwareInfoProvider;
-        _applicationInfoProvider = applicationInfoProvider;
+        _applicationInfoContributors = applicationInfoContributors;
+        _moduleInfoContributor = moduleInfoContributor;
     }
 
 
-    public async Task AddDeviceInformationAsync(ActivityData activityData,
-        CancellationToken cancellationToken = default)
+    public async Task AddDeviceInformationAsync(ActivityData activityData)
     {
         activityData.Add(ActivityPropertyNameConstants.DeviceId, await _deviceInfoProvider.GetDeviceIdAsync());
         activityData.Add(ActivityPropertyNameConstants.DeviceType, _deviceInfoProvider.GetDeviceType());
@@ -39,32 +38,27 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         activityData.Add(ActivityPropertyNameConstants.OperatingSystem, _deviceInfoProvider.GetOperatingSystem());
         activityData.Add(ActivityPropertyNameConstants.CountryIsoCode, _deviceInfoProvider.GetCountry());
 
-        var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync(cancellationToken);
+        var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
         activityData.Add(ActivityPropertyNameConstants.InstalledSoftwares, softwareList);
     }
 
-    public void AddApplicationInformation(ActivityData activityData, Assembly assembly)
+    public async Task AddApplicationInformation(ActivityData activityData)
     {
-        var info = _applicationInfoProvider.ExtractApplicationInfo(assembly);
+        foreach (var applicationInfoContributor in _applicationInfoContributors)
+        {
 
-        activityData.Add(ActivityPropertyNameConstants.ControllerCount, info.ControllerCount);
-        activityData.Add(ActivityPropertyNameConstants.EntityCount, info.EntityCount);
-        activityData.Add(ActivityPropertyNameConstants.AbpModuleCount, info.AbpModuleCount);
-        activityData.Add(ActivityPropertyNameConstants.PermissionCount, info.PermissionCount);
-        activityData.Add(ActivityPropertyNameConstants.AppServiceCount, info.AppServiceCount);
-
-        activityData.Remove(ActivityPropertyNameConstants.Assembly);
+            await applicationInfoContributor.ContributeAsync(activityData);
+        }
     }
 
-    public async Task AddSolutionInformationAsync(ActivityData activityData,
-        CancellationToken cancellationToken = default)
+    public Task AddSolutionInformationAsync(ActivityData activityData)
     {
         if (activityData.TryGetValue(ActivityPropertyNameConstants.SolutionPath, out var value))
         {
             var solutionPath = value as string;
             if (string.IsNullOrEmpty(solutionPath) || !File.Exists(solutionPath))
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var solutionJson = File.ReadAllText(solutionPath);
@@ -75,7 +69,8 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
             if (!root.TryGetProperty("id", out var idElement) ||
                 !Guid.TryParse(idElement.GetString(), out var solutionId))
             {
-                return;
+                return Task.CompletedTask;
+
             }
 
             activityData.Add(ActivityPropertyNameConstants.SolutionId, solutionId);
@@ -170,6 +165,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
                 activityData.Add(ActivityPropertyNameConstants.InstalledModules, modules);
             }
         }
+        return Task.CompletedTask;
     }
 
 
