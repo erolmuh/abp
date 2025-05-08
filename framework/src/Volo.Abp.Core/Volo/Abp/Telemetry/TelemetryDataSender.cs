@@ -9,20 +9,15 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity;
+using Volo.Abp.Telemetry.Shared;
 
 namespace Volo.Abp.Telemetry;
 
 public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
 {
 
-#if DEBUG
-    private const string ApiUrl = "https://localhost:44393/api/telemetry/collect";
-#else
-    private const string ApiUrl = "https://telemetry.abp.io/api/telemetry/collect";
-#endif
     private readonly IActivityStorage _activityStorage;
     private readonly IActivityDataProvider _activityDataProvider;
     private const int ActivityBatchSize = 50;
@@ -47,8 +42,7 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
             {
                 var activityBatch = activities.Skip(i).Take(ActivityBatchSize).ToList();
 
-                await httpClient.PostAsync(ApiUrl,
-                    new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
+                await httpClient.PostAsync($"{AbpPlatformUrls.TelemetryApiUrl}api/telemetry/collect", new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
             }
 
             await _activityStorage.MarkActivitiesAsSentAsync();
@@ -61,8 +55,8 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
         {
             var (isFirstSession, sessionId) = await _activityStorage.GetOrCreateSessionInfoAsync();
 
-            activityData.Add(ActivityPropertyNameConstants.SessionId, sessionId);
-            activityData.Add(ActivityPropertyNameConstants.IsFirstSession, isFirstSession);
+            activityData.Add(ActivityPropertyName.SessionId, sessionId);
+            activityData.Add(ActivityPropertyName.IsFirstSession, isFirstSession);
 
             var lastDeviceInfoSendTime = await _activityStorage.GetLastDeviceInfoSendTimeAsync();
 
@@ -73,12 +67,12 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
                 
             }
 
-            if (activityData.ContainsKey(ActivityPropertyNameConstants.Assembly))
+            if (activityData.ContainsKey(ActivityPropertyName.Assembly))
             {
                 await _activityDataProvider.AddApplicationInformation(activityData);
             }
 
-            if (activityData.TryGetValue(ActivityPropertyNameConstants.SolutionPath, out var path))
+            if (activityData.TryGetValue(ActivityPropertyName.SolutionPath, out var path))
             {
                 var solutionPath = path as string;
                 if (string.IsNullOrEmpty(solutionPath) || !File.Exists(solutionPath))

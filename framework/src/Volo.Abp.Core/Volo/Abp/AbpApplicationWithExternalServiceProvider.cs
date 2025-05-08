@@ -88,10 +88,10 @@ internal class AbpApplicationWithExternalServiceProvider : AbpApplicationBase, I
 
                     await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
                     {
-                        activity.Add(ActivityPropertyNameConstants.Assembly, assembly.Location);
-                        activity.Add(ActivityPropertyNameConstants.ProjectId, packageMetadata.ProjectId!);
-                        activity.Add(ActivityPropertyNameConstants.ProjectType, packageMetadata.Role!);
-                        activity.Add(ActivityPropertyNameConstants.SolutionPath,
+                        activity.Add(ActivityPropertyName.Assembly, assembly.Location);
+                        activity.Add(ActivityPropertyName.ProjectId, packageMetadata.ProjectId!);
+                        activity.Add(ActivityPropertyName.ProjectType, packageMetadata.Role!);
+                        activity.Add(ActivityPropertyName.SolutionPath,
                             packageMetadata.AbpSlnPath ?? string.Empty);
                     });
 

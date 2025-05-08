@@ -6,8 +6,8 @@ using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Shared;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Telemetry.Shared;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection;

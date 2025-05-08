@@ -12,13 +12,13 @@ public class DomainInfoContributor : ITelemetryApplicationInfoContributor
 {
     public Task ContributeAsync(ActivityData activityData)
     {
-        if (activityData.TryGetValue(ActivityPropertyNameConstants.Assembly, out var assemblyPath))
+        if (activityData.TryGetValue(ActivityPropertyName.Assembly, out var assemblyPath))
         {
             var assembly = Assembly.LoadFrom((string)assemblyPath);
 
             var entityCount = assembly.GetTypes().Count(t => typeof(IEntity).IsAssignableFrom(t) && !t.IsAbstract);
 
-            activityData.Add(ActivityPropertyNameConstants.EntityCount, entityCount);
+            activityData.Add(ActivityPropertyName.EntityCount, entityCount);
         }
 
         return Task.CompletedTask;

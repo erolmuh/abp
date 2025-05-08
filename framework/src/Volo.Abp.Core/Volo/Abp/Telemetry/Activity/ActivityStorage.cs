@@ -6,8 +6,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Telemetry.Shared;
 
 namespace Volo.Abp.Telemetry.Activity;
 

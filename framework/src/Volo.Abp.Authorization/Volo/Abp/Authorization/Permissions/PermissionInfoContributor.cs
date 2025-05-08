@@ -16,6 +16,6 @@ public class PermissionInfoContributor : ITelemetryApplicationInfoContributor
     public async Task ContributeAsync(ActivityData activityData)
     {
         var permissions = await _permissionDefinitionManager.GetPermissionsAsync();
-        activityData.Add(ActivityPropertyNameConstants.PermissionCount, permissions.Count);
+        activityData.Add(ActivityPropertyName.PermissionCount, permissions.Count);
     }
 }
