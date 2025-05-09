@@ -28,7 +28,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
     public async Task<List<ActivityData>> GetBufferedActivitiesAsync()
     {
         var state = await GetStateAsync();
-        return state.Activities;
+        return state.Activities.OrderBy(x => x.Time).ToList();
     }
 
     public async Task RemoveActivityAsync(string activityName, CancellationToken cancellationToken = default)

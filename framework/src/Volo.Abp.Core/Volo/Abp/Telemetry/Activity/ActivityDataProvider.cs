@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
@@ -35,7 +34,6 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
 
     public async Task AddDeviceInformationAsync(ActivityData activityData)
     {
-        activityData.Add(ActivityPropertyName.DeviceId, await _deviceInfoProvider.GetDeviceIdAsync());
         activityData.Add(ActivityPropertyName.DeviceType, _deviceInfoProvider.GetDeviceType());
         activityData.Add(ActivityPropertyName.DeviceLanguage, _deviceInfoProvider.GetLanguage());
         activityData.Add(ActivityPropertyName.OperatingSystem, _deviceInfoProvider.GetOperatingSystem());
@@ -60,20 +58,18 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
             return;
         }
 
-        var solutionPath = value as string;
-        if (string.IsNullOrEmpty(solutionPath) || !File.Exists(solutionPath))
+        var solutionPath = (string)value;
+        if (!File.Exists(solutionPath))
         {
             return;
         }
 
-        var solutionJson = await File.ReadAllTextAsync(solutionPath);
+        var solutionJson =  File.ReadAllText(solutionPath);
         using var solutionDoc = JsonDocument.Parse(solutionJson);
         var root = solutionDoc.RootElement;
-
-        if (!TryAddSolutionId(activityData, root, out var solutionId))
-        {
-            return;
-        }
+        var solutionId = GetSolutionId(root);
+       
+        activityData.Add(ActivityPropertyName.SolutionId, solutionId);
 
         if (root.TryGetProperty("creatingStudioConfiguration", out var config))
         {
@@ -84,22 +80,38 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
 
         if (root.TryGetProperty("modules", out var modulesElement) && modulesElement.ValueKind == JsonValueKind.Object)
         {
-            var modules = await ExtractModulesAsync(modulesElement);
+            var modules =  ExtractModulesAsync(modulesElement);
             activityData.Add(ActivityPropertyName.InstalledModules, modules);
         }
     }
 
-    private bool TryAddSolutionId(ActivityData activityData, JsonElement root, out Guid solutionId)
+    public async Task<Guid> ReadDeviceIdAsync()
     {
-        solutionId = Guid.Empty;
-        if (!root.TryGetProperty("id", out var idElement) ||
-            !Guid.TryParse(idElement.GetString(), out solutionId))
+        return await _deviceInfoProvider.GetDeviceIdAsync();
+    }
+
+    public Guid? ReadSolutionId(string solutionPath)
+    {
+        if (!File.Exists(solutionPath))
         {
-            return false;
+            return null;
+        }
+        var solutionJson =  File.ReadAllText(solutionPath);
+        using var solutionDoc = JsonDocument.Parse(solutionJson);
+        var root = solutionDoc.RootElement;
+
+        return GetSolutionId(root);
+    }
+
+    private Guid GetSolutionId(JsonElement root)
+    {
+        if (root.TryGetProperty("id", out var idElement) &&
+            Guid.TryParse(idElement.GetString(), out var solutionId))
+        {
+            return solutionId;
         }
 
-        activityData.Add(ActivityPropertyName.SolutionId, solutionId);
-        return true;
+        throw new Exception("Solution ID is not valid.");
     }
 
     private void AddCreatingStudioConfiguration(ActivityData activityData, JsonElement config)
@@ -133,7 +145,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         activityData.Add(ActivityPropertyName.SocialLogins, config.GetProperty("socialLogin").GetBoolean());
     }
 
-    private async Task<List<SolutionModuleInstallationInfo>> ExtractModulesAsync(JsonElement modulesElement)
+    private List<SolutionModuleInstallationInfo> ExtractModulesAsync(JsonElement modulesElement)
     {
         var modules = new List<SolutionModuleInstallationInfo>();
 
@@ -151,7 +163,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
                 continue;
             }
 
-            var moduleJson = await File.ReadAllTextAsync(path);
+            var moduleJson =  File.ReadAllText(path);
             using var moduleDoc = JsonDocument.Parse(moduleJson);
 
             if (!moduleDoc.RootElement.TryGetProperty("imports", out var importsElement) ||
@@ -283,9 +295,9 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
 
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        await using var stream = await httpClient.GetStreamAsync($"{AbpPlatformUrls.AbpIoUrl}api/license/api-key");
-        using var doc = await JsonDocument.ParseAsync(stream);
+        var json = await httpClient.GetStringAsync($"{AbpPlatformUrls.AbpIoUrl}api/license/api-key");
 
+        using var doc = JsonDocument.Parse(json);
         return doc.RootElement.GetProperty("licenseType").GetInt32();
     }
 }

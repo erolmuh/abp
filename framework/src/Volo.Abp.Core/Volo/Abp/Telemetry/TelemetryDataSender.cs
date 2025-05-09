@@ -15,9 +15,8 @@ using Volo.Abp.Telemetry.Shared;
 
 namespace Volo.Abp.Telemetry;
 
-public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
+public class TelemetryDataSender : ITelemetryDataSender, IScopedDependency
 {
-
     private readonly IActivityStorage _activityStorage;
     private readonly IActivityDataProvider _activityDataProvider;
     private const int ActivityBatchSize = 50;
@@ -37,12 +36,17 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
 
         if (activities.Count > 0)
         {
-            await AddExtraInformationAsync(activities[0]);
             for (var i = 0; i < activities.Count; i += ActivityBatchSize)
             {
                 var activityBatch = activities.Skip(i).Take(ActivityBatchSize).ToList();
 
-                await httpClient.PostAsync($"{AbpPlatformUrls.TelemetryApiUrl}api/telemetry/collect", new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
+                foreach (var activity in activityBatch)
+                {
+                    await AddExtraInformationAsync(activity);
+                }
+
+                await httpClient.PostAsync($"{AbpPlatformUrls.TelemetryApiUrl}api/telemetry/collect",
+                    new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
             }
 
             await _activityStorage.MarkActivitiesAsSentAsync();
@@ -58,13 +62,15 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
             activityData.Add(ActivityPropertyName.SessionId, sessionId);
             activityData.Add(ActivityPropertyName.IsFirstSession, isFirstSession);
 
+            activityData.Add(ActivityPropertyName.DeviceId, await _activityDataProvider.ReadDeviceIdAsync());
+
+
             var lastDeviceInfoSendTime = await _activityStorage.GetLastDeviceInfoSendTimeAsync();
 
             if (lastDeviceInfoSendTime is null || DateTimeOffset.UtcNow - lastDeviceInfoSendTime > TimeSpan.FromDays(7))
             {
                 await _activityDataProvider.AddDeviceInformationAsync(activityData);
                 await _activityStorage.MarkDeviceInfoAsSentAsync();
-                
             }
 
             if (activityData.ContainsKey(ActivityPropertyName.Assembly))
@@ -74,21 +80,20 @@ public class TelemetryDataSender : ITelemetryDataSender , IScopedDependency
 
             if (activityData.TryGetValue(ActivityPropertyName.SolutionPath, out var path))
             {
-                var solutionPath = path as string;
-                if (string.IsNullOrEmpty(solutionPath) || !File.Exists(solutionPath))
+                var id = _activityDataProvider.ReadSolutionId((string)path);
+                if (id.HasValue)
                 {
-                    return;
+                    activityData.Add(ActivityPropertyName.SolutionId, id);
+                    await _activityDataProvider.AddSolutionInformationAsync(activityData);
                 }
-
-                await _activityDataProvider.AddSolutionInformationAsync(activityData);
             }
-
         }
         catch
         {
             //ignored
         }
     }
+
     private static void AddAbpAuthenticationTokenAsync(HttpClient httpClient)
     {
         if (!File.Exists(AbpTelemetryPaths.AccessToken))

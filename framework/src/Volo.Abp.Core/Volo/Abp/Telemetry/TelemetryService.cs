@@ -58,7 +58,7 @@ public class TelemetryService :  ITelemetryService ,  IScopedDependency
             await _telemetryDataSender.SendAsync();
         }
         
-        if (lastActivitySendTime is not null && lastActivitySendTime > DateTimeOffset.UtcNow.AddDays(7) )
+        if (lastActivitySendTime is not null  && lastActivitySendTime < DateTimeOffset.UtcNow.AddDays(-1) )
         {
             await _telemetryDataSender.SendAsync();
         }
