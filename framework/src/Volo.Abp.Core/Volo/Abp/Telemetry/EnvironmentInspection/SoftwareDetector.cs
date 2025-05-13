@@ -6,12 +6,13 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection;
 
-abstract internal class SoftwareDetector : ISoftwareDetector , ISingletonDependency
+[ExposeServices(typeof(ISoftwareDetector))]
+public abstract class SoftwareDetector: ISoftwareDetector , ISingletonDependency
 {
     public abstract string Name { get; }
     public abstract Task<SoftwareInfo?> DetectAsync();
 
-    public virtual async Task<string?> ExecuteCommandAsync(string command, string? arg)
+    protected virtual async Task<string?> ExecuteCommandAsync(string command, string? arg)
     {
         var outputBuilder = new StringBuilder();
 
@@ -61,8 +62,8 @@ abstract internal class SoftwareDetector : ISoftwareDetector , ISingletonDepende
         var output = outputBuilder.ToString().Trim();
         return string.IsNullOrWhiteSpace(output) ? null : output;
     }
-    
-    public string? GetFileVersion(string filePath)
+
+    protected string? GetFileVersion(string filePath)
     {
         try
         {

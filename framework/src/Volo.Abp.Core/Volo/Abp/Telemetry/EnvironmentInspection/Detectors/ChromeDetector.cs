@@ -2,12 +2,13 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class ChromeDetector : SoftwareDetector, ISoftwareDetector
+public class ChromeDetector : SoftwareDetector
 {
     public override string Name => "Chrome";
 

@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Volo.Abp.DependencyInjection;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
-internal interface ISoftwareDetector : IScopedDependency
+public interface ISoftwareDetector 
 {
     string Name { get; }
     Task<SoftwareInfo?> DetectAsync();

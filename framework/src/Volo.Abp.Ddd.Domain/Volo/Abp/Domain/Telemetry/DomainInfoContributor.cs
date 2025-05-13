@@ -8,7 +8,8 @@ using Volo.Abp.Telemetry.Activity;
 
 namespace Volo.Abp.Domain.Telemetry;
 
-public class DomainInfoContributor : ITelemetryApplicationInfoContributor
+[ExposeServices(typeof(ITelemetryApplicationInfoContributor))]
+public class DomainInfoContributor : ITelemetryApplicationInfoContributor , ISingletonDependency
 {
     public Task ContributeAsync(ActivityData activityData)
     {
@@ -18,7 +19,7 @@ public class DomainInfoContributor : ITelemetryApplicationInfoContributor
 
             var entityCount = assembly.GetTypes().Count(t => typeof(IEntity).IsAssignableFrom(t) && !t.IsAbstract);
 
-            activityData.Add(ActivityPropertyName.EntityCount, entityCount);
+            activityData[ActivityPropertyName.EntityCount] =  entityCount;
         }
 
         return Task.CompletedTask;

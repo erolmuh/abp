@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Volo.Abp.Telemetry.Shared.Enums;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection;
+namespace Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
 public interface IDeviceInfoProvider 
 {
-    Task<Guid> GetDeviceIdAsync();
+    Guid GetDeviceId();
     OperationSystem GetOperatingSystem();
     DeviceType GetDeviceType();
     string GetLanguage(); 

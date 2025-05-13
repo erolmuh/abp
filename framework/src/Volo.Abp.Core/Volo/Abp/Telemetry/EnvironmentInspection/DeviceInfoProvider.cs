@@ -7,17 +7,28 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection;
 
-public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
+public class DeviceInfoProvider : IDeviceInfoProvider, ISingletonDependency
 {
-    public Task<Guid> GetDeviceIdAsync()
+    private readonly Lazy<Guid> _deviceId;
+
+    public DeviceInfoProvider()
     {
-        var  deviceId =  File.ReadAllText(AbpTelemetryPaths.ComputerId);
-        return Task.FromResult(deviceId.To<Guid>());
+        _deviceId = new Lazy<Guid>(() =>
+        {
+            var deviceIdText = File.ReadAllText(AbpTelemetryPaths.ComputerId);
+            return deviceIdText.To<Guid>();
+        });
+    }
+
+    public Guid GetDeviceId()
+    {
+        return _deviceId.Value;
     }
 
     public OperationSystem GetOperatingSystem()
@@ -72,7 +83,13 @@ public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
 
     public string GetCountry()
     {
-        var region = new RegionInfo(CultureInfo.CurrentUICulture.Name);
+        var culture = CultureInfo.CurrentUICulture;
+        if (culture.IsNeutralCulture)
+        {
+            culture = CultureInfo.CreateSpecificCulture(culture.Name);
+        }
+
+        var region = new RegionInfo(culture.Name);
         return region.TwoLetterISORegionName;
     }
 
@@ -99,7 +116,7 @@ public class DeviceInfoProvider : IDeviceInfoProvider , ISingletonDependency
     {
         try
         {
-            var type =  File.ReadAllText("/sys/class/dmi/id/chassis_type");
+            var type = File.ReadAllText("/sys/class/dmi/id/chassis_type");
             if (int.TryParse(type.Trim(), out var code) && code is 8 or 9 or 10 or 14)
             {
                 return DeviceType.Laptop;

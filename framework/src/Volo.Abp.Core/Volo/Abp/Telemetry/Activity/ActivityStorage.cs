@@ -13,10 +13,8 @@ namespace Volo.Abp.Telemetry.Activity;
 
 public class ActivityStorage : IActivityStorage, ISingletonDependency
 {
-     
     private ActivityStorageState? _cachedState;
 
-   
 
     public async Task BufferActivityAsync(ActivityData activityData)
     {
@@ -31,19 +29,14 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         return state.Activities.OrderBy(x => x.Time).ToList();
     }
 
-    public async Task RemoveActivityAsync(string activityName, CancellationToken cancellationToken = default)
+    public async Task EndSessionAsync()
     {
         var state = await GetStateAsync();
 
-        var existing = state.Activities
-            .FirstOrDefault(x => string.Equals(x.ActivityName, activityName, StringComparison.OrdinalIgnoreCase));
-
-        if (existing is not null)
-        {
-            state.Activities.Remove(existing);
-            await SaveAsync();
-        }
+        state.SessionId = null;
+        await SaveAsync();
     }
+
 
     public async Task MarkApplicationInfoAsSentAsync(Guid applicationId)
     {
@@ -69,11 +62,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         return state.ActivitySendTime;
     }
 
-    public async Task<Guid?> GetSessionIdAsync(CancellationToken cancellationToken = default)
-    {
-        var state = await GetStateAsync();
-        return state.SessionId ?? null;
-    }
+
 
     public async Task<(bool isFirstSession, Guid sessionId)> GetOrCreateSessionInfoAsync()
     {
@@ -84,21 +73,13 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         return (state.IsFirstSession.Value, state.SessionId.Value);
     }
 
-    public async Task SetSessionIdAsync(Guid sessionId, bool isFirstSession = false,
-        CancellationToken cancellationToken = default)
-    {
-        var state = await GetStateAsync();
-        state.SessionId = sessionId;
-        state.IsFirstSession = isFirstSession;
-        await SaveAsync();
-    }
-
     public async Task MarkActivitiesAsSentAsync()
     {
         var state = await GetStateAsync();
         state.ActivitySendTime = DateTimeOffset.UtcNow;
         state.Activities.Clear();
         state.SessionId = null;
+        state.IsFirstSession = false;
 
         await SaveAsync();
     }
@@ -161,7 +142,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         {
             try
             {
-                 using var stream = new FileStream(
+                using var stream = new FileStream(
                     AbpTelemetryPaths.ActivityStorage,
                     FileMode.OpenOrCreate,
                     FileAccess.ReadWrite,
@@ -184,13 +165,16 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         throw new IOException("Unable to acquire file lock for ActivityStorage.");
     }
 
-    private async Task SaveAsync()
+    private Task SaveAsync()
     {
-        var json = JsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(), new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
-         File.WriteAllText(AbpTelemetryPaths.ActivityStorage, json, Encoding.UTF8);
+        var json = JsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(),
+            new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+        File.WriteAllText(AbpTelemetryPaths.ActivityStorage, json, Encoding.UTF8);
+        return Task.CompletedTask;
     }
 
 
@@ -200,18 +184,16 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         {
             var directory = Path.GetDirectoryName(AbpTelemetryPaths.ActivityStorage);
 
-            if (!Directory.Exists(directory) && ! directory.IsNullOrEmpty())
+            if (!Directory.Exists(directory) && !directory.IsNullOrEmpty())
             {
                 Directory.CreateDirectory(directory);
             }
 
             if (!File.Exists(AbpTelemetryPaths.ActivityStorage))
             {
-                var json = JsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(), new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
-                 File.WriteAllText(AbpTelemetryPaths.ActivityStorage, json, Encoding.UTF8);
+                var json = JsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(),
+                    new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(AbpTelemetryPaths.ActivityStorage, json, Encoding.UTF8);
             }
         }
         catch

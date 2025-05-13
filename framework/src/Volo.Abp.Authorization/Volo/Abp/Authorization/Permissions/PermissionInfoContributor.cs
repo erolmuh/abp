@@ -1,10 +1,12 @@
 ﻿using System.Threading.Tasks;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry;
 using Volo.Abp.Telemetry.Activity;
 
 namespace Volo.Abp.Authorization.Permissions;
 
-public class PermissionInfoContributor : ITelemetryApplicationInfoContributor
+[ExposeServices(typeof(ITelemetryApplicationInfoContributor))]
+public class PermissionInfoContributor : ITelemetryApplicationInfoContributor, ISingletonDependency
 {
     private readonly IPermissionDefinitionManager _permissionDefinitionManager;
 
@@ -16,6 +18,6 @@ public class PermissionInfoContributor : ITelemetryApplicationInfoContributor
     public async Task ContributeAsync(ActivityData activityData)
     {
         var permissions = await _permissionDefinitionManager.GetPermissionsAsync();
-        activityData.Add(ActivityPropertyName.PermissionCount, permissions.Count);
+        activityData[ActivityPropertyName.PermissionCount] = permissions.Count;
     }
 }

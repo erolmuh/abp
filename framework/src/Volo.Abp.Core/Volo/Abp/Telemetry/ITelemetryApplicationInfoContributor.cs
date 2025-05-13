@@ -4,7 +4,7 @@ using Volo.Abp.Telemetry.Activity;
 
 namespace Volo.Abp.Telemetry;
 
-public interface ITelemetryApplicationInfoContributor : ISingletonDependency
+public interface ITelemetryApplicationInfoContributor
 {
     Task ContributeAsync(ActivityData activityData);
 }

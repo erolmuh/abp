@@ -40,4 +40,5 @@ public static class ActivityPropertyName
     public const string SolutionPath = nameof(SolutionPath);
     public const string Assembly = nameof(Assembly);
     public const string LicenseType = nameof(LicenseType);
+    public const string SessionType = nameof(SessionType);
 }

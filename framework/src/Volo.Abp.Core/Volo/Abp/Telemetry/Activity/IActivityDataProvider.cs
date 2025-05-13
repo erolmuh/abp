@@ -2,14 +2,12 @@
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.Activity;
 
 public interface IActivityDataProvider
 {
-    Task AddDeviceInformationAsync(ActivityData activityData);
-    Task AddApplicationInformation(ActivityData activityData);
-    Task AddSolutionInformationAsync(ActivityData activityData);
-    Task<Guid> ReadDeviceIdAsync();
-    Guid? ReadSolutionId(string solutionPath);
+    
+    Task AddExtraInformationAsync(ActivityData activity);
 }

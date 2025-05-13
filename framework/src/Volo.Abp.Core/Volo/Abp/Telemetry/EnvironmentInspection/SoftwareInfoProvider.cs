@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
@@ -15,7 +14,7 @@ internal class SoftwareInfoProvider : ISoftwareInfoProvider , ISingletonDependen
         _softwareDetectors = softwareDetectors;
     }
 
-    public async Task<List<SoftwareInfo>> GetSoftwareInfoAsync(CancellationToken cancellationToken = default)
+    public async Task<List<SoftwareInfo>> GetSoftwareInfoAsync()
     {
         var result = new List<SoftwareInfo>();
 

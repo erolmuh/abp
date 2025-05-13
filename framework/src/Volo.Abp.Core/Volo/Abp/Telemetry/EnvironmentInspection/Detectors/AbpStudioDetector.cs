@@ -2,13 +2,14 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class AbpStudioDetector : SoftwareDetector, ISoftwareDetector
+public class AbpStudioDetector : SoftwareDetector
 {
     public override string Name => "Abp Studio";
 

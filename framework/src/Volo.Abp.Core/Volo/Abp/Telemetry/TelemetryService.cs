@@ -11,11 +11,13 @@ public class TelemetryService :  ITelemetryService ,  IScopedDependency
 {
     private readonly IActivityStorage _activityStorage;
     private readonly ITelemetryDataSender _telemetryDataSender;
+    private readonly IActivityDataProvider _activityDataProvider;
 
-    public TelemetryService(IActivityStorage activityStorage, ITelemetryDataSender telemetryDataSender)
+    public TelemetryService(IActivityStorage activityStorage, ITelemetryDataSender telemetryDataSender, IActivityDataProvider activityDataProvider)
     {
         _activityStorage = activityStorage;
         _telemetryDataSender = telemetryDataSender;
+        _activityDataProvider = activityDataProvider;
     }
 
     public IAsyncDisposable TrackActivity(string activityName, Action<ActivityData>? configure = null)
@@ -53,22 +55,40 @@ public class TelemetryService :  ITelemetryService ,  IScopedDependency
     private async Task CheckIfActivitySendTimeIsDueAsync()
     {
         var lastActivitySendTime = await _activityStorage.GetLastActivitySendTimeAsync();
-        if (lastActivitySendTime is null)
-        {
-            await _telemetryDataSender.SendAsync();
-        }
+        // if (lastActivitySendTime is null)
+        // {
+        //     await _telemetryDataSender.SendAsync();
+        // }
         
         if (lastActivitySendTime is not null  && lastActivitySendTime < DateTimeOffset.UtcNow.AddDays(-1) )
         {
             await _telemetryDataSender.SendAsync();
         }
     }
-    public async Task AddActivityAsync(ActivityData data)
+    public Task AddActivityAsync(ActivityData data)
     {
-       
-        await _activityStorage.BufferActivityAsync(data);
 
-        await CheckIfActivitySendTimeIsDueAsync();
+        Task.Run(async () =>
+        {
+            try
+            {
+                await _activityDataProvider.AddExtraInformationAsync(data);
+                await _activityStorage.BufferActivityAsync(data);
+                await CheckIfActivitySendTimeIsDueAsync();
+
+                if (data.ActivityName == ActivityNameConsts.AbpStudioClose)
+                {
+                    await _activityStorage.EndSessionAsync();
+                }
+            }
+            catch
+            {
+               
+            }
+        });
+
+
+        return Task.CompletedTask;
     }
 
     public async Task AddActivityAsync(string activityName, string? details = null)

@@ -4,10 +4,12 @@ using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Modularity;
 using Volo.Abp.Telemetry.Activity;
+using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry;
 
-public class ModuleInfoContributor : ITelemetryApplicationInfoContributor
+[ExposeServices(typeof(ITelemetryApplicationInfoContributor))]
+public class ModuleInfoContributor : ITelemetryApplicationInfoContributor, ISingletonDependency
 {
     public Task ContributeAsync(ActivityData activityData)
     {
@@ -18,10 +20,20 @@ public class ModuleInfoContributor : ITelemetryApplicationInfoContributor
             var moduleCount = types.Count(t => typeof(AbpModule).IsAssignableFrom(t) && !t.IsAbstract);
             var projectCount = types.Select(t => t.Assembly.GetName().Name).Distinct().Count();
 
-            activityData.Add(ActivityPropertyName.ModuleCount, moduleCount);
-            activityData.Add(ActivityPropertyName.ProjectCount, projectCount);
+            activityData[ActivityPropertyName.ModuleCount] =  moduleCount;
+            activityData[ActivityPropertyName.ProjectCount] = projectCount;
         }
 
         return Task.CompletedTask;
     }
+}
+
+public interface ITelemetrySessionTypeProvider
+{
+    public SessionType SessionType { get;  }
+}
+
+public class ApplicationRuntimeSessionTypeProvider : ITelemetrySessionTypeProvider, ISingletonDependency
+{
+    public SessionType SessionType => SessionType.ApplicationRuntime;
 }
