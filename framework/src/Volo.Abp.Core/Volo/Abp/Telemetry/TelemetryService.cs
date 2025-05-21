@@ -95,4 +95,16 @@ public class TelemetryService :  ITelemetryService ,  IScopedDependency
     {
         await AddActivityAsync(new ActivityData(activityName, details));
     }
+
+    public async Task AddActivityAsync(string activityName, Action<ActivityData> configure)
+    {
+        var activityData = new ActivityData(activityName)
+        {
+            Time = DateTimeOffset.UtcNow
+        };
+
+        configure?.Invoke(activityData);
+
+        await AddActivityAsync(activityData);
+    }
 }

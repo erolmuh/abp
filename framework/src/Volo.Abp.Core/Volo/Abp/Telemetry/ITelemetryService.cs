@@ -11,4 +11,5 @@ public interface ITelemetryService
     IAsyncDisposable TrackActivity(ActivityData activityData);
     Task AddActivityAsync(ActivityData data);
     Task AddActivityAsync(string activityName, string? details = null);
+    Task AddActivityAsync(string activityName, Action<ActivityData> configure);
 }

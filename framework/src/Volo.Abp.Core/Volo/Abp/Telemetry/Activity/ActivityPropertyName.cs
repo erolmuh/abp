@@ -3,6 +3,10 @@
 public static class ActivityPropertyName
 {
     public const string SessionId =  nameof(SessionId);
+    public const string Id =  nameof(Id);
+    public const string UserId =  nameof(UserId);
+    public const string OrganizationId =  nameof(OrganizationId);
+    public const string IpAddress =  nameof(IpAddress);
     public const string IsFirstSession = nameof(IsFirstSession);
     public const string DeviceId = nameof(DeviceId);
     public const string DeviceType = nameof(DeviceType);
@@ -41,4 +45,32 @@ public static class ActivityPropertyName
     public const string Assembly = nameof(Assembly);
     public const string LicenseType = nameof(LicenseType);
     public const string SessionType = nameof(SessionType);
+    public const string HasError = nameof(HasError);
+    public const string ActivityDuration = nameof(ActivityDuration);
+    public const string ActivityDetails = nameof(ActivityDetails);
+    public const string ApplicationId = nameof(ApplicationId);
+    public const string Time = nameof(Time);
+    public const string SoftwareName = nameof(SoftwareName);
+    public const string SoftwareVersion = nameof(SoftwareVersion);
+    public const string SoftwareUiTheme = nameof(SoftwareUiTheme);
+    public const string SoftwareType = nameof(SoftwareType);
+    public const string UserDeviceId = nameof(UserDeviceId);
+    public const string SolutionTemplate = nameof(SolutionTemplate);
+    public const string WebFramework = nameof(WebFramework);
+    public const string Dbms = nameof(Dbms);
+    public const string UiTheme = nameof(UiTheme);
+    public const string UiThemeStyle = nameof(UiThemeStyle);
+    public const string MobileApp = nameof(MobileApp);
+    public const string IsMultiTenant = nameof(IsMultiTenant);
+    public const string SampleCrudPage = nameof(SampleCrudPage);
+    public const string FirstAbpVersion = nameof(FirstAbpVersion);
+    public const string FirstDotnetVersion = nameof(FirstDotnetVersion);
+    public const string CreationTool = nameof(CreationTool);
+    public const string Applications = nameof(Applications);
+    public const string ModuleName = nameof(ModuleName);
+    public const string ModuleVersion = nameof(ModuleVersion);
+    public const string ModuleInstallationTime = nameof(ModuleInstallationTime);
+    public const string ApplicationType = nameof(ApplicationType);
+    public const string AbpModuleCount = nameof(AbpModuleCount);
+
 }

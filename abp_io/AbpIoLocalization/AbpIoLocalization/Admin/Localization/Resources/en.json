@@ -717,6 +717,7 @@
     "IncludePrereleaseInfo": "Gets or sets whether to include prerelease versions in the cache",
     "CacheVersionCount": "Cache Version Count",
     "CacheVersionCountInfo": "Gets or sets the number of versions to cache",
-    "CacheLatestVersionsInfo": "This caches the latest versions of the NuGet packages"
+    "CacheLatestVersionsInfo": "This caches the latest versions of the NuGet packages",
+    "Menu:TelemetryReports" : "Telemetry Reports"
   }
 }

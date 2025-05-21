@@ -128,7 +128,10 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         {
             using var reader = new StreamReader(stream, Encoding.UTF8);
             var json = await reader.ReadToEndAsync();
-            return JsonSerializer.Deserialize<ActivityStorageState?>(json) ?? new ActivityStorageState();
+            return JsonSerializer.Deserialize<ActivityStorageState?>(json, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            }) ?? new ActivityStorageState();
         });
         return _cachedState;
     }
@@ -178,7 +181,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
     }
 
 
-    private async Task EnsureFileExistsAsync()
+    private Task EnsureFileExistsAsync()
     {
         try
         {
@@ -192,7 +195,11 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
             if (!File.Exists(AbpTelemetryPaths.ActivityStorage))
             {
                 var json = JsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(),
-                    new JsonSerializerOptions { WriteIndented = true });
+                    new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        WriteIndented = true
+                    });
                 File.WriteAllText(AbpTelemetryPaths.ActivityStorage, json, Encoding.UTF8);
             }
         }
@@ -200,5 +207,20 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         {
             //ignored
         }
+
+        return Task.CompletedTask;
+    }
+    
+    
+    public virtual async Task<bool> ShouldAddDeviceInfoAsync()
+    {
+        var lastSend = await GetLastDeviceInfoSendTimeAsync();
+        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
+    }
+
+    public virtual async Task<bool> ShouldAddSolutionInformation(Guid solutionId)
+    {
+        var lastSend = await GetLastSolutionInfoSendTimeAsync(solutionId);
+        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
     }
 }
