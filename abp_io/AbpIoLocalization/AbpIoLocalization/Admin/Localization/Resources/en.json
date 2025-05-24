@@ -729,6 +729,20 @@
     "TelemetryReports:MaxLaunchCount": "Max Launch",
     "TelemetryReports:MinDurationSeconds": "Min Seconds",
     "TelemetryReports:FeatureNamePlaceholder": "Feature",
-    "TelemetryReports:IncludeAverage": "Avg/User"
+    "TelemetryReports:IncludeAverage": "Avg/User",
+    "TelemetryReports:Year": "Year",
+    "TelemetryReports:ChartTitles:Daily": "Daily Studio Opens",
+    "TelemetryReports:ChartTitles:Monthly": "Monthly Studio Opens",
+    "TelemetryReports:ChartTitles:AverageDuration": "Daily Average Usage Duration",
+    "TelemetryReports:ChartTitles:Frequency": "Studio Usage Frequency",
+    "TelemetryReports:ChartTitles:FeatureUsage": "Feature Usage Stats",
+    "TelemetryReports:ChartLabels:AverageUsage": "Average Usage",
+    "TelemetryReports:ChartLabels:MinutesPerDay": "Minutes Per Day",
+    "TelemetryReports:ChartLabels:FirstTime": "First Time",
+    "TelemetryReports:ChartLabels:Returning": "Returning",
+    "TelemetryReports:ChartLabels:UserCount": "User Count",
+    "TelemetryReports:ChartLabels:AvgDailyUsageSec": "Avg. Daily Usage (sec)",
+    "TelemetryReports:ChartLabels:UniqueUsers": "Unique Users",
+    "TelemetryReports:ChartLabels:Total": "Total"
   }
 }
