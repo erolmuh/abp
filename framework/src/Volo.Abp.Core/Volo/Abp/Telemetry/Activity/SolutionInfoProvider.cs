@@ -58,27 +58,25 @@ public class SolutionInfoProvider : ISolutionInfoProvider , ISingletonDependency
 
     protected virtual void AddCreatingStudioConfiguration(Dictionary<string,object> dict, JsonElement config)
     {
-        try
-        {
             var mappings = new Dictionary<string, Action<JsonElement>>
             {
                 { "template", value => dict[ActivityPropertyName.Template] = MapSolutionTemplate(value.GetString()) },
                 { "createdAbpStudioVersion", value => dict[ActivityPropertyName.CreatedAbpStudioVersion] = value.GetString()! },
-                { "tiered", value => dict[ActivityPropertyName.IsTiered] = ParseBool(value) },
+                { "multiTenancy", value => dict[ActivityPropertyName.MultiTenancy] = ParseBool(value) },
                 { "uiFramework", value => dict[ActivityPropertyName.UiFramework] = MapUiFramework(value.GetString()) },
                 { "databaseProvider", value => dict[ActivityPropertyName.DatabaseProvider] = MapDatabaseProvider(value.GetString()) },
-                { "databaseManagementSystem", value => dict[ActivityPropertyName.DatabaseManagementSystem] = MapDbms(value.GetString()) },
-                { "separateTenantSchema", value => dict[ActivityPropertyName.IsSeparateTenantSchema] = ParseBool(value) },
                 { "theme", value => dict[ActivityPropertyName.Theme] = MapUiTheme(value.GetString()) },
                 { "themeStyle", value => dict[ActivityPropertyName.ThemeStyle] = MapUiThemeStyle(value.GetString()) },
-                { "mobileFramework", value => dict[ActivityPropertyName.MobileFramework] = MapMobileApp(value.GetString()) },
                 { "publicWebsite", value => dict[ActivityPropertyName.HasPublicWebsite] = ParseBool(value) },
+                { "tiered", value => dict[ActivityPropertyName.IsTiered] = ParseBool(value) },
+                { "socialLogin", value => dict[ActivityPropertyName.SocialLogins] = ParseBool(value) },
+                { "databaseManagementSystem", value => dict[ActivityPropertyName.DatabaseManagementSystem] = MapDbms(value.GetString()) },
+                { "separateTenantSchema", value => dict[ActivityPropertyName.IsSeparateTenantSchema] = ParseBool(value) },
+                { "mobileFramework", value => dict[ActivityPropertyName.MobileFramework] = MapMobileApp(value.GetString()) },
                 { "includeTests", value => dict[ActivityPropertyName.IncludeTests] = ParseBool(value) },
-                { "multiTenancy", value => dict[ActivityPropertyName.MultiTenancy] = ParseBool(value) },
                 { "dynamicLocalization", value => dict[ActivityPropertyName.DynamicLocalization] = ParseBool(value) },
                 { "kubernetesConfiguration", value => dict[ActivityPropertyName.KubernetesConfiguration] = ParseBool(value) },
                 { "grafanaDashboard", value => dict[ActivityPropertyName.GrafanaDashboard] = ParseBool(value) },
-                { "socialLogin", value => dict[ActivityPropertyName.SocialLogins] = ParseBool(value) }
             };
             foreach (var mapping in mappings)
             {
@@ -89,16 +87,11 @@ public class SolutionInfoProvider : ISolutionInfoProvider , ISingletonDependency
                         mapping.Value(propertyValue);
                     }
                 }
-                catch (Exception e)
+                catch
                 {
-                    Console.WriteLine(e);
+                    // ignored
                 }
             }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
     }
 
     private static bool ParseBool(JsonElement element) =>

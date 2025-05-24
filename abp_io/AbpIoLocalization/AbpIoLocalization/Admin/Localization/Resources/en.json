@@ -718,6 +718,17 @@
     "CacheVersionCount": "Cache Version Count",
     "CacheVersionCountInfo": "Gets or sets the number of versions to cache",
     "CacheLatestVersionsInfo": "This caches the latest versions of the NuGet packages",
-    "Menu:TelemetryReports" : "Telemetry Reports"
+    "Menu:TelemetryReports" : "Telemetry Reports",
+    "TelemetryReports:DailyStudioOpen": "Daily Studio Opens",
+    "TelemetryReports:MonthlyStudioOpen": "Monthly Studio Opens",
+    "TelemetryReports:AverageDailyUsage": "Average Daily Usage",
+    "TelemetryReports:UsageFrequency": "Usage Frequency",
+    "TelemetryReports:FeatureUsage": "Feature Usage",
+    "TelemetryReports:Load": "Load",
+    "TelemetryReports:MinLaunchCount": "Min Launch",
+    "TelemetryReports:MaxLaunchCount": "Max Launch",
+    "TelemetryReports:MinDurationSeconds": "Min Seconds",
+    "TelemetryReports:FeatureNamePlaceholder": "Feature",
+    "TelemetryReports:IncludeAverage": "Avg/User"
   }
 }
