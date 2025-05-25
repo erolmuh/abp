@@ -22,7 +22,7 @@
     "Permission:Accounting": "Accounting",
     "Permission:Accounting:Quotation": "Quotation",
     "Permission:Accounting:Invoice": "Invoice",
-    "Permission:Export" : "Export",
+    "Permission:Export": "Export",
     "Menu:Organizations": "Organizations",
     "Menu:Accounting": "Accounting",
     "Menu:Packages": "Packages",
@@ -691,7 +691,7 @@
     "Permission:Licenses": "License Settings",
     "BlockUserPolicy": "User Block Policies",
     "Permission:BlockUserPolicy": "User Block Policy",
-    "ManageImages" : "Manage Image",
+    "ManageImages": "Manage Image",
     "ModuleMainImage": "Module Main Image",
     "ModuleImageInfo1": "Accepted file types : <strong> JPEG, JPG, PNG, SVG </strong>",
     "ModuleImageInfo2": "Max file size : <strong> 1 MB </strong>",
@@ -718,7 +718,7 @@
     "CacheVersionCount": "Cache Version Count",
     "CacheVersionCountInfo": "Gets or sets the number of versions to cache",
     "CacheLatestVersionsInfo": "This caches the latest versions of the NuGet packages",
-    "Menu:TelemetryReports" : "Telemetry Reports",
+    "Menu:TelemetryReports": "Telemetry Reports",
     "TelemetryReports:DailyStudioOpen": "Daily Studio Opens",
     "TelemetryReports:MonthlyStudioOpen": "Monthly Studio Opens",
     "TelemetryReports:AverageDailyUsage": "Average Daily Usage",
@@ -743,6 +743,8 @@
     "TelemetryReports:ChartLabels:UserCount": "User Count",
     "TelemetryReports:ChartLabels:AvgDailyUsageSec": "Avg. Daily Usage (sec)",
     "TelemetryReports:ChartLabels:UniqueUsers": "Unique Users",
-    "TelemetryReports:ChartLabels:Total": "Total"
+    "TelemetryReports:ChartLabels:Total": "Total",
+    "TelemetryReports:ChartLabels:Daily": "Daily",
+    "TelemetryReports:ChartLabels:Monthly": "Monthly"
   }
 }
