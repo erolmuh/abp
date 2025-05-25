@@ -728,7 +728,7 @@
     "TelemetryReports:MinLaunchCount": "Min Launch",
     "TelemetryReports:MaxLaunchCount": "Max Launch",
     "TelemetryReports:MinDurationSeconds": "Min Seconds",
-    "TelemetryReports:FeatureNamePlaceholder": "Feature",
+    "TelemetryReports:ActivityName": "Activity",
     "TelemetryReports:IncludeAverage": "Avg/User",
     "TelemetryReports:Year": "Year",
     "TelemetryReports:ChartTitles:Daily": "Daily Studio Opens",
