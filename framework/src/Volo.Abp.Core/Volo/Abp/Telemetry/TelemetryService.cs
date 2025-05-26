@@ -5,22 +5,22 @@ using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity;
 using Volo.Abp.Telemetry.Activity.Contracts;
-using Volo.Abp.Telemetry.Shared;
+using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry;
 
 public class TelemetryService : ITelemetryService, IScopedDependency
 {
-    private readonly IActivityStorage _activityStorage;
+    private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private readonly ITelemetryDataSender _telemetryDataSender;
-    private readonly IActivityDataProvider _activityDataProvider;
+    private readonly ITelemetryActivityDataProvider _telemetryActivityDataProvider;
 
-    public TelemetryService(IActivityStorage activityStorage, ITelemetryDataSender telemetryDataSender,
-        IActivityDataProvider activityDataProvider)
+    public TelemetryService(ITelemetryActivityStorage telemetryActivityStorage, ITelemetryDataSender telemetryDataSender,
+        ITelemetryActivityDataProvider telemetryActivityDataProvider)
     {
-        _activityStorage = activityStorage;
+        _telemetryActivityStorage = telemetryActivityStorage;
         _telemetryDataSender = telemetryDataSender;
-        _activityDataProvider = activityDataProvider;
+        _telemetryActivityDataProvider = telemetryActivityDataProvider;
     }
 
     public IAsyncDisposable TrackActivity(string activityName, Action<ActivityData>? configure = null)
@@ -54,11 +54,7 @@ public class TelemetryService : ITelemetryService, IScopedDependency
 
     private async Task CheckIfActivitySendTimeIsDueAsync()
     {
-        var lastActivitySendTime = await _activityStorage.GetLastActivitySendTimeAsync();
-        // if (lastActivitySendTime is null)
-        // {
-        //     await _telemetryDataSender.SendAsync();
-        // }
+        var lastActivitySendTime = await _telemetryActivityStorage.GetLastActivitySendTimeAsync();
 
         if (lastActivitySendTime is not null && lastActivitySendTime < DateTimeOffset.UtcNow.AddDays(-1))
         {
@@ -70,13 +66,13 @@ public class TelemetryService : ITelemetryService, IScopedDependency
     {
         try
         {
-            await _activityDataProvider.AddExtraInformationAsync(data);
-            await _activityStorage.BufferActivityAsync(data);
+            await _telemetryActivityDataProvider.AddExtraInformationAsync(data);
+            await _telemetryActivityStorage.BufferActivityAsync(data);
             await CheckIfActivitySendTimeIsDueAsync();
 
             if (data.ActivityName == ActivityNameConsts.AbpStudioClose)
             {
-                await _activityStorage.EndSessionAsync();
+                await _telemetryActivityStorage.EndSessionAsync();
             }
         }
         catch

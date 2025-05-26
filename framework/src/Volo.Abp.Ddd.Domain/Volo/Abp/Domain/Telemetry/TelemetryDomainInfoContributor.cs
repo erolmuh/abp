@@ -5,12 +5,12 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Telemetry;
 using Volo.Abp.Telemetry.Activity;
-using Volo.Abp.Telemetry.Shared;
+using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Domain.Telemetry;
 
 [ExposeServices(typeof(ITelemetryApplicationInfoContributor))]
-public class DomainInfoContributor : ITelemetryApplicationInfoContributor , ISingletonDependency
+public class TelemetryDomainInfoContributor : ITelemetryApplicationInfoContributor , ISingletonDependency
 {
     public Task ContributeAsync(ActivityData activityData)
     {

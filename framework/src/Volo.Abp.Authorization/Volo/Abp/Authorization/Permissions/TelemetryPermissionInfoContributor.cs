@@ -2,16 +2,16 @@
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry;
 using Volo.Abp.Telemetry.Activity;
-using Volo.Abp.Telemetry.Shared;
+using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Authorization.Permissions;
 
 [ExposeServices(typeof(ITelemetryApplicationInfoContributor))]
-public class PermissionInfoContributor : ITelemetryApplicationInfoContributor, ISingletonDependency
+public class TelemetryPermissionInfoContributor : ITelemetryApplicationInfoContributor, ISingletonDependency
 {
     private readonly IPermissionDefinitionManager _permissionDefinitionManager;
 
-    public PermissionInfoContributor(IPermissionDefinitionManager permissionDefinitionManager)
+    public TelemetryPermissionInfoContributor(IPermissionDefinitionManager permissionDefinitionManager)
     {
         _permissionDefinitionManager = permissionDefinitionManager;
     }

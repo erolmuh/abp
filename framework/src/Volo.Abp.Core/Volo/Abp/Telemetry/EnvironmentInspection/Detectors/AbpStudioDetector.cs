@@ -2,10 +2,10 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Volo.Abp.Telemetry.Constants;
+using Volo.Abp.Telemetry.Constants.Enums;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.EnvironmentInspection.Core;
-using Volo.Abp.Telemetry.Shared;
-using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
@@ -31,7 +31,7 @@ internal class AbpStudioDetector : SoftwareDetector
     private string? GetAbpStudioUiTheme()
     {
         var ideStateJsonPath = Path.Combine(
-            AbpTelemetryPaths.Studio,
+            TelemetryPaths.Studio,
             "ui",
             "ide-state.json"
         );
@@ -48,7 +48,7 @@ internal class AbpStudioDetector : SoftwareDetector
 
     private string? GetAbpStudioVersion()
     {
-        var extensionsFilePath = Path.Combine(AbpTelemetryPaths.Studio, "extensions.json");
+        var extensionsFilePath = Path.Combine(TelemetryPaths.Studio, "extensions.json");
 
         if (!File.Exists(extensionsFilePath))
         {

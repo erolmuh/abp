@@ -1,5 +1,5 @@
 ﻿using System;
-using Volo.Abp.Telemetry.Shared.Enums;
+using Volo.Abp.Telemetry.Constants.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 

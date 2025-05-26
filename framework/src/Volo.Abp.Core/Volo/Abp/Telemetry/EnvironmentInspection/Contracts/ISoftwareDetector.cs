@@ -2,7 +2,7 @@
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
-public interface ISoftwareDetector 
+internal interface ISoftwareDetector 
 {
     string Name { get; }
     Task<SoftwareInfo?> DetectAsync();

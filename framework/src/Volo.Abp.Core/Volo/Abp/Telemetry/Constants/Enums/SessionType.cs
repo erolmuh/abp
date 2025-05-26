@@ -1,4 +1,4 @@
-namespace Volo.Abp.Telemetry.Shared.Enums;
+namespace Volo.Abp.Telemetry.Constants.Enums;
 
 public enum SessionType
 {

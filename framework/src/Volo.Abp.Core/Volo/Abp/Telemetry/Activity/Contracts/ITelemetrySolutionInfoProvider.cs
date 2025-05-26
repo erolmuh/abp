@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Volo.Abp.Telemetry.Activity;
+namespace Volo.Abp.Telemetry.Activity.Contracts;
 
-public interface ISolutionInfoProvider
+public interface ITelemetrySolutionInfoProvider
 {
     Task<IDictionary<string, object>> GetSolutionInfoAsync(string solutionPath);
     

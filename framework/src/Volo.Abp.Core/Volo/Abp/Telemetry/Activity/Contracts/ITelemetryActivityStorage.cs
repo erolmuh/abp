@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Volo.Abp.Telemetry.Activity.Contracts;
 
-public interface IActivityStorage
+public interface ITelemetryActivityStorage
 {
     Task<DateTimeOffset?> GetLastActivitySendTimeAsync();
     Task<(bool isFirstSession, Guid sessionId)> GetOrCreateSessionInfoAsync();

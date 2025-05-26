@@ -7,7 +7,7 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Core;
 
 [ExposeServices(typeof(ISoftwareDetector))]
-public abstract class SoftwareDetector: ISoftwareDetector , ISingletonDependency
+abstract internal class SoftwareDetector: ISoftwareDetector , ISingletonDependency
 {
     public abstract string Name { get; }
     public abstract Task<SoftwareInfo?> DetectAsync();

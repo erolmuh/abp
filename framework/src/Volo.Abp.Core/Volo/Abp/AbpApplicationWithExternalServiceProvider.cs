@@ -6,8 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.Telemetry;
+using Volo.Abp.Telemetry.Constants;
 using Volo.Abp.Telemetry.Helpers;
-using Volo.Abp.Telemetry.Shared;
 
 namespace Volo.Abp;
 
@@ -67,20 +67,21 @@ internal class AbpApplicationWithExternalServiceProvider : AbpApplicationBase, I
     }
     private void ConfigureTelemetry(IServiceProvider serviceProvider)
     {
+        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+        if (configuration.GetValue<bool>("Abp:Telemetry:Disable"))
+        {
+            return;
+        }
+        
         Task.Run(async () =>
         {
             try
             {
                 using var scope = serviceProvider.CreateScope();
-                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-                if (configuration.GetValue<bool>("Abp:Telemetry:Disable"))
-                {
-                    return;
-                }
 
                 var assembly = Assembly.GetEntryAssembly()!;
 
-                var packageMetadata = AbpPackageMetadataHelper.GetMetaData(assembly);
+                var packageMetadata = AbpPackageMetadataReader.GetMetaData(assembly);
 
                 if (packageMetadata != null)
                 {

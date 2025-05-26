@@ -3,12 +3,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+#if WINDOWS
 using System.Management;
+#endif
 using System.Runtime.InteropServices;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Telemetry.Constants;
+using Volo.Abp.Telemetry.Constants.Enums;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
-using Volo.Abp.Telemetry.Shared;
-using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Providers;
 
@@ -20,7 +22,7 @@ public class DeviceInfoProvider : IDeviceInfoProvider, ISingletonDependency
     {
         _deviceId = new Lazy<Guid>(() =>
         {
-            var deviceIdText = File.ReadAllText(AbpTelemetryPaths.ComputerId);
+            var deviceIdText = File.ReadAllText(TelemetryPaths.ComputerId);
             return deviceIdText.To<Guid>();
         });
     }

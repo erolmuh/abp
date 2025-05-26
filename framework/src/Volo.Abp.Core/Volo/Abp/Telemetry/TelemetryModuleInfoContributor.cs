@@ -4,13 +4,12 @@ using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Modularity;
 using Volo.Abp.Telemetry.Activity;
-using Volo.Abp.Telemetry.Shared;
-using Volo.Abp.Telemetry.Shared.Enums;
+using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry;
 
 [ExposeServices(typeof(ITelemetryApplicationInfoContributor))]
-public class ModuleInfoContributor : ITelemetryApplicationInfoContributor, ISingletonDependency
+public class TelemetryModuleInfoContributor : ITelemetryApplicationInfoContributor, ISingletonDependency
 {
     public Task ContributeAsync(ActivityData activityData)
     {
@@ -27,14 +26,4 @@ public class ModuleInfoContributor : ITelemetryApplicationInfoContributor, ISing
 
         return Task.CompletedTask;
     }
-}
-
-public interface ITelemetrySessionTypeProvider
-{
-    public SessionType SessionType { get;  }
-}
-
-public class ApplicationRuntimeSessionTypeProvider : ITelemetrySessionTypeProvider, ISingletonDependency
-{
-    public SessionType SessionType => SessionType.ApplicationRuntime;
 }

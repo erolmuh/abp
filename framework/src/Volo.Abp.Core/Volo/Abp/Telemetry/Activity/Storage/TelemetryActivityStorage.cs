@@ -7,14 +7,13 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity.Contracts;
-using Volo.Abp.Telemetry.Shared;
+using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry.Activity.Storage;
 
-public class ActivityStorage : IActivityStorage, ISingletonDependency
+public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDependency
 {
-    private ActivityStorageState? _cachedState;
-
+    private TelemetryActivityStorageState? _cachedState;
 
     public async Task BufferActivityAsync(ActivityData activityData)
     {
@@ -116,7 +115,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         await SaveAsync();
     }
 
-    private async Task<ActivityStorageState> GetStateAsync()
+    private async Task<TelemetryActivityStorageState> GetStateAsync()
     {
         if (_cachedState != null)
         {
@@ -128,10 +127,10 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
         {
             using var reader = new StreamReader(stream, Encoding.UTF8);
             var json = await reader.ReadToEndAsync();
-            return JsonSerializer.Deserialize<ActivityStorageState?>(json, new JsonSerializerOptions
+            return JsonSerializer.Deserialize<TelemetryActivityStorageState?>(json, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }) ?? new ActivityStorageState();
+            }) ?? new TelemetryActivityStorageState();
         });
         return _cachedState;
     }
@@ -146,7 +145,7 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
             try
             {
                 using var stream = new FileStream(
-                    AbpTelemetryPaths.ActivityStorage,
+                    TelemetryPaths.ActivityStorage,
                     FileMode.OpenOrCreate,
                     FileAccess.ReadWrite,
                     FileShare.None
@@ -170,13 +169,13 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
 
     private Task SaveAsync()
     {
-        var json = JsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(),
+        var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(),
             new JsonSerializerOptions
             {
                 WriteIndented = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
-        File.WriteAllText(AbpTelemetryPaths.ActivityStorage, json, Encoding.UTF8);
+        File.WriteAllText(TelemetryPaths.ActivityStorage, json, Encoding.UTF8);
         return Task.CompletedTask;
     }
 
@@ -185,22 +184,22 @@ public class ActivityStorage : IActivityStorage, ISingletonDependency
     {
         try
         {
-            var directory = Path.GetDirectoryName(AbpTelemetryPaths.ActivityStorage);
+            var directory = Path.GetDirectoryName(TelemetryPaths.ActivityStorage);
 
             if (!Directory.Exists(directory) && !directory.IsNullOrEmpty())
             {
                 Directory.CreateDirectory(directory);
             }
 
-            if (!File.Exists(AbpTelemetryPaths.ActivityStorage))
+            if (!File.Exists(TelemetryPaths.ActivityStorage))
             {
-                var json = JsonSerializer.Serialize(_cachedState ?? new ActivityStorageState(),
+                var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(),
                     new JsonSerializerOptions
                     {
                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                         WriteIndented = true
                     });
-                File.WriteAllText(AbpTelemetryPaths.ActivityStorage, json, Encoding.UTF8);
+                File.WriteAllText(TelemetryPaths.ActivityStorage, json, Encoding.UTF8);
             }
         }
         catch

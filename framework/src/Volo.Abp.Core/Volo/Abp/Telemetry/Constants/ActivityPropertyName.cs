@@ -1,4 +1,4 @@
-﻿namespace Volo.Abp.Telemetry.Shared;
+﻿namespace Volo.Abp.Telemetry.Constants;
 
 public static class ActivityPropertyName
 {

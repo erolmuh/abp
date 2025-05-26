@@ -7,20 +7,19 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Telemetry.Activity;
 using Volo.Abp.Telemetry.Activity.Contracts;
-using Volo.Abp.Telemetry.Shared;
+using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry;
 
 public class TelemetryDataSender : ITelemetryDataSender, IScopedDependency
 {
-    private readonly IActivityStorage _activityStorage;
+    private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private const int ActivityBatchSize = 50;
 
-    public TelemetryDataSender(IActivityStorage activityStorage)
+    public TelemetryDataSender(ITelemetryActivityStorage telemetryActivityStorage)
     {
-        _activityStorage = activityStorage;
+        _telemetryActivityStorage = telemetryActivityStorage;
     }
 
     public async Task SendAsync()
@@ -30,7 +29,7 @@ public class TelemetryDataSender : ITelemetryDataSender, IScopedDependency
             using var httpClient = new HttpClient();
             AddAbpAuthenticationTokenAsync(httpClient);
 
-            var activities = await _activityStorage.GetBufferedActivitiesAsync();
+            var activities = await _telemetryActivityStorage.GetBufferedActivitiesAsync();
             if (activities.Count == 0)
             {
                 return;
@@ -41,11 +40,11 @@ public class TelemetryDataSender : ITelemetryDataSender, IScopedDependency
             {
                 var activityBatch = activities.Skip(i).Take(ActivityBatchSize).ToList();
 
-                await httpClient.PostAsync($"{AbpPlatformUrls.TelemetryApiUrl}api/telemetry/collect",
+                await httpClient.PostAsync($"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect",
                     new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
 
             }
-            await _activityStorage.MarkActivitiesAsSentAsync();
+            await _telemetryActivityStorage.MarkActivitiesAsSentAsync();
         }
         catch
         {
@@ -56,12 +55,12 @@ public class TelemetryDataSender : ITelemetryDataSender, IScopedDependency
 
     private static void AddAbpAuthenticationTokenAsync(HttpClient httpClient)
     {
-        if (!File.Exists(AbpTelemetryPaths.AccessToken))
+        if (!File.Exists(TelemetryPaths.AccessToken))
         {
             return;
         }
 
-        var accessToken = File.ReadAllText(AbpTelemetryPaths.AccessToken, Encoding.UTF8);
+        var accessToken = File.ReadAllText(TelemetryPaths.AccessToken, Encoding.UTF8);
         if (!accessToken.IsNullOrEmpty())
         {
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

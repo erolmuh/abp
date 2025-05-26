@@ -17,7 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" />
-    <PackageReference Include="System.Management" />
     <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="Microsoft.Extensions.Localization" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -35,6 +34,12 @@
     <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="Nito.AsyncEx.Context" />
   </ItemGroup>
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <PackageReference Include="System.Management"  />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>	
@@ -47,4 +52,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+ 
 </Project>

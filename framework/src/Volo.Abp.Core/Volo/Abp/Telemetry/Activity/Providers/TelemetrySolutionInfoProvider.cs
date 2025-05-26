@@ -7,11 +7,12 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Telemetry.Shared;
+using Volo.Abp.Telemetry.Activity.Contracts;
+using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
-public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
+public class TelemetrySolutionInfoProvider : ITelemetrySolutionInfoProvider, ISingletonDependency
 {
     public async Task<IDictionary<string, object>> GetSolutionInfoAsync(string solutionPath)
     {
@@ -158,7 +159,7 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
 
     protected virtual async Task<int> GetLicenseTypeAsync()
     {
-        if (!File.Exists(AbpTelemetryPaths.AccessToken))
+        if (!File.Exists(TelemetryPaths.AccessToken))
         {
             return 0;
         }
@@ -166,7 +167,7 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
         try
         {
             using var httpClient = new HttpClient();
-            var accessToken = File.ReadAllText(AbpTelemetryPaths.AccessToken);
+            var accessToken = File.ReadAllText(TelemetryPaths.AccessToken);
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             var response = await httpClient.GetAsync($"{AbpPlatformUrls.AbpIoUrl}api/license/api-key");

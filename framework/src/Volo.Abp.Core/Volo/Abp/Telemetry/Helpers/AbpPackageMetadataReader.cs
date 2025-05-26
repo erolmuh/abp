@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Volo.Abp.Telemetry.Helpers;
 
-public static class AbpPackageMetadataHelper
+public static class AbpPackageMetadataReader
 {
     public static AbpPackageMetadata? GetMetaData(Assembly assembly)
     {
