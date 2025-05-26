@@ -1,6 +1,6 @@
 # BLOB Storing Aws Provider
 
-BLOB Storing Aws Provider can store BLOBs in [Amazon Simple Storage Service](https://aws.amazon.com/s3/).
+BLOB Storing Aws Provider can store BLOBs in [Amazon Simple Storage Service](https://aws.amazon.com/s3/) and **S3-compatible storage services** like MinIO, DigitalOcean Spaces, Cloudflare R2, and others.
 
 > Read the [BLOB Storing document](../blob-storing) to understand how to use the BLOB storing system. This document only covers how to configure containers to use a Aws BLOB as the storage provider.
 
@@ -35,6 +35,7 @@ Configure<AbpBlobStoringOptions>(options =>
             Aws.ProfileName = "the name of the profile to get credentials from";
             Aws.ProfilesLocation = "the path to the aws credentials file to look at";
             Aws.Region = "the system name of the service";
+            Aws.ServiceURL = "custom service URL for S3-compatible APIs (optional)";
             Aws.Name = "the name of the federated user";
             Aws.Policy = "policy";
             Aws.DurationSeconds = "expiration date";
@@ -58,6 +59,7 @@ Configure<AbpBlobStoringOptions>(options =>
 * **ProfileName** (string): The [name of the profile](https://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/net-dg-config-creds.html) to get credentials from.
 * **ProfilesLocation** (string): The path to the aws credentials file to look at.
 * **Region** (string): The system name of the service.
+* **ServiceURL** (string): Custom service URL for S3-compatible APIs (e.g., MinIO, DigitalOcean Spaces). If not specified, the default AWS S3 service URL will be used based on the region. When using S3-compatible services, this should point to your service endpoint (e.g., `https://minio.example.com:9000`).
 * **Policy** (string): An IAM policy in JSON format that you want to use as an inline session policy.
 * **DurationSeconds** (int): Validity period(s) of a temporary access certificate,minimum is 900 and the maximum is 3600. **note**: Using sub-accounts operated OSS,if the value is 0.
 * **ContainerName** (string): You can specify the container name in Aws. If this is not specified, it uses the name of the BLOB container defined with the `BlobContainerName` attribute (see the [BLOB storing document](../blob-storing)). Please note that Aws has some **rules for naming containers**. A container name must be a valid DNS name, conforming to the [following naming rules](https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html):
@@ -69,6 +71,72 @@ Configure<AbpBlobStoringOptions>(options =>
     * Bucket names must be unique within a partition. 
     * Buckets used with Amazon S3 Transfer Acceleration can't have dots (.) in their names. For more information about transfer acceleration, see Amazon S3 Transfer Acceleration.
 * **CreateContainerIfNotExists** (bool): Default value is `false`, If a container does not exist in Aws, `AwsBlobProvider` will try to create it.
+
+## S3-Compatible Services
+
+The AWS provider supports S3-compatible storage services by configuring the `ServiceURL` property. Here are some examples:
+
+### MinIO Configuration
+
+````csharp
+Configure<AbpBlobStoringOptions>(options =>
+{
+    options.Containers.ConfigureDefault(container =>
+    {
+        container.UseAws(aws =>
+        {
+            aws.AccessKeyId = "your-minio-access-key";
+            aws.SecretAccessKey = "your-minio-secret-key";
+            aws.ServiceURL = "https://minio.example.com:9000";
+            aws.Region = "us-east-1"; // MinIO region (can be any valid region)
+            aws.ContainerName = "my-bucket";
+            aws.CreateContainerIfNotExists = true;
+        });
+    });
+});
+````
+
+### DigitalOcean Spaces Configuration
+
+````csharp
+Configure<AbpBlobStoringOptions>(options =>
+{
+    options.Containers.ConfigureDefault(container =>
+    {
+        container.UseAws(aws =>
+        {
+            aws.AccessKeyId = "your-spaces-access-key";
+            aws.SecretAccessKey = "your-spaces-secret-key";
+            aws.ServiceURL = "https://nyc3.digitaloceanspaces.com";
+            aws.Region = "us-east-1"; // DigitalOcean Spaces region
+            aws.ContainerName = "my-space";
+            aws.CreateContainerIfNotExists = true;
+        });
+    });
+});
+````
+
+### Wasabi Configuration
+
+````csharp
+Configure<AbpBlobStoringOptions>(options =>
+{
+    options.Containers.ConfigureDefault(container =>
+    {
+        container.UseAws(aws =>
+        {
+            aws.AccessKeyId = "your-wasabi-access-key";
+            aws.SecretAccessKey = "your-wasabi-secret-key";
+            aws.ServiceURL = "https://s3.us-east-1.wasabisys.com";
+            aws.Region = "us-east-1";
+            aws.ContainerName = "my-bucket";
+            aws.CreateContainerIfNotExists = true;
+        });
+    });
+});
+````
+
+> **Note**: When using S3-compatible services, the provider automatically enables path-style requests which are required by most S3-compatible implementations.
 
 ## Aws Blob Name Calculator
 
