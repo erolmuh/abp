@@ -84,4 +84,33 @@ public class DefaultAmazonS3ClientFactory_Tests : AbpBlobStoringAwsTestBase
         s3Client.Config.ServiceURL.ShouldBe("https://minio.example.com:9000/"); // AWS SDK automatically appends trailing slash
         ((AmazonS3Config)s3Client.Config).ForcePathStyle.ShouldBeTrue(); // Should be enabled for S3-compatible services
     }
+
+    [Fact]
+    public async Task Should_Set_Checksum_Properties_For_S3Compatible_Services()
+    {
+        // Arrange
+        var containerConfiguration = new BlobContainerConfiguration();
+        
+        var awsConfiguration = new AwsBlobProviderConfiguration(containerConfiguration)
+        {
+            AccessKeyId = "test-access-key",
+            SecretAccessKey = "test-secret-key",
+            ServiceURL = "https://r2.cloudflarestorage.com",
+            Region = "auto"
+        };
+
+        // Act
+        using var s3Client = await _amazonS3ClientFactory.GetAmazonS3Client(awsConfiguration);
+
+        // Assert
+        s3Client.ShouldNotBeNull();
+        var config = (AmazonS3Config)s3Client.Config;
+        config.ServiceURL.ShouldBe("https://r2.cloudflarestorage.com/");
+        config.ForcePathStyle.ShouldBeTrue();
+        
+        // Verify checksum properties are set for S3-compatible services (required for Cloudflare R2)
+        // We just verify they are not null/default, indicating they have been set
+        config.RequestChecksumCalculation.ShouldNotBe(default);
+        config.ResponseChecksumValidation.ShouldNotBe(default);
+    }
 } 

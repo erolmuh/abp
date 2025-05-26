@@ -74,6 +74,11 @@ public class DefaultAmazonS3ClientFactory : IAmazonS3ClientFactory, ITransientDe
         {
             clientConfig.ServiceURL = configuration.ServiceURL;
             clientConfig.ForcePathStyle = true; // Required for most S3-compatible services
+            
+            // Set checksum properties for S3-compatible services (e.g., Cloudflare R2)
+            // These settings help with compatibility issues in non-AWS S3 services
+            clientConfig.RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED;
+            clientConfig.ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED;
         }
 
         return clientConfig;
