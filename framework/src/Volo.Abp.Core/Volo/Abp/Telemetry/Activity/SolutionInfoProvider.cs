@@ -19,31 +19,23 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
     {
         try
         {
-            var dictionary = new Dictionary<string, object>();
+            var result = new Dictionary<string, object>();
+            var jsonContent = File.ReadAllText(solutionPath);
+            using var doc = JsonDocument.Parse(jsonContent);
+            var root = doc.RootElement;
 
-            var solutionJson = File.ReadAllText(solutionPath);
-            using var solutionDoc = JsonDocument.Parse(solutionJson);
-            var root = solutionDoc.RootElement;
+            AddCreatingStudioConfiguration(result, root.GetProperty("creatingStudioConfiguration"));
+            result[ActivityPropertyName.LicenseType] = await GetLicenseTypeAsync();
 
-
-            if (root.TryGetProperty("creatingStudioConfiguration", out var config))
+            if (root.TryGetProperty("modules", out var modulesElement) && modulesElement.ValueKind == JsonValueKind.Object)
             {
-                AddCreatingStudioConfiguration(dictionary, config);
+                var directoryPath = Path.GetDirectoryName(solutionPath)!;
+                result[ActivityPropertyName.InstalledModules] = ExtractModules(directoryPath, modulesElement);
             }
 
-            dictionary[ActivityPropertyName.LicenseType] = await GetLicenseTypeAsync();
-
-            if (root.TryGetProperty("modules", out var modulesElement) &&
-                modulesElement.ValueKind == JsonValueKind.Object)
-            {
-                var directoryPath = Path.GetDirectoryName(solutionPath);
-                var modules = ExtractModules(directoryPath!, modulesElement);
-                dictionary[ActivityPropertyName.InstalledModules] = modules;
-            }
-
-            return dictionary;
+            return result;
         }
-        catch (Exception)
+        catch
         {
             return new Dictionary<string, object>();
         }
@@ -51,49 +43,107 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
 
     public Guid? GetSolutionId(string solutionPath)
     {
-        var solutionJson = File.ReadAllText((string)solutionPath);
-        using var solutionDoc = JsonDocument.Parse(solutionJson);
-        var root = solutionDoc.RootElement;
-
-        return ReadSolutionIdFromJson(root);
+        var jsonContent = File.ReadAllText(solutionPath);
+        using var doc = JsonDocument.Parse(jsonContent);
+        return TryGetGuid(doc.RootElement, "id");
     }
 
-    private Guid? ReadSolutionIdFromJson(JsonElement root)
+    private Guid? TryGetGuid(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty("id", out var idElement) && Guid.TryParse(idElement.GetString(), out var id)
-            ? id
-            : null;
+        return root.TryGetProperty(propertyName, out var prop) && Guid.TryParse(prop.GetString(), out var id) ? id : null;
     }
 
-    protected virtual void AddCreatingStudioConfiguration(Dictionary<string, object> dict, JsonElement config)
+    private void AddCreatingStudioConfiguration(Dictionary<string, object> dict, JsonElement config)
     {
-        var mappings = new Dictionary<string, Action<JsonElement>>
+        var map = new (string Key, Action<JsonElement> Apply)[]
         {
-            { "template", value => dict[ActivityPropertyName.Template] = MapSolutionTemplate(value.GetString()) },
-            { "createdAbpStudioVersion", value => dict[ActivityPropertyName.CreatedAbpStudioVersion] = value.GetString()! },
-            { "multiTenancy", value => dict[ActivityPropertyName.MultiTenancy] = ParseBool(value) },
-            { "uiFramework", value => dict[ActivityPropertyName.UiFramework] = MapUiFramework(value.GetString()) },
-            { "databaseProvider", value => dict[ActivityPropertyName.DatabaseProvider] = MapDatabaseProvider(value.GetString()) },
-            { "theme", value => dict[ActivityPropertyName.Theme] = MapUiTheme(value.GetString()) },
-            { "themeStyle", value => dict[ActivityPropertyName.ThemeStyle] = MapUiThemeStyle(value.GetString()) },
-            { "publicWebsite", value => dict[ActivityPropertyName.HasPublicWebsite] = ParseBool(value) },
-            { "tiered", value => dict[ActivityPropertyName.IsTiered] = ParseBool(value) },
-            { "socialLogin", value => dict[ActivityPropertyName.SocialLogins] = ParseBool(value) },
-            { "databaseManagementSystem", value => dict[ActivityPropertyName.DatabaseManagementSystem] = MapDbms(value.GetString()) },
-            { "separateTenantSchema", value => dict[ActivityPropertyName.IsSeparateTenantSchema] = ParseBool(value) },
-            { "mobileFramework", value => dict[ActivityPropertyName.MobileFramework] = MapMobileApp(value.GetString()) },
-            { "includeTests", value => dict[ActivityPropertyName.IncludeTests] = ParseBool(value) },
-            { "dynamicLocalization", value => dict[ActivityPropertyName.DynamicLocalization] = ParseBool(value) },
-            { "kubernetesConfiguration", value => dict[ActivityPropertyName.KubernetesConfiguration] = ParseBool(value) },
-            { "grafanaDashboard", value => dict[ActivityPropertyName.GrafanaDashboard] = ParseBool(value) },
+            ("template", v => dict[ActivityPropertyName.Template] = MapSolutionTemplate(v.GetString())),
+            ("createdAbpStudioVersion", v => dict[ActivityPropertyName.CreatedAbpStudioVersion] = v.GetString()!),
+            ("multiTenancy", v => dict[ActivityPropertyName.MultiTenancy] = ParseBool(v)),
+            ("uiFramework", v => dict[ActivityPropertyName.UiFramework] = MapUiFramework(v.GetString())),
+            ("databaseProvider", v => dict[ActivityPropertyName.DatabaseProvider] = MapDatabaseProvider(v.GetString())),
+            ("theme", v => dict[ActivityPropertyName.Theme] = MapUiTheme(v.GetString())),
+            ("themeStyle", v => dict[ActivityPropertyName.ThemeStyle] = MapUiThemeStyle(v.GetString())),
+            ("publicWebsite", v => dict[ActivityPropertyName.HasPublicWebsite] = ParseBool(v)),
+            ("tiered", v => dict[ActivityPropertyName.IsTiered] = ParseBool(v)),
+            ("socialLogin", v => dict[ActivityPropertyName.SocialLogins] = ParseBool(v)),
+            ("databaseManagementSystem", v => dict[ActivityPropertyName.DatabaseManagementSystem] = MapDbms(v.GetString())),
+            ("separateTenantSchema", v => dict[ActivityPropertyName.IsSeparateTenantSchema] = ParseBool(v)),
+            ("mobileFramework", v => dict[ActivityPropertyName.MobileFramework] = MapMobileApp(v.GetString())),
+            ("includeTests", v => dict[ActivityPropertyName.IncludeTests] = ParseBool(v)),
+            ("dynamicLocalization", v => dict[ActivityPropertyName.DynamicLocalization] = ParseBool(v)),
+            ("kubernetesConfiguration", v => dict[ActivityPropertyName.KubernetesConfiguration] = ParseBool(v)),
+            ("grafanaDashboard", v => dict[ActivityPropertyName.GrafanaDashboard] = ParseBool(v)),
         };
-        foreach (var mapping in mappings)
+
+        foreach (var (key, apply) in map)
         {
-            if (config.TryGetProperty(mapping.Key, out var propertyValue))
+            if (config.TryGetProperty(key, out var prop))
             {
-                mapping.Value(propertyValue);
+                apply(prop);
             }
         }
+    }
+
+    private List<Dictionary<string, object>> ExtractModules(string directoryPath, JsonElement modulesElement)
+    {
+        var modules = new List<Dictionary<string, object>>();
+
+        foreach (var module in modulesElement.EnumerateObject())
+        {
+            if (!module.Value.TryGetProperty("path", out var pathElement))
+            {
+                continue;
+            }
+
+            var path = pathElement.GetString();
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                continue;
+            }
+
+            var fullPath = Path.Combine(directoryPath, path);
+            if (!File.Exists(fullPath))
+            {
+                continue;
+            }
+
+            var moduleJson = File.ReadAllText(fullPath);
+            using var moduleDoc = JsonDocument.Parse(moduleJson);
+
+            if (!moduleDoc.RootElement.TryGetProperty("imports", out var imports) || imports.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            foreach (var import in imports.EnumerateObject())
+            {
+                var version = import.Value.GetProperty("version").GetString();
+                var creationTime = import.Value.TryGetProperty("creationTime", out var ct) ? DateTimeOffset.Parse(ct.GetString()!) : (DateTimeOffset?)null;
+
+                if (modules.Any(x =>
+                        x.TryGetValue(ActivityPropertyName.ModuleName, out var n) && n as string == module.Name &&
+                        x.TryGetValue(ActivityPropertyName.ModuleVersion, out var v) && v as string == version))
+                {
+                    continue;
+                }
+
+                var moduleEntry = new Dictionary<string, object> { { ActivityPropertyName.ModuleName, module.Name } };
+                if (!version.IsNullOrEmpty())
+                {
+                    moduleEntry[ActivityPropertyName.ModuleVersion] = version;
+                }
+
+                if (creationTime.HasValue)
+                {
+                    moduleEntry[ActivityPropertyName.ModuleInstallationTime] = creationTime.Value;
+                }
+
+                modules.Add(moduleEntry);
+            }
+        }
+
+        return modules;
     }
 
     private static bool ParseBool(JsonElement element)
@@ -105,73 +155,6 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
             JsonValueKind.String when bool.TryParse(element.GetString(), out var b) => b,
             _ => false
         };
-    }
-
-
-    protected virtual List<Dictionary<string,object>> ExtractModules(string directoryPath, JsonElement modulesElement)
-    {
-        var modules = new List<Dictionary<string,object>>();
-
-        foreach (var module in modulesElement.EnumerateObject())
-        {
-            var name = module.Name;
-            if (!module.Value.TryGetProperty("path", out var pathElement))
-            {
-                continue;
-            }
-
-            var path = pathElement.GetString();
-            if (path.IsNullOrEmpty())
-            {
-                continue;
-            }
-            var modulePath = Path.Combine(directoryPath, path);
-
-            if (!File.Exists(modulePath))
-            {
-                continue;
-            }
-            
-            var moduleJson = File.ReadAllText(modulePath);
-            using var moduleDoc = JsonDocument.Parse(moduleJson);
-
-            if (!moduleDoc.RootElement.TryGetProperty("imports", out var imports) ||
-                imports.ValueKind != JsonValueKind.Object)
-            {
-                continue;
-            }
-
-            foreach (var import in imports.EnumerateObject())
-            {
-                var version = import.Value.GetProperty("version").GetString();
-                var creationTime = import.Value.TryGetProperty("creationTime", out var ct)
-                    ? DateTimeOffset.Parse(ct.GetString()!)
-                    : (DateTimeOffset?)null;
-
-                if (modules.Any(x => 
-                        x.ContainsKey("ModuleName") && (string)x["ModuleName"] == name &&
-                        x.ContainsKey("Version") && (string)x["Version"] == version))
-                {
-                    continue;
-                }
-
-                if (modules.Any(x =>
-                        x.TryGetValue("ModuleName", out var moduleNameObj) && moduleNameObj as string == name &&
-                        x.TryGetValue("Version", out var versionObj) && versionObj as string == version))
-                {
-                    continue;
-                }
-
-                modules.Add(new Dictionary<string, object>
-                {
-                    { "ModuleName", name },
-                    { "Version", version ?? string.Empty },
-                    { "InstallationTime", creationTime ?? DateTime.MinValue }
-                });
-            }
-        }
-
-        return modules;
     }
 
     protected virtual async Task<int> GetLicenseTypeAsync()
@@ -187,15 +170,14 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
             var accessToken = File.ReadAllText(AbpTelemetryPaths.AccessToken);
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            var httpResponse = await httpClient.GetAsync($"{AbpPlatformUrls.AbpIoUrl}api/license/api-key");
-            if (!httpResponse.IsSuccessStatusCode)
+            var response = await httpClient.GetAsync($"{AbpPlatformUrls.AbpIoUrl}api/license/api-key");
+            if (!response.IsSuccessStatusCode)
             {
                 return 0;
             }
 
-            var responseContent = await httpResponse.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(responseContent);
-
+            var content = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(content);
             return doc.RootElement.GetProperty("licenseType").GetInt32();
         }
         catch
@@ -204,68 +186,89 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
         }
     }
 
-    protected virtual UiTheme MapUiTheme(string? theme) => theme switch
+    protected virtual UiTheme MapUiTheme(string? theme)
     {
-        "none" => UiTheme.None,
-        "basic" => UiTheme.Basic,
-        "leptonx" => UiTheme.LeptonX,
-        "leptonx-lite" => UiTheme.LeptonXLite,
-        _ => UiTheme.Unknown
-    };
+        return theme switch
+        {
+            "none" => UiTheme.None,
+            "basic" => UiTheme.Basic,
+            "leptonx" => UiTheme.LeptonX,
+            "leptonx-lite" => UiTheme.LeptonXLite,
+            _ => UiTheme.Unknown
+        };
+    }
 
-    protected virtual UiThemeStyle MapUiThemeStyle(string? style) => style switch
+    protected virtual UiThemeStyle MapUiThemeStyle(string? style)
     {
-        "dim" => UiThemeStyle.Dim,
-        "style" => UiThemeStyle.System,
-        "dark" => UiThemeStyle.Dark,
-        "light" => UiThemeStyle.Light,
-        _ => UiThemeStyle.Unknown
-    };
+        return style switch
+        {
+            "dim" => UiThemeStyle.Dim,
+            "style" => UiThemeStyle.System,
+            "dark" => UiThemeStyle.Dark,
+            "light" => UiThemeStyle.Light,
+            _ => UiThemeStyle.Unknown
+        };
+    }
 
-    protected virtual SolutionTemplate MapSolutionTemplate(string? template) => template switch
+    protected virtual SolutionTemplate MapSolutionTemplate(string? template)
     {
-        "microservice" => SolutionTemplate.Microservice,
-        "app-nolayers" => SolutionTemplate.AppNoLayers,
-        "app" => SolutionTemplate.AppLayered,
-        _ => SolutionTemplate.Unknown
-    };
+        return template switch
+        {
+            "microservice" => SolutionTemplate.Microservice,
+            "app-nolayers" => SolutionTemplate.AppNoLayers,
+            "app" => SolutionTemplate.AppLayered,
+            _ => SolutionTemplate.Unknown
+        };
+    }
 
-    protected virtual UiFramework MapUiFramework(string? framework) => framework switch
+    protected virtual UiFramework MapUiFramework(string? framework)
     {
-        "mvc" => UiFramework.MvcRazorPages,
-        "blazor" => UiFramework.BlazorWasm,
-        "angular" => UiFramework.Angular,
-        "blazor-server" => UiFramework.BlazorServer,
-        "blazor-webapp" => UiFramework.BlazorWebApp,
-        "maui-blazor" => UiFramework.BlazorMaUI,
-        "none" => UiFramework.None,
-        _ => UiFramework.Unknown
-    };
+        return framework switch
+        {
+            "mvc" => UiFramework.MvcRazorPages,
+            "blazor" => UiFramework.BlazorWasm,
+            "angular" => UiFramework.Angular,
+            "blazor-server" => UiFramework.BlazorServer,
+            "blazor-webapp" => UiFramework.BlazorWebApp,
+            "maui-blazor" => UiFramework.BlazorMaUI,
+            "none" => UiFramework.None,
+            _ => UiFramework.Unknown
+        };
+    }
 
-    protected virtual DatabaseProvider MapDatabaseProvider(string? provider) => provider switch
+    protected virtual DatabaseProvider MapDatabaseProvider(string? provider)
     {
-        "ef" => DatabaseProvider.EfCore,
-        "mongodb" => DatabaseProvider.MongoDb,
-        "none" => DatabaseProvider.None,
-        _ => DatabaseProvider.Unknown
-    };
+        return provider switch
+        {
+            "ef" => DatabaseProvider.EfCore,
+            "mongodb" => DatabaseProvider.MongoDb,
+            "none" => DatabaseProvider.None,
+            _ => DatabaseProvider.Unknown
+        };
+    }
 
-    protected virtual Dbms MapDbms(string? dbms) => dbms switch
+    protected virtual Dbms MapDbms(string? dbms)
     {
-        "mysql" => Dbms.MySql,
-        "oracle" => Dbms.Oracle,
-        "oracle-devart" => Dbms.OracleDevart,
-        "postgresql" => Dbms.PostgreSql,
-        "sqlserver" => Dbms.SqlServer,
-        "sqlite" => Dbms.Sqlite,
-        _ => Dbms.Unknown
-    };
+        return dbms switch
+        {
+            "mysql" => Dbms.MySql,
+            "oracle" => Dbms.Oracle,
+            "oracle-devart" => Dbms.OracleDevart,
+            "postgresql" => Dbms.PostgreSql,
+            "sqlserver" => Dbms.SqlServer,
+            "sqlite" => Dbms.Sqlite,
+            _ => Dbms.Unknown
+        };
+    }
 
-    protected virtual MobileApp MapMobileApp(string? mobile) => mobile switch
+    protected virtual MobileApp MapMobileApp(string? mobile)
     {
-        "maui" => MobileApp.Maui,
-        "react-native" => MobileApp.ReactNative,
-        "none" => MobileApp.None,
-        _ => MobileApp.Unknown
-    };
+        return mobile switch
+        {
+            "maui" => MobileApp.Maui,
+            "react-native" => MobileApp.ReactNative,
+            "none" => MobileApp.None,
+            _ => MobileApp.Unknown
+        };
+    }
 }
