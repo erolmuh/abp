@@ -5,6 +5,7 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities;
 using Volo.Abp.Telemetry;
 using Volo.Abp.Telemetry.Activity;
+using Volo.Abp.Telemetry.Shared;
 
 namespace Volo.Abp.Domain.Telemetry;
 

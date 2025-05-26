@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection;
+namespace Volo.Abp.Telemetry.EnvironmentInspection.Providers;
 
 internal class SoftwareInfoProvider : ISoftwareInfoProvider , ISingletonDependency
 {

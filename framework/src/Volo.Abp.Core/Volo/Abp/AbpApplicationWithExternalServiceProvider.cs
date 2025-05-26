@@ -6,8 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.Telemetry;
-using Volo.Abp.Telemetry.Activity;
 using Volo.Abp.Telemetry.Helpers;
+using Volo.Abp.Telemetry.Shared;
 
 namespace Volo.Abp;
 

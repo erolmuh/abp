@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+using Volo.Abp.Telemetry.EnvironmentInspection.Core;
 using Volo.Abp.Telemetry.Shared;
 using Volo.Abp.Telemetry.Shared.Enums;
 

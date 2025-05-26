@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+using Volo.Abp.Telemetry.Shared;
 using Volo.Abp.Telemetry.Shared.Enums;
 
-namespace Volo.Abp.Telemetry.Activity;
+namespace Volo.Abp.Telemetry.Activity.Providers;
 
 public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
 {
@@ -53,6 +55,7 @@ public class ActivityDataProvider : IActivityDataProvider, IScopedDependency
         if (activity.ContainsKey(ActivityPropertyName.Assembly) && sessionType == SessionType.ApplicationRuntime)
         {
             await AddApplicationInformationAsync(activity);
+            activity.Remove(ActivityPropertyName.Assembly);
         }
 
         if (await ShouldAddSolutionInformation(activity))

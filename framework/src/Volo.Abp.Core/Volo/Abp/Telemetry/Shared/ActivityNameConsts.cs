@@ -1,4 +1,4 @@
-﻿namespace Volo.Abp.Telemetry;
+﻿namespace Volo.Abp.Telemetry.Shared;
 
 public static class ActivityNameConsts
 {

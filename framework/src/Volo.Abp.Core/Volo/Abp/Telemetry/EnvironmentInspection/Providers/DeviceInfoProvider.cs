@@ -5,13 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared;
 using Volo.Abp.Telemetry.Shared.Enums;
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection;
+namespace Volo.Abp.Telemetry.EnvironmentInspection.Providers;
 
 public class DeviceInfoProvider : IDeviceInfoProvider, ISingletonDependency
 {

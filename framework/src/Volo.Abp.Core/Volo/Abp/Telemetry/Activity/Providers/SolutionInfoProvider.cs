@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Shared;
 
-namespace Volo.Abp.Telemetry.Activity;
+namespace Volo.Abp.Telemetry.Activity.Providers;
 
 public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
 {
@@ -22,7 +22,8 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
             using var doc = JsonDocument.Parse(jsonContent);
             var root = doc.RootElement;
 
-            AddCreatingStudioConfiguration(result, root.GetProperty("creatingStudioConfiguration"));
+            AddSolutionInformation(result, root.GetProperty("creatingStudioConfiguration"));
+            
             result[ActivityPropertyName.LicenseType] = await GetLicenseTypeAsync();
 
             if (root.TryGetProperty("modules", out var modulesElement) && modulesElement.ValueKind == JsonValueKind.Object)
@@ -51,7 +52,7 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
         return root.TryGetProperty(propertyName, out var prop) && Guid.TryParse(prop.GetString(), out var id) ? id : null;
     }
 
-    private void AddCreatingStudioConfiguration(Dictionary<string, object> dict, JsonElement config)
+    private void AddSolutionInformation(Dictionary<string, object> dict, JsonElement config)
     {
         var map = new (string Key, Action<JsonElement> Apply)[]
         {

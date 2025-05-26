@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Modularity;
 using Volo.Abp.Telemetry.Activity;
+using Volo.Abp.Telemetry.Shared;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry;

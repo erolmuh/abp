@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Shared;
 
-namespace Volo.Abp.Telemetry.Activity;
+namespace Volo.Abp.Telemetry.Activity.Storage;
 
 public class ActivityStorage : IActivityStorage, ISingletonDependency
 {

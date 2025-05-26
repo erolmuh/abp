@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Volo.Abp.Telemetry.Activity;
+namespace Volo.Abp.Telemetry.Activity.Storage;
 
 public class ActivityStorageState
 {
