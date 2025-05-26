@@ -30,7 +30,9 @@ public class DefaultAmazonS3ClientFactory : IAmazonS3ClientFactory, ITransientDe
     public virtual async Task<AmazonS3Client> GetAmazonS3Client(
         AwsBlobProviderConfiguration configuration)
     {
-        var region = RegionEndpoint.GetBySystemName(configuration.Region);
+        var region = !configuration.Region.IsNullOrWhiteSpace() 
+            ? RegionEndpoint.GetBySystemName(configuration.Region)
+            : null;
         var clientConfig = CreateS3ClientConfig(configuration, region);
 
         if (configuration.UseCredentials)
@@ -58,12 +60,15 @@ public class DefaultAmazonS3ClientFactory : IAmazonS3ClientFactory, ITransientDe
         return new AmazonS3Client(configuration.AccessKeyId, configuration.SecretAccessKey, clientConfig);
     }
 
-    protected virtual AmazonS3Config CreateS3ClientConfig(AwsBlobProviderConfiguration configuration, RegionEndpoint region)
+    protected virtual AmazonS3Config CreateS3ClientConfig(AwsBlobProviderConfiguration configuration, RegionEndpoint? region)
     {
-        var clientConfig = new AmazonS3Config
+        var clientConfig = new AmazonS3Config();
+
+        // Set region only if it's provided (for AWS S3)
+        if (region != null)
         {
-            RegionEndpoint = region
-        };
+            clientConfig.RegionEndpoint = region;
+        }
 
         if (!configuration.ServiceURL.IsNullOrWhiteSpace())
         {

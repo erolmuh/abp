@@ -61,4 +61,27 @@ public class DefaultAmazonS3ClientFactory_Tests : AbpBlobStoringAwsTestBase
         s3Client.Config.ServiceURL.ShouldBeNull(); // Should use default AWS S3 service
         ((AmazonS3Config)s3Client.Config).ForcePathStyle.ShouldBeFalse(); // Should be false for AWS S3
     }
+
+    [Fact]
+    public async Task Should_Create_S3Client_Without_Region_For_S3Compatible_Services()
+    {
+        // Arrange
+        var containerConfiguration = new BlobContainerConfiguration();
+        
+        var awsConfiguration = new AwsBlobProviderConfiguration(containerConfiguration)
+        {
+            AccessKeyId = "test-access-key",
+            SecretAccessKey = "test-secret-key",
+            ServiceURL = "https://minio.example.com:9000"
+            // Region not set - should work for S3-compatible services
+        };
+
+        // Act
+        using var s3Client = await _amazonS3ClientFactory.GetAmazonS3Client(awsConfiguration);
+
+        // Assert
+        s3Client.ShouldNotBeNull();
+        s3Client.Config.ServiceURL.ShouldBe("https://minio.example.com:9000/"); // AWS SDK automatically appends trailing slash
+        ((AmazonS3Config)s3Client.Config).ForcePathStyle.ShouldBeTrue(); // Should be enabled for S3-compatible services
+    }
 } 
