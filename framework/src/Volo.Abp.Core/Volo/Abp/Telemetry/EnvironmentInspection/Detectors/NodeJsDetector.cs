@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class NodeJsDetector : SoftwareDetector, ISoftwareDetector, ISingletonDependency
+internal class NodeJsDetector : SoftwareDetector
 {
     public override string Name => "Node.js";
 

@@ -4,13 +4,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class VisualStudioCodeDetector : SoftwareDetector, ISoftwareDetector, ISingletonDependency
+internal class VisualStudioCodeDetector : SoftwareDetector
 {
     public override string Name => "Visual Studio Code";
 

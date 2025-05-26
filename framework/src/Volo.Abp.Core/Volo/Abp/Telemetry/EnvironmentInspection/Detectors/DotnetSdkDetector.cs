@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class DotnetSdkDetector : SoftwareDetector, ISoftwareDetector, ISingletonDependency
+internal class DotnetSdkDetector : SoftwareDetector
 {
     public override string Name => "DotnetSdk";
 

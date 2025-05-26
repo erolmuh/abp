@@ -7,9 +7,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared;
-using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.Activity;
 
@@ -57,19 +55,19 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
     {
         var map = new (string Key, Action<JsonElement> Apply)[]
         {
-            ("template", v => dict[ActivityPropertyName.Template] = MapSolutionTemplate(v.GetString())),
+            ("template", v => dict[ActivityPropertyName.Template] = v.GetString() ?? string.Empty),
             ("createdAbpStudioVersion", v => dict[ActivityPropertyName.CreatedAbpStudioVersion] = v.GetString()!),
             ("multiTenancy", v => dict[ActivityPropertyName.MultiTenancy] = ParseBool(v)),
-            ("uiFramework", v => dict[ActivityPropertyName.UiFramework] = MapUiFramework(v.GetString())),
-            ("databaseProvider", v => dict[ActivityPropertyName.DatabaseProvider] = MapDatabaseProvider(v.GetString())),
-            ("theme", v => dict[ActivityPropertyName.Theme] = MapUiTheme(v.GetString())),
-            ("themeStyle", v => dict[ActivityPropertyName.ThemeStyle] = MapUiThemeStyle(v.GetString())),
+            ("uiFramework", v => dict[ActivityPropertyName.UiFramework] = v.GetString() ?? string.Empty),
+            ("databaseProvider", v => dict[ActivityPropertyName.DatabaseProvider] = v.GetString() ?? string.Empty),
+            ("theme", v => dict[ActivityPropertyName.Theme] = v.GetString() ?? string.Empty),
+            ("themeStyle", v => dict[ActivityPropertyName.ThemeStyle] = v.GetString() ?? string.Empty),
             ("publicWebsite", v => dict[ActivityPropertyName.HasPublicWebsite] = ParseBool(v)),
             ("tiered", v => dict[ActivityPropertyName.IsTiered] = ParseBool(v)),
             ("socialLogin", v => dict[ActivityPropertyName.SocialLogins] = ParseBool(v)),
-            ("databaseManagementSystem", v => dict[ActivityPropertyName.DatabaseManagementSystem] = MapDbms(v.GetString())),
+            ("databaseManagementSystem", v => dict[ActivityPropertyName.DatabaseManagementSystem] = v.GetString() ?? string.Empty),
             ("separateTenantSchema", v => dict[ActivityPropertyName.IsSeparateTenantSchema] = ParseBool(v)),
-            ("mobileFramework", v => dict[ActivityPropertyName.MobileFramework] = MapMobileApp(v.GetString())),
+            ("mobileFramework", v => dict[ActivityPropertyName.MobileFramework] = v.GetString() ?? string.Empty),
             ("includeTests", v => dict[ActivityPropertyName.IncludeTests] = ParseBool(v)),
             ("dynamicLocalization", v => dict[ActivityPropertyName.DynamicLocalization] = ParseBool(v)),
             ("kubernetesConfiguration", v => dict[ActivityPropertyName.KubernetesConfiguration] = ParseBool(v)),
@@ -184,91 +182,5 @@ public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
         {
             return 0;
         }
-    }
-
-    protected virtual UiTheme MapUiTheme(string? theme)
-    {
-        return theme switch
-        {
-            "none" => UiTheme.None,
-            "basic" => UiTheme.Basic,
-            "leptonx" => UiTheme.LeptonX,
-            "leptonx-lite" => UiTheme.LeptonXLite,
-            _ => UiTheme.Unknown
-        };
-    }
-
-    protected virtual UiThemeStyle MapUiThemeStyle(string? style)
-    {
-        return style switch
-        {
-            "dim" => UiThemeStyle.Dim,
-            "style" => UiThemeStyle.System,
-            "dark" => UiThemeStyle.Dark,
-            "light" => UiThemeStyle.Light,
-            _ => UiThemeStyle.Unknown
-        };
-    }
-
-    protected virtual SolutionTemplate MapSolutionTemplate(string? template)
-    {
-        return template switch
-        {
-            "microservice" => SolutionTemplate.Microservice,
-            "app-nolayers" => SolutionTemplate.AppNoLayers,
-            "app" => SolutionTemplate.AppLayered,
-            _ => SolutionTemplate.Unknown
-        };
-    }
-
-    protected virtual UiFramework MapUiFramework(string? framework)
-    {
-        return framework switch
-        {
-            "mvc" => UiFramework.MvcRazorPages,
-            "blazor" => UiFramework.BlazorWasm,
-            "angular" => UiFramework.Angular,
-            "blazor-server" => UiFramework.BlazorServer,
-            "blazor-webapp" => UiFramework.BlazorWebApp,
-            "maui-blazor" => UiFramework.BlazorMaUI,
-            "none" => UiFramework.None,
-            _ => UiFramework.Unknown
-        };
-    }
-
-    protected virtual DatabaseProvider MapDatabaseProvider(string? provider)
-    {
-        return provider switch
-        {
-            "ef" => DatabaseProvider.EfCore,
-            "mongodb" => DatabaseProvider.MongoDb,
-            "none" => DatabaseProvider.None,
-            _ => DatabaseProvider.Unknown
-        };
-    }
-
-    protected virtual Dbms MapDbms(string? dbms)
-    {
-        return dbms switch
-        {
-            "mysql" => Dbms.MySql,
-            "oracle" => Dbms.Oracle,
-            "oracle-devart" => Dbms.OracleDevart,
-            "postgresql" => Dbms.PostgreSql,
-            "sqlserver" => Dbms.SqlServer,
-            "sqlite" => Dbms.Sqlite,
-            _ => Dbms.Unknown
-        };
-    }
-
-    protected virtual MobileApp MapMobileApp(string? mobile)
-    {
-        return mobile switch
-        {
-            "maui" => MobileApp.Maui,
-            "react-native" => MobileApp.ReactNative,
-            "none" => MobileApp.None,
-            _ => MobileApp.Unknown
-        };
     }
 }

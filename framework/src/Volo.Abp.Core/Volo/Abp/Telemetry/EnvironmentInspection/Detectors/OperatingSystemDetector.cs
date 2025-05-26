@@ -3,13 +3,12 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Win32;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class OperatingSystemDetector : SoftwareDetector, ISoftwareDetector, ISingletonDependency
+internal class OperatingSystemDetector : SoftwareDetector
 {
     public override string Name => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" :
         RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "macOS" : "Linux";

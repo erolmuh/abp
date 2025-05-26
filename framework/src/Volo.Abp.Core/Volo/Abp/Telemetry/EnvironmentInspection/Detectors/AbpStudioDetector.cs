@@ -2,14 +2,13 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Telemetry.Shared;
 using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-public class AbpStudioDetector : SoftwareDetector
+internal class AbpStudioDetector : SoftwareDetector
 {
     public override string Name => "Abp Studio";
 
@@ -58,6 +57,17 @@ public class AbpStudioDetector : SoftwareDetector
         var json = File.ReadAllText(extensionsFilePath);
         using var doc = JsonDocument.Parse(json);
 
-        return doc.RootElement.TryGetProperty("version", out var versionElement) ? versionElement.GetString() : null;
+        if (doc.RootElement.TryGetProperty("Extensions", out var extensionsElement) &&
+            extensionsElement.ValueKind == JsonValueKind.Array &&
+            extensionsElement.GetArrayLength() > 0)
+        {
+            var firstExtension = extensionsElement[0];
+            if (firstExtension.TryGetProperty("version", out var versionElement))
+            {
+                return versionElement.GetString();
+            }
+        }
+
+        return null;
     }
 }
