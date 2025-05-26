@@ -63,6 +63,15 @@ public class AwsBlobProviderConfiguration
     }
 
     /// <summary>
+    /// Custom service URL for S3-compatible APIs (e.g., MinIO, DigitalOcean Spaces).
+    /// If not specified, the default AWS S3 service URL will be used based on the region.
+    /// </summary>
+    public string? ServiceURL {
+        get => _containerConfiguration.GetConfigurationOrDefault<string>(AwsBlobProviderConfigurationNames.ServiceURL);
+        set => _containerConfiguration.SetConfiguration(AwsBlobProviderConfigurationNames.ServiceURL, value);
+    }
+
+    /// <summary>
     /// This name may only contain lowercase letters, numbers, and hyphens, and must begin with a letter or a number.
     /// Each hyphen must be preceded and followed by a non-hyphen character.
     /// The name must also be between 3 and 63 characters long.

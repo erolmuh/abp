@@ -31,30 +31,47 @@ public class DefaultAmazonS3ClientFactory : IAmazonS3ClientFactory, ITransientDe
         AwsBlobProviderConfiguration configuration)
     {
         var region = RegionEndpoint.GetBySystemName(configuration.Region);
+        var clientConfig = CreateS3ClientConfig(configuration, region);
 
         if (configuration.UseCredentials)
         {
             var awsCredentials = GetAwsCredentials(configuration);
             return awsCredentials == null
-                ? new AmazonS3Client(region)
-                : new AmazonS3Client(awsCredentials, region);
+                ? new AmazonS3Client(clientConfig)
+                : new AmazonS3Client(awsCredentials, clientConfig);
         }
 
         if (configuration.UseTemporaryCredentials)
         {
-            return new AmazonS3Client(await GetTemporaryCredentialsAsync(configuration), region);
+            return new AmazonS3Client(await GetTemporaryCredentialsAsync(configuration), clientConfig);
         }
 
         if (configuration.UseTemporaryFederatedCredentials)
         {
             return new AmazonS3Client(await GetTemporaryFederatedCredentialsAsync(configuration),
-                region);
+                clientConfig);
         }
 
         Check.NotNullOrWhiteSpace(configuration.AccessKeyId, nameof(configuration.AccessKeyId));
         Check.NotNullOrWhiteSpace(configuration.SecretAccessKey, nameof(configuration.SecretAccessKey));
 
-        return new AmazonS3Client(configuration.AccessKeyId, configuration.SecretAccessKey, region);
+        return new AmazonS3Client(configuration.AccessKeyId, configuration.SecretAccessKey, clientConfig);
+    }
+
+    protected virtual AmazonS3Config CreateS3ClientConfig(AwsBlobProviderConfiguration configuration, RegionEndpoint region)
+    {
+        var clientConfig = new AmazonS3Config
+        {
+            RegionEndpoint = region
+        };
+
+        if (!configuration.ServiceURL.IsNullOrWhiteSpace())
+        {
+            clientConfig.ServiceURL = configuration.ServiceURL;
+            clientConfig.ForcePathStyle = true; // Required for most S3-compatible services
+        }
+
+        return clientConfig;
     }
 
     protected virtual AWSCredentials? GetAwsCredentials(

@@ -14,6 +14,7 @@ public static class AwsBlobProviderConfigurationNames
     public const string Name = "Aws.Name";
     public const string Policy = "Aws.Policy";
     public const string Region = "Aws.Region";
+    public const string ServiceURL = "Aws.ServiceURL";
     public const string ContainerName = "Aws.ContainerName";
     public const string CreateContainerIfNotExists = "Aws.CreateContainerIfNotExists";
 }
