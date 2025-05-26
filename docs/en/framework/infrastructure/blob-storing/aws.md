@@ -116,7 +116,7 @@ Configure<AbpBlobStoringOptions>(options =>
 });
 ````
 
-### Wasabi Configuration
+### Cloudflare R2 Configuration
 
 ````csharp
 Configure<AbpBlobStoringOptions>(options =>
@@ -125,10 +125,10 @@ Configure<AbpBlobStoringOptions>(options =>
     {
         container.UseAws(aws =>
         {
-            aws.AccessKeyId = "your-wasabi-access-key";
-            aws.SecretAccessKey = "your-wasabi-secret-key";
-            aws.ServiceURL = "https://s3.us-east-1.wasabisys.com";
-            aws.Region = "us-east-1";
+            aws.AccessKeyId = "your-r2-access-key";
+            aws.SecretAccessKey = "your-r2-secret-key";
+            aws.ServiceURL = "https://your-account-id.r2.cloudflarestorage.com";
+            aws.Region = "auto"; // Cloudflare R2 uses 'auto' as region
             aws.ContainerName = "my-bucket";
             aws.CreateContainerIfNotExists = true;
         });
