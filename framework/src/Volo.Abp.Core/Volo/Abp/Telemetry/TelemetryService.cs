@@ -7,13 +7,14 @@ using Volo.Abp.Telemetry.Activity;
 
 namespace Volo.Abp.Telemetry;
 
-public class TelemetryService :  ITelemetryService ,  IScopedDependency
+public class TelemetryService : ITelemetryService, IScopedDependency
 {
     private readonly IActivityStorage _activityStorage;
     private readonly ITelemetryDataSender _telemetryDataSender;
     private readonly IActivityDataProvider _activityDataProvider;
 
-    public TelemetryService(IActivityStorage activityStorage, ITelemetryDataSender telemetryDataSender, IActivityDataProvider activityDataProvider)
+    public TelemetryService(IActivityStorage activityStorage, ITelemetryDataSender telemetryDataSender,
+        IActivityDataProvider activityDataProvider)
     {
         _activityStorage = activityStorage;
         _telemetryDataSender = telemetryDataSender;
@@ -23,10 +24,7 @@ public class TelemetryService :  ITelemetryService ,  IScopedDependency
     public IAsyncDisposable TrackActivity(string activityName, Action<ActivityData>? configure = null)
     {
         var stopwatch = Stopwatch.StartNew();
-        var activityData = new ActivityData(activityName)
-        {
-            Time = DateTimeOffset.UtcNow
-        };
+        var activityData = new ActivityData(activityName) { Time = DateTimeOffset.UtcNow };
 
         configure?.Invoke(activityData);
 
@@ -59,36 +57,30 @@ public class TelemetryService :  ITelemetryService ,  IScopedDependency
         // {
         //     await _telemetryDataSender.SendAsync();
         // }
-        
-        if (lastActivitySendTime is not null  && lastActivitySendTime < DateTimeOffset.UtcNow.AddDays(-1) )
+
+        if (lastActivitySendTime is not null && lastActivitySendTime < DateTimeOffset.UtcNow.AddDays(-1))
         {
             await _telemetryDataSender.SendAsync();
         }
     }
-    public Task AddActivityAsync(ActivityData data)
+
+    public async Task AddActivityAsync(ActivityData data)
     {
-
-        Task.Run(async () =>
+        try
         {
-            try
+            await _activityDataProvider.AddExtraInformationAsync(data);
+            await _activityStorage.BufferActivityAsync(data);
+            await CheckIfActivitySendTimeIsDueAsync();
+
+            if (data.ActivityName == ActivityNameConsts.AbpStudioClose)
             {
-                await _activityDataProvider.AddExtraInformationAsync(data);
-                await _activityStorage.BufferActivityAsync(data);
-                await CheckIfActivitySendTimeIsDueAsync();
-
-                if (data.ActivityName == ActivityNameConsts.AbpStudioClose)
-                {
-                    await _activityStorage.EndSessionAsync();
-                }
+                await _activityStorage.EndSessionAsync();
             }
-            catch
-            {
-               
-            }
-        });
-
-
-        return Task.CompletedTask;
+        }
+        catch
+        {
+            // ignored
+        }
     }
 
     public async Task AddActivityAsync(string activityName, string? details = null)
@@ -98,10 +90,7 @@ public class TelemetryService :  ITelemetryService ,  IScopedDependency
 
     public async Task AddActivityAsync(string activityName, Action<ActivityData> configure)
     {
-        var activityData = new ActivityData(activityName)
-        {
-            Time = DateTimeOffset.UtcNow
-        };
+        var activityData = new ActivityData(activityName) { Time = DateTimeOffset.UtcNow };
 
         configure?.Invoke(activityData);
 

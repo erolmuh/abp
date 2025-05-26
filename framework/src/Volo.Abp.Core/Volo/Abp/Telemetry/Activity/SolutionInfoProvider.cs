@@ -13,31 +13,40 @@ using Volo.Abp.Telemetry.Shared.Enums;
 
 namespace Volo.Abp.Telemetry.Activity;
 
-public class SolutionInfoProvider : ISolutionInfoProvider , ISingletonDependency
+public class SolutionInfoProvider : ISolutionInfoProvider, ISingletonDependency
 {
     public async Task<IDictionary<string, object>> GetSolutionInfoAsync(string solutionPath)
     {
-        var dictionary = new Dictionary<string, object>();
-
-        var solutionJson = File.ReadAllText(solutionPath);
-        using var solutionDoc = JsonDocument.Parse(solutionJson);
-        var root = solutionDoc.RootElement;
-
-
-        if (root.TryGetProperty("creatingStudioConfiguration", out var config))
+        try
         {
-            AddCreatingStudioConfiguration(dictionary, config);
+            var dictionary = new Dictionary<string, object>();
+
+            var solutionJson = File.ReadAllText(solutionPath);
+            using var solutionDoc = JsonDocument.Parse(solutionJson);
+            var root = solutionDoc.RootElement;
+
+
+            if (root.TryGetProperty("creatingStudioConfiguration", out var config))
+            {
+                AddCreatingStudioConfiguration(dictionary, config);
+            }
+
+            dictionary[ActivityPropertyName.LicenseType] = await GetLicenseTypeAsync();
+
+            if (root.TryGetProperty("modules", out var modulesElement) &&
+                modulesElement.ValueKind == JsonValueKind.Object)
+            {
+                var directoryPath = Path.GetDirectoryName(solutionPath);
+                var modules = ExtractModules(directoryPath!, modulesElement);
+                dictionary[ActivityPropertyName.InstalledModules] = modules;
+            }
+
+            return dictionary;
         }
-
-        dictionary[ActivityPropertyName.LicenseType] = await GetLicenseTypeAsync();
-
-        if (root.TryGetProperty("modules", out var modulesElement) && modulesElement.ValueKind == JsonValueKind.Object)
+        catch (Exception)
         {
-            var modules = ExtractModules(modulesElement);
-            dictionary[ActivityPropertyName.InstalledModules] = modules;
+            return new Dictionary<string, object>();
         }
-
-        return dictionary;
     }
 
     public Guid? GetSolutionId(string solutionPath)
@@ -48,7 +57,7 @@ public class SolutionInfoProvider : ISolutionInfoProvider , ISingletonDependency
 
         return ReadSolutionIdFromJson(root);
     }
-    
+
     private Guid? ReadSolutionIdFromJson(JsonElement root)
     {
         return root.TryGetProperty("id", out var idElement) && Guid.TryParse(idElement.GetString(), out var id)
@@ -56,57 +65,52 @@ public class SolutionInfoProvider : ISolutionInfoProvider , ISingletonDependency
             : null;
     }
 
-    protected virtual void AddCreatingStudioConfiguration(Dictionary<string,object> dict, JsonElement config)
+    protected virtual void AddCreatingStudioConfiguration(Dictionary<string, object> dict, JsonElement config)
     {
-            var mappings = new Dictionary<string, Action<JsonElement>>
+        var mappings = new Dictionary<string, Action<JsonElement>>
+        {
+            { "template", value => dict[ActivityPropertyName.Template] = MapSolutionTemplate(value.GetString()) },
+            { "createdAbpStudioVersion", value => dict[ActivityPropertyName.CreatedAbpStudioVersion] = value.GetString()! },
+            { "multiTenancy", value => dict[ActivityPropertyName.MultiTenancy] = ParseBool(value) },
+            { "uiFramework", value => dict[ActivityPropertyName.UiFramework] = MapUiFramework(value.GetString()) },
+            { "databaseProvider", value => dict[ActivityPropertyName.DatabaseProvider] = MapDatabaseProvider(value.GetString()) },
+            { "theme", value => dict[ActivityPropertyName.Theme] = MapUiTheme(value.GetString()) },
+            { "themeStyle", value => dict[ActivityPropertyName.ThemeStyle] = MapUiThemeStyle(value.GetString()) },
+            { "publicWebsite", value => dict[ActivityPropertyName.HasPublicWebsite] = ParseBool(value) },
+            { "tiered", value => dict[ActivityPropertyName.IsTiered] = ParseBool(value) },
+            { "socialLogin", value => dict[ActivityPropertyName.SocialLogins] = ParseBool(value) },
+            { "databaseManagementSystem", value => dict[ActivityPropertyName.DatabaseManagementSystem] = MapDbms(value.GetString()) },
+            { "separateTenantSchema", value => dict[ActivityPropertyName.IsSeparateTenantSchema] = ParseBool(value) },
+            { "mobileFramework", value => dict[ActivityPropertyName.MobileFramework] = MapMobileApp(value.GetString()) },
+            { "includeTests", value => dict[ActivityPropertyName.IncludeTests] = ParseBool(value) },
+            { "dynamicLocalization", value => dict[ActivityPropertyName.DynamicLocalization] = ParseBool(value) },
+            { "kubernetesConfiguration", value => dict[ActivityPropertyName.KubernetesConfiguration] = ParseBool(value) },
+            { "grafanaDashboard", value => dict[ActivityPropertyName.GrafanaDashboard] = ParseBool(value) },
+        };
+        foreach (var mapping in mappings)
+        {
+            if (config.TryGetProperty(mapping.Key, out var propertyValue))
             {
-                { "template", value => dict[ActivityPropertyName.Template] = MapSolutionTemplate(value.GetString()) },
-                { "createdAbpStudioVersion", value => dict[ActivityPropertyName.CreatedAbpStudioVersion] = value.GetString()! },
-                { "multiTenancy", value => dict[ActivityPropertyName.MultiTenancy] = ParseBool(value) },
-                { "uiFramework", value => dict[ActivityPropertyName.UiFramework] = MapUiFramework(value.GetString()) },
-                { "databaseProvider", value => dict[ActivityPropertyName.DatabaseProvider] = MapDatabaseProvider(value.GetString()) },
-                { "theme", value => dict[ActivityPropertyName.Theme] = MapUiTheme(value.GetString()) },
-                { "themeStyle", value => dict[ActivityPropertyName.ThemeStyle] = MapUiThemeStyle(value.GetString()) },
-                { "publicWebsite", value => dict[ActivityPropertyName.HasPublicWebsite] = ParseBool(value) },
-                { "tiered", value => dict[ActivityPropertyName.IsTiered] = ParseBool(value) },
-                { "socialLogin", value => dict[ActivityPropertyName.SocialLogins] = ParseBool(value) },
-                { "databaseManagementSystem", value => dict[ActivityPropertyName.DatabaseManagementSystem] = MapDbms(value.GetString()) },
-                { "separateTenantSchema", value => dict[ActivityPropertyName.IsSeparateTenantSchema] = ParseBool(value) },
-                { "mobileFramework", value => dict[ActivityPropertyName.MobileFramework] = MapMobileApp(value.GetString()) },
-                { "includeTests", value => dict[ActivityPropertyName.IncludeTests] = ParseBool(value) },
-                { "dynamicLocalization", value => dict[ActivityPropertyName.DynamicLocalization] = ParseBool(value) },
-                { "kubernetesConfiguration", value => dict[ActivityPropertyName.KubernetesConfiguration] = ParseBool(value) },
-                { "grafanaDashboard", value => dict[ActivityPropertyName.GrafanaDashboard] = ParseBool(value) },
-            };
-            foreach (var mapping in mappings)
-            {
-                try
-                {
-                    if (config.TryGetProperty(mapping.Key, out var propertyValue))
-                    {
-                        mapping.Value(propertyValue);
-                    }
-                }
-                catch
-                {
-                    // ignored
-                }
+                mapping.Value(propertyValue);
             }
+        }
     }
 
-    private static bool ParseBool(JsonElement element) =>
-        element.ValueKind switch
+    private static bool ParseBool(JsonElement element)
+    {
+        return element.ValueKind switch
         {
             JsonValueKind.True => true,
             JsonValueKind.False => false,
             JsonValueKind.String when bool.TryParse(element.GetString(), out var b) => b,
             _ => false
         };
+    }
 
 
-    protected virtual List<SolutionModuleInstallationInfo> ExtractModules(JsonElement modulesElement)
+    protected virtual List<Dictionary<string,object>> ExtractModules(string directoryPath, JsonElement modulesElement)
     {
-        var modules = new List<SolutionModuleInstallationInfo>();
+        var modules = new List<Dictionary<string,object>>();
 
         foreach (var module in modulesElement.EnumerateObject())
         {
@@ -117,12 +121,18 @@ public class SolutionInfoProvider : ISolutionInfoProvider , ISingletonDependency
             }
 
             var path = pathElement.GetString();
-            if (path.IsNullOrEmpty() || !File.Exists(path))
+            if (path.IsNullOrEmpty())
             {
                 continue;
             }
+            var modulePath = Path.Combine(directoryPath, path);
 
-            var moduleJson = File.ReadAllText(path);
+            if (!File.Exists(modulePath))
+            {
+                continue;
+            }
+            
+            var moduleJson = File.ReadAllText(modulePath);
             using var moduleDoc = JsonDocument.Parse(moduleJson);
 
             if (!moduleDoc.RootElement.TryGetProperty("imports", out var imports) ||
@@ -138,14 +148,25 @@ public class SolutionInfoProvider : ISolutionInfoProvider , ISingletonDependency
                     ? DateTimeOffset.Parse(ct.GetString()!)
                     : (DateTimeOffset?)null;
 
-                if (modules.Any(x => x.ModuleName == name && x.Version == version))
+                if (modules.Any(x => 
+                        x.ContainsKey("ModuleName") && (string)x["ModuleName"] == name &&
+                        x.ContainsKey("Version") && (string)x["Version"] == version))
                 {
                     continue;
                 }
 
-                modules.Add(new SolutionModuleInstallationInfo
+                if (modules.Any(x =>
+                        x.TryGetValue("ModuleName", out var moduleNameObj) && moduleNameObj as string == name &&
+                        x.TryGetValue("Version", out var versionObj) && versionObj as string == version))
                 {
-                    ModuleName = name, Version = version, InstallationTime = creationTime
+                    continue;
+                }
+
+                modules.Add(new Dictionary<string, object>
+                {
+                    { "ModuleName", name },
+                    { "Version", version ?? string.Empty },
+                    { "InstallationTime", creationTime ?? DateTime.MinValue }
                 });
             }
         }
@@ -160,14 +181,27 @@ public class SolutionInfoProvider : ISolutionInfoProvider , ISingletonDependency
             return 0;
         }
 
-        using var httpClient = new HttpClient();
-        var accessToken = File.ReadAllText(AbpTelemetryPaths.AccessToken);
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        try
+        {
+            using var httpClient = new HttpClient();
+            var accessToken = File.ReadAllText(AbpTelemetryPaths.AccessToken);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        var json = await httpClient.GetStringAsync($"{AbpPlatformUrls.AbpIoUrl}api/license/api-key");
-        using var doc = JsonDocument.Parse(json);
+            var httpResponse = await httpClient.GetAsync($"{AbpPlatformUrls.AbpIoUrl}api/license/api-key");
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return 0;
+            }
 
-        return doc.RootElement.GetProperty("licenseType").GetInt32();
+            var responseContent = await httpResponse.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(responseContent);
+
+            return doc.RootElement.GetProperty("licenseType").GetInt32();
+        }
+        catch
+        {
+            return 0;
+        }
     }
 
     protected virtual UiTheme MapUiTheme(string? theme) => theme switch
