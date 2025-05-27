@@ -496,6 +496,8 @@ Run the following command line under the `Angular` project folder to generate th
 abp generate-proxy -t ng -m ordering -u http://localhost:44311 --target ordering-service
 ```
 
+> Make sure the url port (example 44311) must be same with your OrderService's port. 
+
 For more information, please refer to the [Service Proxies](https://abp.io/docs/latest/framework/ui/angular/service-proxies) documentation.
 
 ### Create Order Module

@@ -167,7 +167,7 @@ Now, stop any application running in the *Solution Runner* panel, and then run t
 
 ![abp-studio-run-build-and-start-all](images/abp-studio-run-start-all.png)
 
-After the application is started, you can right-click and [Browse](../../studio/running-applications.md#monitoring) on the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} application to open it in the ABP Studio's pre-integrated browser:
+After the application is started, you can right-click and [Browse](../../studio/running-applications.md#monitoring) on the {{if UI == "MVC"}} `CloudCrm.Web` {{else if UI == "NG"}} `CloudCrm.Angular` {{else}} `CloudCrm.Blazor` {{end}} application to open it in the ABP Studio's pre-integrated browser:
 
 ![abp-studio-browse-cloud-crm-products](images/abp-studio-browse-cloud-crm-products.png)
 
