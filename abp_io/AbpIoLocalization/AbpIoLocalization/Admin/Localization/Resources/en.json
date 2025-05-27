@@ -721,9 +721,9 @@
     "Menu:TelemetryReports": "Telemetry Reports",
     "TelemetryReports:DailyStudioOpen": "Daily Studio Opens",
     "TelemetryReports:MonthlyStudioOpen": "Monthly Studio Opens",
-    "TelemetryReports:AverageDailyUsage": "Average Daily Usage",
-    "TelemetryReports:UsageFrequency": "Usage Frequency",
-    "TelemetryReports:FeatureUsage": "Feature Usage",
+    "TelemetryReports:AverageDailyUsage": "Studio Daily Usage Duration Distribution",
+    "TelemetryReports:UsageFrequency": "Studio Usage Frequency",
+    "TelemetryReports:FeatureUsage": "Studio Feature Usage",
     "TelemetryReports:Load": "Load",
     "TelemetryReports:MinLaunchCount": "Min Launch",
     "TelemetryReports:MaxLaunchCount": "Max Launch",
@@ -733,10 +733,11 @@
     "TelemetryReports:Year": "Year",
     "TelemetryReports:ChartTitles:Daily": "Daily Studio Opens",
     "TelemetryReports:ChartTitles:Monthly": "Monthly Studio Opens",
-    "TelemetryReports:ChartTitles:AverageDuration": "Daily Average Usage Duration",
+    "TelemetryReports:ChartTitles:AverageDuration": "Daily Studio Average Usage Duration",
     "TelemetryReports:ChartTitles:Frequency": "Studio Usage Frequency",
-    "TelemetryReports:ChartTitles:FeatureUsage": "Feature Usage Stats",
-    "TelemetryReports:ChartLabels:AverageUsage": "Average Usage",
+    "TelemetryReports:ChartTitles:FeatureUsage": "Studio Feature Usage Stats",
+    "TelemetryReports:ChartTitles:UsageDurationDistribution": "Studio Usage Time (Daily Avg)",
+    "TelemetryReports:ChartLabels:AverageUsage": "Studio Average Usage",
     "TelemetryReports:ChartLabels:MinutesPerDay": "Minutes Per Day",
     "TelemetryReports:ChartLabels:FirstTime": "First Time",
     "TelemetryReports:ChartLabels:Returning": "Returning",
@@ -745,6 +746,7 @@
     "TelemetryReports:ChartLabels:UniqueUsers": "Unique Users",
     "TelemetryReports:ChartLabels:Total": "Total",
     "TelemetryReports:ChartLabels:Daily": "Daily",
-    "TelemetryReports:ChartLabels:Monthly": "Monthly"
+    "TelemetryReports:ChartLabels:Monthly": "Monthly",
+    "TelemetryReports:ChartLabels:Users" : "Users"
   }
 }

@@ -57,9 +57,8 @@ public class TelemetryActivityDataProvider : ITelemetryActivityDataProvider, ISi
             activity.Remove(ActivityPropertyName.Assembly);
         }
 
-        if (activity.TryGetValue(ActivityPropertyName.SolutionId, out var rawSolutionId))
+        if (activity.TryGetValue(ActivityPropertyName.SolutionId, out var rawSolutionId) && Guid.TryParse(rawSolutionId?.ToString(), out var solutionId))
         {
-            var solutionId = Guid.Parse(rawSolutionId!.ToString()!);
 
             if (await activityStorage.ShouldAddSolutionInformation(solutionId))
             {
