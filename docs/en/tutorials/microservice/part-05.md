@@ -26,7 +26,7 @@ In the previous part, we created the Ordering microservice. In this part, we wil
 
 ## Creating the Order Entity
 
-We will start by creating the `Order` entity, which will represent an order in our system. We'll add this entity to the `CloudCrm.OrderingService` project. Create a new folder named `Entities` and add a class named `Order` inside it:
+We will start by creating the `Order` entity, which will represent an order in our system. We'll add this entity to the `CloudCrm.OrderingService` project. Create a new folder named `Entities` and create a file `Order.cs` inside it:
 
 ```csharp
 using CloudCrm.OrderingService.Enums;
@@ -46,7 +46,7 @@ To keep this example simple, we allow users to include only a single product wit
 
 ### Adding the OrderState Enum
 
-We also need to define the `OrderState` enum. In the `CloudCrm.OrderingService.Contracts` project, create a folder named `Enums` and add an `OrderState` enum inside it:
+We also need to define the `OrderState` enum. In the `CloudCrm.OrderingService.Contracts` project, create a folder named `Enums` and create a file `OrderState.cs` inside it:
 
 ```csharp
 namespace CloudCrm.OrderingService.Enums;

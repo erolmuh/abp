@@ -250,7 +250,9 @@ It opens the *Generate C# proxies* window. Select the `CloudCrm.CatalogService` 
 
 ![generate-catalog-service-proxy](images/generate-catalog-service-proxy.png)
 
-We have generated the proxy classes for the `IProductIntegrationService` interface. Now, we must add the *Remote Service* url to the `appsettings.json` file of the `CloudCrm.OrderingService` project. Open the `appsettings.json` file (the `appsettings.json` file of the `CloudCrm.OrderingService` project of the `CloudCrm.OrderingService` .NET solution) and add the *CatalogService* section following configuration:
+Proxy classes for the `IProductIntegrationService` interface have been generated. This configuration is usually added automatically. 
+
+However, if it has not been added, you must manually add the `CatalogService` entry to the `appsettings.json` file of the `CloudCrm.OrderingService` project:
 
 ```json
 {
