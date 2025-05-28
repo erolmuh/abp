@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,9 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.Internal;
 using Volo.Abp.Logging;
 using Volo.Abp.Modularity;
+using Volo.Abp.Telemetry;
+using Volo.Abp.Telemetry.Constants;
+using Volo.Abp.Telemetry.Helpers;
 
 namespace Volo.Abp;
 
@@ -361,5 +365,48 @@ public abstract class AbpApplicationBase : IAbpApplication
         {
             abpHostEnvironment.EnvironmentName = Environments.Production;
         }
+    }
+    
+    protected void ConfigureTelemetry(IServiceProvider serviceProvider)
+    {
+        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+        if (configuration.GetValue<bool?>("Abp:Telemetry:IsEnabled") == false)
+        {
+            return;
+        }
+        
+        Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = serviceProvider.CreateScope();
+
+                var assembly = Assembly.GetEntryAssembly()!;
+
+                var projectMetaData = AbpProjectMetadataReader.ReadProjectMetadata(assembly);
+
+                if (projectMetaData != null)
+                {
+                    var telemetryService = scope.ServiceProvider.GetRequiredService<ITelemetryService>();
+
+                    await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
+                    {
+                        activity[ActivityPropertyName.Assembly] = assembly.Location;
+                        activity[ActivityPropertyName.ProjectId] = projectMetaData.ProjectId!;
+                        activity[ActivityPropertyName.ProjectType] = projectMetaData.Role!;
+                        if (!projectMetaData.AbpSlnPath.IsNullOrEmpty())
+                        {
+                            activity[ActivityPropertyName.SolutionPath] = projectMetaData.AbpSlnPath;
+                        }
+                    });
+
+                }
+            }
+            catch (Exception e)
+            {
+                var logger = serviceProvider.GetRequiredService<ILogger<AbpApplicationWithExternalServiceProvider>>();
+                logger.LogError(e, "An error occurred while configuring telemetry.");
+            }
+        });
     }
 }

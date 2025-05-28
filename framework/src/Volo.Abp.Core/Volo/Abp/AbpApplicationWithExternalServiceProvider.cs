@@ -65,45 +65,7 @@ internal class AbpApplicationWithExternalServiceProvider : AbpApplicationBase, I
         ConfigureTelemetry(serviceProvider);
         
     }
-    private void ConfigureTelemetry(IServiceProvider serviceProvider)
-    {
-        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-        if (configuration.GetValue<bool>("Abp:Telemetry:Disable"))
-        {
-            return;
-        }
-        
-        Task.Run(async () =>
-        {
-            try
-            {
-                using var scope = serviceProvider.CreateScope();
-
-                var assembly = Assembly.GetEntryAssembly()!;
-
-                var packageMetadata = AbpPackageMetadataReader.GetMetaData(assembly);
-
-                if (packageMetadata != null)
-                {
-                    var telemetryService = scope.ServiceProvider.GetRequiredService<ITelemetryService>();
-
-                    await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
-                    {
-                        activity[ActivityPropertyName.Assembly] = assembly.Location;
-                        activity[ActivityPropertyName.ProjectId] = packageMetadata.ProjectId!;
-                        activity[ActivityPropertyName.ProjectType] = packageMetadata.Role!;
-                        activity[ActivityPropertyName.SolutionPath] = packageMetadata.AbpSlnPath!;
-                    });
-
-                }
-            }
-            catch (Exception e)
-            {
-                var logger = serviceProvider.GetRequiredService<ILogger<AbpApplicationWithExternalServiceProvider>>();
-                logger.LogError(e, "An error occurred while configuring telemetry.");
-            }
-        });
-    }
+ 
     public override void Dispose()
     {
         base.Dispose();

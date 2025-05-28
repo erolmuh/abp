@@ -7,9 +7,9 @@ using System.Text.Json;
 
 namespace Volo.Abp.Telemetry.Helpers;
 
-public static class AbpPackageMetadataReader
+public static class AbpProjectMetadataReader
 {
-    public static AbpPackageMetadata? GetMetaData(Assembly assembly)
+    public static AbpPackageMetadata? ReadProjectMetadata(Assembly assembly)
     {
         var assemblyPath = assembly.Location;
         try
@@ -73,8 +73,10 @@ public static class AbpPackageMetadataReader
     private static string? FindFileUpwards(string startingDir, string searchPattern)
     {
         var currentDir = new DirectoryInfo(startingDir);
+        const int maxDepth = 10;
+        var currentDepth = 0;
 
-        while (currentDir != null)
+        while (currentDir != null && currentDepth < maxDepth)
         {
             var file = currentDir.GetFiles(searchPattern).FirstOrDefault();
             if (file != null)
@@ -83,6 +85,7 @@ public static class AbpPackageMetadataReader
             }
 
             currentDir = currentDir.Parent;
+            currentDepth++;
         }
 
         return null;
