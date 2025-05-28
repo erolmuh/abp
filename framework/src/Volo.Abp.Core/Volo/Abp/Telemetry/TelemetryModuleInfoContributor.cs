@@ -13,15 +13,15 @@ public class TelemetryModuleInfoContributor : ITelemetryApplicationInfoContribut
 {
     public Task ContributeAsync(ActivityData activityData)
     {
-        if (activityData.TryGetValue(ActivityPropertyName.Assembly, out var assemblyPath))
+        if (activityData.TryGetValue(ActivityPropertyNames.Assembly, out var assemblyPath))
         {
             var assembly = Assembly.LoadFrom((string)assemblyPath);
             var types = assembly.GetTypes();
             var moduleCount = types.Count(t => typeof(AbpModule).IsAssignableFrom(t) && !t.IsAbstract);
             var projectCount = types.Select(t => t.Assembly.GetName().Name).Distinct().Count();
 
-            activityData[ActivityPropertyName.ModuleCount] =  moduleCount;
-            activityData[ActivityPropertyName.ProjectCount] = projectCount;
+            activityData[ActivityPropertyNames.ModuleCount] =  moduleCount;
+            activityData[ActivityPropertyNames.ProjectCount] = projectCount;
         }
 
         return Task.CompletedTask;

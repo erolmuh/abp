@@ -1,6 +1,6 @@
 ﻿namespace Volo.Abp.Telemetry.Constants;
 
-public static class ActivityPropertyName
+public static class ActivityPropertyNames
 {
     public const string SessionId =  nameof(SessionId);
     public const string ActivityName =  nameof(ActivityName);
@@ -75,5 +75,6 @@ public static class ActivityPropertyName
     public const string ModuleInstallationTime = nameof(ModuleInstallationTime);
     public const string ApplicationType = nameof(ApplicationType);
     public const string AbpModuleCount = nameof(AbpModuleCount);
+    public const string ExtraProperties = nameof(ExtraProperties);
 
 }

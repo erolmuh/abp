@@ -42,19 +42,19 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
     public async Task EnrichAsync(ActivityData activity)
     {
         
-        activity[ActivityPropertyName.DeviceId] = _deviceId.Value;
+        activity[ActivityPropertyNames.DeviceId] = _deviceId.Value;
         if (!await _telemetryActivityStorage.ShouldAddDeviceInfoAsync())
         {
             return;
         }
         
-        activity[ActivityPropertyName.DeviceType] = GetDeviceType();
-        activity[ActivityPropertyName.DeviceLanguage] = GetLanguage();
-        activity[ActivityPropertyName.OperatingSystem] = GetOperatingSystem();
-        activity[ActivityPropertyName.CountryIsoCode] = GetCountry();
+        activity[ActivityPropertyNames.DeviceType] = GetDeviceType();
+        activity[ActivityPropertyNames.DeviceLanguage] = GetLanguage();
+        activity[ActivityPropertyNames.OperatingSystem] = GetOperatingSystem();
+        activity[ActivityPropertyNames.CountryIsoCode] = GetCountry();
 
         var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
-        activity[ActivityPropertyName.InstalledSoftwares] = softwareList;
+        activity[ActivityPropertyNames.InstalledSoftwares] = softwareList;
 
         await _telemetryActivityStorage.MarkDeviceInfoAsAddedAsync();
     }

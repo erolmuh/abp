@@ -25,9 +25,9 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
 
     public async Task EnrichAsync(ActivityData activity)
     {
-        if (activity.ContainsKey(ActivityPropertyName.Assembly) && _telemetrySessionTypeProvider.SessionType == SessionType.ApplicationRuntime)
+        if (activity.ContainsKey(ActivityPropertyNames.Assembly) && _telemetrySessionTypeProvider.SessionType == SessionType.ApplicationRuntime)
         {
-            if (!activity.TryGetValue(ActivityPropertyName.ProjectId, out var projectIdObj) || 
+            if (!activity.TryGetValue(ActivityPropertyNames.ProjectId, out var projectIdObj) || 
                 projectIdObj is not string projectIdStr || 
                 !Guid.TryParse(projectIdStr, out var projectId))
             {
@@ -44,7 +44,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
                 await contributor.ContributeAsync(activity);
             }
 
-            activity.Remove(ActivityPropertyName.Assembly);
+            activity.Remove(ActivityPropertyNames.Assembly);
             await _telemetryActivityStorage.MarkApplicationInfoAsAddedAsync(projectId);
         }
     }

@@ -35,7 +35,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
                 await _telemetryActivityStorage.MarkSolutionInfoAsAddedAsync(solutionId.Value);
             }
 
-            activity.Remove(ActivityPropertyName.SolutionPath);
+            activity.Remove(ActivityPropertyNames.SolutionPath);
         }
     }
 
@@ -48,7 +48,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
 
         if (TryGetSolutionIdFromFile(activity, out var idFromFile))
         {
-            activity[ActivityPropertyName.SolutionId] = idFromFile;
+            activity[ActivityPropertyNames.SolutionId] = idFromFile;
             return idFromFile;
         }
 
@@ -58,7 +58,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
     {
         try
         {
-            if (!activityData.TryGetValue(ActivityPropertyName.SolutionPath, out var rawSolutionPath)
+            if (!activityData.TryGetValue(ActivityPropertyNames.SolutionPath, out var rawSolutionPath)
                 || string.IsNullOrWhiteSpace(rawSolutionPath?.ToString())
                 || !File.Exists(rawSolutionPath?.ToString()))
             {
@@ -78,13 +78,13 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
 
             AddSolutionInformation(activityData, root.GetProperty("creatingStudioConfiguration"));
 
-            activityData[ActivityPropertyName.LicenseType] = await GetLicenseTypeAsync();
+            activityData[ActivityPropertyNames.LicenseType] = await GetLicenseTypeAsync();
 
             if (root.TryGetProperty("modules", out var modulesElement) &&
                 modulesElement.ValueKind == JsonValueKind.Object)
             {
                 var directoryPath = Path.GetDirectoryName(solutionPath)!;
-                activityData[ActivityPropertyName.InstalledModules] = ExtractModules(directoryPath, modulesElement);
+                activityData[ActivityPropertyNames.InstalledModules] = ExtractModules(directoryPath, modulesElement);
             }
         }
         catch
@@ -97,7 +97,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
     {
         solutionId = Guid.Empty;
 
-        if (activity.TryGetValue(ActivityPropertyName.SolutionId, out var value) &&
+        if (activity.TryGetValue(ActivityPropertyNames.SolutionId, out var value) &&
             Guid.TryParse(value?.ToString(), out var parsedId))
         {
             solutionId = parsedId;
@@ -111,7 +111,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
     {
         solutionId = Guid.Empty;
 
-        if (!activity.TryGetValue(ActivityPropertyName.SolutionPath, out var value))
+        if (!activity.TryGetValue(ActivityPropertyNames.SolutionPath, out var value))
         {
             return false;
         }
@@ -145,23 +145,23 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
     {
         var map = new (string Key, Action<JsonElement> Apply)[]
         {
-            ("template", v => activity[ActivityPropertyName.Template] = v.GetString() ?? string.Empty),
-            ("createdAbpStudioVersion", v => activity[ActivityPropertyName.CreatedAbpStudioVersion] = v.GetString()!),
-            ("multiTenancy", v => activity[ActivityPropertyName.MultiTenancy] = ParseBool(v)),
-            ("uiFramework", v => activity[ActivityPropertyName.UiFramework] = v.GetString() ?? string.Empty),
-            ("databaseProvider", v => activity[ActivityPropertyName.DatabaseProvider] = v.GetString() ?? string.Empty),
-            ("theme", v => activity[ActivityPropertyName.Theme] = v.GetString() ?? string.Empty),
-            ("themeStyle", v => activity[ActivityPropertyName.ThemeStyle] = v.GetString() ?? string.Empty),
-            ("publicWebsite", v => activity[ActivityPropertyName.HasPublicWebsite] = ParseBool(v)),
-            ("tiered", v => activity[ActivityPropertyName.IsTiered] = ParseBool(v)),
-            ("socialLogin", v => activity[ActivityPropertyName.SocialLogins] = ParseBool(v)),
-            ("databaseManagementSystem", v => activity[ActivityPropertyName.DatabaseManagementSystem] = v.GetString() ?? string.Empty),
-            ("separateTenantSchema", v => activity[ActivityPropertyName.IsSeparateTenantSchema] = ParseBool(v)),
-            ("mobileFramework", v => activity[ActivityPropertyName.MobileFramework] = v.GetString() ?? string.Empty),
-            ("includeTests", v => activity[ActivityPropertyName.IncludeTests] = ParseBool(v)),
-            ("dynamicLocalization", v => activity[ActivityPropertyName.DynamicLocalization] = ParseBool(v)),
-            ("kubernetesConfiguration", v => activity[ActivityPropertyName.KubernetesConfiguration] = ParseBool(v)),
-            ("grafanaDashboard", v => activity[ActivityPropertyName.GrafanaDashboard] = ParseBool(v)),
+            ("template", v => activity[ActivityPropertyNames.Template] = v.GetString() ?? string.Empty),
+            ("createdAbpStudioVersion", v => activity[ActivityPropertyNames.CreatedAbpStudioVersion] = v.GetString()!),
+            ("multiTenancy", v => activity[ActivityPropertyNames.MultiTenancy] = ParseBool(v)),
+            ("uiFramework", v => activity[ActivityPropertyNames.UiFramework] = v.GetString() ?? string.Empty),
+            ("databaseProvider", v => activity[ActivityPropertyNames.DatabaseProvider] = v.GetString() ?? string.Empty),
+            ("theme", v => activity[ActivityPropertyNames.Theme] = v.GetString() ?? string.Empty),
+            ("themeStyle", v => activity[ActivityPropertyNames.ThemeStyle] = v.GetString() ?? string.Empty),
+            ("publicWebsite", v => activity[ActivityPropertyNames.HasPublicWebsite] = ParseBool(v)),
+            ("tiered", v => activity[ActivityPropertyNames.IsTiered] = ParseBool(v)),
+            ("socialLogin", v => activity[ActivityPropertyNames.SocialLogins] = ParseBool(v)),
+            ("databaseManagementSystem", v => activity[ActivityPropertyNames.DatabaseManagementSystem] = v.GetString() ?? string.Empty),
+            ("separateTenantSchema", v => activity[ActivityPropertyNames.IsSeparateTenantSchema] = ParseBool(v)),
+            ("mobileFramework", v => activity[ActivityPropertyNames.MobileFramework] = v.GetString() ?? string.Empty),
+            ("includeTests", v => activity[ActivityPropertyNames.IncludeTests] = ParseBool(v)),
+            ("dynamicLocalization", v => activity[ActivityPropertyNames.DynamicLocalization] = ParseBool(v)),
+            ("kubernetesConfiguration", v => activity[ActivityPropertyNames.KubernetesConfiguration] = ParseBool(v)),
+            ("grafanaDashboard", v => activity[ActivityPropertyNames.GrafanaDashboard] = ParseBool(v)),
         };
 
         foreach (var (key, apply) in map)
@@ -213,21 +213,21 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
                     : (DateTimeOffset?)null;
 
                 if (modules.Any(x =>
-                        x.TryGetValue(ActivityPropertyName.ModuleName, out var n) && n as string == import.Name &&
-                        x.TryGetValue(ActivityPropertyName.ModuleVersion, out var v) && v as string == version))
+                        x.TryGetValue(ActivityPropertyNames.ModuleName, out var n) && n as string == import.Name &&
+                        x.TryGetValue(ActivityPropertyNames.ModuleVersion, out var v) && v as string == version))
                 {
                     continue;
                 }
 
-                var moduleEntry = new Dictionary<string, object> { { ActivityPropertyName.ModuleName, import.Name } };
+                var moduleEntry = new Dictionary<string, object> { { ActivityPropertyNames.ModuleName, import.Name } };
                 if (!version.IsNullOrEmpty())
                 {
-                    moduleEntry[ActivityPropertyName.ModuleVersion] = version;
+                    moduleEntry[ActivityPropertyNames.ModuleVersion] = version;
                 }
 
                 if (creationTime.HasValue)
                 {
-                    moduleEntry[ActivityPropertyName.ModuleInstallationTime] = creationTime.Value;
+                    moduleEntry[ActivityPropertyNames.ModuleInstallationTime] = creationTime.Value;
                 }
 
                 modules.Add(moduleEntry);

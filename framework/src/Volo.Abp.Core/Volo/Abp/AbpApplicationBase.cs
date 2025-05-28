@@ -391,12 +391,12 @@ public abstract class AbpApplicationBase : IAbpApplication
 
                     await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
                     {
-                        activity[ActivityPropertyName.Assembly] = assembly.Location;
-                        activity[ActivityPropertyName.ProjectId] = projectMetaData.ProjectId!;
-                        activity[ActivityPropertyName.ProjectType] = projectMetaData.Role!;
+                        activity[ActivityPropertyNames.Assembly] = assembly.Location;
+                        activity[ActivityPropertyNames.ProjectId] = projectMetaData.ProjectId!;
+                        activity[ActivityPropertyNames.ProjectType] = projectMetaData.Role!;
                         if (!projectMetaData.AbpSlnPath.IsNullOrEmpty())
                         {
-                            activity[ActivityPropertyName.SolutionPath] = projectMetaData.AbpSlnPath;
+                            activity[ActivityPropertyNames.SolutionPath] = projectMetaData.AbpSlnPath;
                         }
                     });
 

@@ -14,13 +14,13 @@ public class TelemetryDomainInfoContributor : ITelemetryApplicationInfoContribut
 {
     public Task ContributeAsync(ActivityData activityData)
     {
-        if (activityData.TryGetValue(ActivityPropertyName.Assembly, out var assemblyPath))
+        if (activityData.TryGetValue(ActivityPropertyNames.Assembly, out var assemblyPath))
         {
             var assembly = Assembly.LoadFrom((string)assemblyPath);
 
             var entityCount = assembly.GetTypes().Count(t => typeof(IEntity).IsAssignableFrom(t) && !t.IsAbstract);
 
-            activityData[ActivityPropertyName.EntityCount] =  entityCount;
+            activityData[ActivityPropertyNames.EntityCount] =  entityCount;
         }
 
         return Task.CompletedTask;
