@@ -9,7 +9,7 @@ public class ActivityData : Dictionary<string, object>
     {
     }
 
-    public ActivityData(string activityName, string? detail = null)
+    public ActivityData(string activityName, string? details = null)
     {
         if (activityName.IsNullOrWhiteSpace())
         {
@@ -17,7 +17,7 @@ public class ActivityData : Dictionary<string, object>
         }
 
         ActivityName = activityName;
-        ActivityDetail = detail;
+        ActivityDetails = details;
     }
 
     public string ActivityName {
@@ -25,22 +25,22 @@ public class ActivityData : Dictionary<string, object>
         set => this[nameof(ActivityName)] = value;
     }
 
-    public string? ActivityDetail {
-        get => (string?)this[nameof(ActivityDetail)];
+    public string? ActivityDetails {
+        get => (string?)this[nameof(ActivityDetails)];
         internal set {
             if (value is not null)
             {
-                this[nameof(ActivityDetail)] = value;
+                this[nameof(ActivityDetails)] = value;
             }
         }
     }
 
-    public Dictionary<string, object>? ActivityDetails {
-        get => (Dictionary<string, object>?)this[nameof(ActivityDetail)];
-        internal set {
+    public Dictionary<string, object>? AdditionalProperties {
+        get => (Dictionary<string, object>?)this[nameof(AdditionalProperties)];
+        set {
             if (value is not null)
             {
-                this[nameof(ActivityDetail)] = value;
+                this[nameof(AdditionalProperties)] = value;
             }
         }
     }

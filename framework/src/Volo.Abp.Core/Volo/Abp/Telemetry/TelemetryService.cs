@@ -80,9 +80,9 @@ public class TelemetryService : ITelemetryService, IScopedDependency
         return Task.CompletedTask;
     }
 
-    public async Task AddActivityAsync(string activityName, string? detail = null)
+    public async Task AddActivityAsync(string activityName, string? details = null)
     {
-        await AddActivityAsync(new ActivityData(activityName, detail));
+        await AddActivityAsync(new ActivityData(activityName, details));
     }
 
     public async Task AddActivityAsync(string activityName, Action<ActivityData> configure)
@@ -98,10 +98,10 @@ public class TelemetryService : ITelemetryService, IScopedDependency
     {
         var activityData = new ActivityData(ActivityNameConsts.Error)
         {
-            ActivityDetails = new Dictionary<string, object>()
+            AdditionalProperties = new Dictionary<string, object>()
         };
 
-        configure?.Invoke(activityData.ActivityDetails);
+        configure?.Invoke(activityData.AdditionalProperties);
 
         await AddActivityAsync(activityData);
     }
@@ -110,7 +110,7 @@ public class TelemetryService : ITelemetryService, IScopedDependency
     {
         var activityData = new ActivityData(ActivityNameConsts.Error)
         {
-            ActivityDetails = new Dictionary<string, object>
+            AdditionalProperties = new Dictionary<string, object>
             {
                 { "ErrorMessage", errorMessage },
                 { "FailingActivity", failingActivity },
