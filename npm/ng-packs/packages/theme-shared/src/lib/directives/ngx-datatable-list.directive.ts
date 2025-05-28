@@ -24,7 +24,6 @@ import { SpinnerComponent } from '../components';
 @Directive({
   // eslint-disable-next-line @angular-eslint/directive-selector
   selector: 'ngx-datatable[list]',
-  standalone: true,
   exportAs: 'ngxDatatableList',
 })
 export class NgxDatatableListDirective implements OnChanges, OnInit, DoCheck {

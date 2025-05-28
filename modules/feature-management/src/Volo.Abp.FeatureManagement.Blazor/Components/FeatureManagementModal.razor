@@ -17,12 +17,14 @@
             <ModalBody>
                 <Tabs TabPosition="TabPosition.Start" Pills="true" @bind-SelectedTab="@SelectedTabName">
                     <Items>
-                        @foreach (var group in Groups)
-                        {
-                            <Tab Name="@GetNormalizedGroupName(group.Name)">
-                                <span>@group.DisplayName</span>
-                            </Tab>
-                        }
+                        <div class="pt-3">
+                            @foreach (var group in Groups)
+                            {
+                                <Tab Name="@GetNormalizedGroupName(group.Name)">
+                                    <span>@group.DisplayName</span>
+                                </Tab>
+                            }
+                        </div>
                     </Items>
                     <Content>
                         @for (var i = 0; i < Groups.Count; i++)

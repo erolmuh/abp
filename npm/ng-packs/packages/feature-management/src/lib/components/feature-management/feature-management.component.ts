@@ -1,4 +1,7 @@
-import { ConfigStateService, LocalizationModule, TrackByService } from '@abp/ng.core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ConfigStateService, LocalizationPipe, TrackByService } from '@abp/ng.core';
 import {
   FeatureDto,
   FeatureGroupDto,
@@ -6,19 +9,18 @@ import {
   UpdateFeatureDto,
 } from '@abp/ng.feature-management/proxy';
 import {
+  ButtonComponent,
   Confirmation,
   ConfirmationService,
   LocaleDirection,
-  ThemeSharedModule,
+  ModalCloseDirective,
+  ModalComponent,
   ToasterService,
 } from '@abp/ng.theme.shared';
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
-import { CommonModule, NgTemplateOutlet } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { finalize } from 'rxjs/operators';
 import { FreeTextInputDirective } from '../../directives';
-import { FeatureManagement } from '../../models/feature-management';
+import { FeatureManagement } from '../../models';
 
 enum ValueTypes {
   ToggleStringValueType = 'ToggleStringValueType',
@@ -32,12 +34,14 @@ enum ValueTypes {
   exportAs: 'abpFeatureManagement',
   imports: [
     CommonModule,
-    ThemeSharedModule,
-    LocalizationModule,
+    ButtonComponent,
+    ModalComponent,
+    LocalizationPipe,
     FormsModule,
     NgbNavModule,
     FreeTextInputDirective,
     NgTemplateOutlet,
+    ModalCloseDirective,
   ],
 })
 export class FeatureManagementComponent

@@ -114,9 +114,11 @@ public class BookStoreDbContext : AbpDbContext<BookStoreDbContext>
 
 {{if DB == "Mongo"}}
 
-Add a `IMongoCollection<Book> Books` property to the `BookStoreMongoDbContext` inside the `Acme.BookStore.MongoDB` project:
+Add an `IMongoCollection<Book> Books` property to the `BookStoreMongoDbContext` inside the `Acme.BookStore.MongoDB` project:
 
 ```csharp
+using Acme.BookStore.Books;
+
 public class BookStoreMongoDbContext : AbpMongoDbContext
 {
     public IMongoCollection<Book> Books => Collection<Book>();
