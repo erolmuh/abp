@@ -11,11 +11,12 @@ public interface ITelemetryActivityStorage
     Task MarkActivitiesAsSentAsync();
     Task MarkDeviceInfoAsAddedAsync();
     Task MarkSolutionInfoAsAddedAsync(Guid solutionId);
-    Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid solutionId);
-    Task<DateTimeOffset?> GetLastDeviceInfoSendTimeAsync();
+    Task MarkApplicationInfoAsAddedAsync(Guid applicationInfo);
     Task BufferActivityAsync(ActivityData activityData);
     Task<List<ActivityData>> GetBufferedActivitiesAsync();
     Task EndSessionAsync();
     Task<bool> ShouldAddDeviceInfoAsync();
     Task<bool> ShouldAddSolutionInformation(Guid solutionId);
+
+    Task<bool> ShouldAddApplicationInfoAsync(Guid applicationId);
 }

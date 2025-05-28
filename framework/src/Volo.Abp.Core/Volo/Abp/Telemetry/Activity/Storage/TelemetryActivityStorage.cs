@@ -68,8 +68,14 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         state.Solutions[solutionId] = DateTimeOffset.UtcNow;
         await SaveAsync();
     }
-
-    public async Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid id)
+    public async Task MarkApplicationInfoAsAddedAsync(Guid applicationInfo)
+    {
+        var state = await GetStateAsync();
+        state.Solutions[applicationInfo] = DateTimeOffset.UtcNow;
+        await SaveAsync();
+    }
+    
+    private async Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid id)
     {
         var state = await GetStateAsync();
 
@@ -81,7 +87,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return null;
     }
 
-    public async Task<DateTimeOffset?> GetLastDeviceInfoSendTimeAsync()
+    private async Task<DateTimeOffset?> GetLastDeviceInfoSendTimeAsync()
     {
         var state = await GetStateAsync();
         return state.LastDeviceInfoAddTime;
@@ -92,6 +98,23 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         var state = await GetStateAsync();
         state.LastDeviceInfoAddTime = DateTimeOffset.UtcNow;
         await SaveAsync();
+    }
+    
+    public virtual async Task<bool> ShouldAddDeviceInfoAsync()
+    {
+        var lastSend = await GetLastDeviceInfoSendTimeAsync();
+        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
+    }
+
+    public virtual async Task<bool> ShouldAddSolutionInformation(Guid solutionId)
+    {
+        var lastSend = await GetLastSolutionInfoSendTimeAsync(solutionId);
+        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
+    }
+    public virtual async Task<bool> ShouldAddApplicationInfoAsync(Guid applicationId)
+    {
+        var lastSend = await GetLastApplicationInfoSendTimeAsync(applicationId);
+        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
     }
 
     private async Task<TelemetryActivityStorageState> GetStateAsync()
@@ -183,16 +206,15 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return Task.CompletedTask;
     }
 
-
-    public virtual async Task<bool> ShouldAddDeviceInfoAsync()
+    private async Task<DateTimeOffset?> GetLastApplicationInfoSendTimeAsync(Guid applicationId)
     {
-        var lastSend = await GetLastDeviceInfoSendTimeAsync();
-        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
-    }
+        var state = await GetStateAsync();
+        if (state.ApplicationInfos.TryGetValue(applicationId, out var lastActivitySendTime))
+        {
+            return lastActivitySendTime;
+        }
 
-    public virtual async Task<bool> ShouldAddSolutionInformation(Guid solutionId)
-    {
-        var lastSend = await GetLastSolutionInfoSendTimeAsync(solutionId);
-        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
+        return null;
     }
+   
 }
