@@ -6,7 +6,7 @@ namespace Volo.Abp.Telemetry.Activity.Contracts;
 
 public interface ITelemetrySolutionInfoProvider
 {
-    Task<IDictionary<string, object>> GetSolutionInfoAsync(string solutionPath);
+    Task FillSolutionInfoAsync(ActivityData activityData, string solutionPath);
     
     Guid? GetSolutionId(string solutionPath);
 }

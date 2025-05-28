@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.Telemetry.Activity;
@@ -12,4 +13,6 @@ public interface ITelemetryService
     Task AddActivityAsync(ActivityData data);
     Task AddActivityAsync(string activityName, string? details = null);
     Task AddActivityAsync(string activityName, Action<ActivityData> configure);
+    Task AddErrorActivityAsync(Action<Dictionary<string, object>> configure);
+    Task AddErrorForActivityAsync(string failingActivity, string errorMessage);
 }

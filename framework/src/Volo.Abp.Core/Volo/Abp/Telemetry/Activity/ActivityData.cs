@@ -7,10 +7,9 @@ public class ActivityData : Dictionary<string, object>
 {
     public ActivityData()
     {
-        
     }
-    
-    public ActivityData(string activityName, string? details = null)
+
+    public ActivityData(string activityName, string? detail = null)
     {
         if (activityName.IsNullOrWhiteSpace())
         {
@@ -18,29 +17,37 @@ public class ActivityData : Dictionary<string, object>
         }
 
         ActivityName = activityName;
-        ActivityDetails = details;
+        ActivityDetail = detail;
     }
-    
-    public string ActivityName
-    {
-        get => (string) this[nameof(ActivityName)];
+
+    public string ActivityName {
+        get => (string)this[nameof(ActivityName)];
         set => this[nameof(ActivityName)] = value;
     }
 
-    public string? ActivityDetails
-    {
-        get => (string?) this[nameof(ActivityDetails)];
-        internal set
-        {
-            if (value is not null) this[nameof(ActivityDetails)] = value;
+    public string? ActivityDetail {
+        get => (string?)this[nameof(ActivityDetail)];
+        internal set {
+            if (value is not null)
+            {
+                this[nameof(ActivityDetail)] = value;
+            }
         }
     }
 
-    public long? ActivityDuration
-    {
-        get => (long?) this[nameof(ActivityDuration)];
-        internal set
-        {
+    public Dictionary<string, object>? ActivityDetails {
+        get => (Dictionary<string, object>?)this[nameof(ActivityDetail)];
+        internal set {
+            if (value is not null)
+            {
+                this[nameof(ActivityDetail)] = value;
+            }
+        }
+    }
+
+    public long? ActivityDuration {
+        get => (long?)this[nameof(ActivityDuration)];
+        internal set {
             if (value is not null)
             {
                 this[nameof(ActivityDuration)] = value;
@@ -49,6 +56,4 @@ public class ActivityData : Dictionary<string, object>
     }
 
     public DateTimeOffset Time = DateTimeOffset.UtcNow;
-
-   
 }

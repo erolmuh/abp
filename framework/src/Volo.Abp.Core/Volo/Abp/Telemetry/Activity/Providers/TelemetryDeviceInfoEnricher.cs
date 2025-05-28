@@ -3,33 +3,60 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-#if WINDOWS
-using System.Management;
-#endif
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
 using Volo.Abp.Telemetry.Constants.Enums;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
+#if WINDOWS
+using System.Management;
+#endif
 
-namespace Volo.Abp.Telemetry.EnvironmentInspection.Providers;
+namespace Volo.Abp.Telemetry.Activity.Providers;
 
-public class DeviceInfoProvider : IDeviceInfoProvider, ISingletonDependency
+[ExposeServices(typeof(ITelemetryActivityDataEnricher))]
+public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISingletonDependency
 {
+    private readonly ITelemetryActivityStorage _telemetryActivityStorage;
+    private readonly ISoftwareInfoProvider _softwareInfoProvider;
     private readonly Lazy<Guid> _deviceId;
 
-    public DeviceInfoProvider()
+    public TelemetryDeviceInfoEnricher(ITelemetryActivityStorage telemetryActivityStorage, ISoftwareInfoProvider softwareInfoProvider)
     {
+        _telemetryActivityStorage = telemetryActivityStorage;
+        _softwareInfoProvider = softwareInfoProvider;
         _deviceId = new Lazy<Guid>(() =>
         {
             var deviceIdText = File.ReadAllText(TelemetryPaths.ComputerId);
-            return deviceIdText.To<Guid>();
+            return deviceIdText.To<Guid>(); 
         });
     }
 
-    public Guid GetDeviceId()
+    public async Task<bool> ShouldEnrichAsync(ActivityData activity)
     {
-        return _deviceId.Value;
+        return await _telemetryActivityStorage.ShouldAddDeviceInfoAsync();
+    }
+
+    public async Task EnrichAsync(ActivityData activity)
+    {
+        
+        activity[ActivityPropertyName.DeviceId] = _deviceId.Value;
+        if (!await _telemetryActivityStorage.ShouldAddDeviceInfoAsync())
+        {
+            return;
+        }
+        
+        activity[ActivityPropertyName.DeviceType] = GetDeviceType();
+        activity[ActivityPropertyName.DeviceLanguage] = GetLanguage();
+        activity[ActivityPropertyName.OperatingSystem] = GetOperatingSystem();
+        activity[ActivityPropertyName.CountryIsoCode] = GetCountry();
+
+        var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
+        activity[ActivityPropertyName.InstalledSoftwares] = softwareList;
+
+        await _telemetryActivityStorage.MarkDeviceInfoAsAddedAsync();
     }
 
     public OperationSystem GetOperatingSystem()
@@ -168,4 +195,6 @@ public class DeviceInfoProvider : IDeviceInfoProvider, ISingletonDependency
 
         return DeviceType.Unknown;
     }
+
+   
 }

@@ -3,6 +3,9 @@
 public static class ActivityPropertyName
 {
     public const string SessionId =  nameof(SessionId);
+    public const string ActivityName =  nameof(ActivityName);
+    public const string Error =  nameof(Error);
+    public const string ErrorDetail =  nameof(ErrorDetail);
     public const string Id =  nameof(Id);
     public const string UserId =  nameof(UserId);
     public const string OrganizationId =  nameof(OrganizationId);
