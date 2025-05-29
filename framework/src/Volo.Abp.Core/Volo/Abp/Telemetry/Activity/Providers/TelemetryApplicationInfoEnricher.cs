@@ -15,8 +15,10 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
     private readonly IEnumerable<ITelemetryApplicationInfoContributor> _telemetryApplicationInfoContributors;
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
 
-    public TelemetryApplicationInfoEnricher(ITelemetrySessionTypeProvider telemetrySessionTypeProvider,
-        IEnumerable<ITelemetryApplicationInfoContributor> telemetryApplicationInfoContributors, ITelemetryActivityStorage telemetryActivityStorage)
+    public TelemetryApplicationInfoEnricher(
+        ITelemetrySessionTypeProvider telemetrySessionTypeProvider,
+        IEnumerable<ITelemetryApplicationInfoContributor> telemetryApplicationInfoContributors, 
+        ITelemetryActivityStorage telemetryActivityStorage)
     {
         _telemetrySessionTypeProvider = telemetrySessionTypeProvider;
         _telemetryApplicationInfoContributors = telemetryApplicationInfoContributors;
@@ -25,27 +27,64 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
 
     public async Task EnrichAsync(ActivityData activity)
     {
-        if (activity.ContainsKey(ActivityPropertyNames.Assembly) && _telemetrySessionTypeProvider.SessionType == SessionType.ApplicationRuntime)
+        if (!ShouldEnrichActivity(activity))
         {
-            if (!activity.TryGetValue(ActivityPropertyNames.ProjectId, out var projectIdObj) || 
-                projectIdObj is not string projectIdStr || 
-                !Guid.TryParse(projectIdStr, out var projectId))
+            return;
+        }
+
+        var projectId = ExtractProjectId(activity);
+        if (projectId == null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!await _telemetryActivityStorage.ShouldAddApplicationInfoAsync(projectId.Value))
             {
                 return;
             }
 
-            if (!await _telemetryActivityStorage.ShouldAddApplicationInfoAsync(projectId))
-            {
-                return;
-            }
-            
-            foreach (var contributor in _telemetryApplicationInfoContributors)
+            await ContributeApplicationInfoAsync(activity);
+            activity.Remove(ActivityPropertyNames.Assembly);
+            await _telemetryActivityStorage.MarkApplicationInfoAsAddedAsync(projectId.Value);
+        }
+        catch
+        {
+            // ignored
+        }
+    }
+
+    private bool ShouldEnrichActivity(ActivityData activity)
+    {
+        return activity.ContainsKey(ActivityPropertyNames.Assembly) && 
+               _telemetrySessionTypeProvider.SessionType == SessionType.ApplicationRuntime;
+    }
+
+    private static Guid? ExtractProjectId(ActivityData activity)
+    {
+        if (!activity.TryGetValue(ActivityPropertyNames.ProjectId, out var projectIdObj) || 
+            projectIdObj is not string projectIdStr || 
+            !Guid.TryParse(projectIdStr, out var projectId))
+        {
+            return null;
+        }
+
+        return projectId;
+    }
+
+    private async Task ContributeApplicationInfoAsync(ActivityData activity)
+    {
+        foreach (var contributor in _telemetryApplicationInfoContributors)
+        {
+            try
             {
                 await contributor.ContributeAsync(activity);
             }
-
-            activity.Remove(ActivityPropertyNames.Assembly);
-            await _telemetryActivityStorage.MarkApplicationInfoAsAddedAsync(projectId);
+            catch
+            {
+                // ignored
+            }
         }
     }
 }
