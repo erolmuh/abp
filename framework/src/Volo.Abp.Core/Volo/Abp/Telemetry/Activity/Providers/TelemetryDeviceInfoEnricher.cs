@@ -21,95 +21,94 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private readonly ISoftwareInfoProvider _softwareInfoProvider;
-    private readonly Lazy<Guid> _deviceId;
+    private readonly Lazy<Guid?> _deviceId;
 
     public TelemetryDeviceInfoEnricher(ITelemetryActivityStorage telemetryActivityStorage, ISoftwareInfoProvider softwareInfoProvider)
     {
         _telemetryActivityStorage = telemetryActivityStorage;
         _softwareInfoProvider = softwareInfoProvider;
-        _deviceId = new Lazy<Guid>(() =>
-        {
-            var deviceIdText = File.ReadAllText(TelemetryPaths.ComputerId);
-            return deviceIdText.To<Guid>(); 
-        });
-    }
-
-    public async Task<bool> ShouldEnrichAsync(ActivityData activity)
-    {
-        return await _telemetryActivityStorage.ShouldAddDeviceInfoAsync();
+        _deviceId = new Lazy<Guid?>(GetDeviceId);
     }
 
     public async Task EnrichAsync(ActivityData activity)
     {
-        
-        activity[ActivityPropertyNames.DeviceId] = _deviceId.Value;
+        if (_deviceId.Value.HasValue)
+        {
+            activity[ActivityPropertyNames.DeviceId] = _deviceId.Value.Value;
+        }
+
         if (!await _telemetryActivityStorage.ShouldAddDeviceInfoAsync())
         {
             return;
         }
-        
+
+        EnrichWithDeviceInfo(activity);
+        await EnrichWithSoftwareInfoAsync(activity);
+        await _telemetryActivityStorage.MarkDeviceInfoAsAddedAsync();
+    }
+
+    private void EnrichWithDeviceInfo(ActivityData activity)
+    {
         activity[ActivityPropertyNames.DeviceType] = GetDeviceType();
         activity[ActivityPropertyNames.DeviceLanguage] = GetLanguage();
         activity[ActivityPropertyNames.OperatingSystem] = GetOperatingSystem();
         activity[ActivityPropertyNames.CountryIsoCode] = GetCountry();
-
-        var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
-        activity[ActivityPropertyNames.InstalledSoftwares] = softwareList;
-
-        await _telemetryActivityStorage.MarkDeviceInfoAsAddedAsync();
     }
 
-    public OperationSystem GetOperatingSystem()
+    private async Task EnrichWithSoftwareInfoAsync(ActivityData activity)
+    {
+        var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
+        activity[ActivityPropertyNames.InstalledSoftwares] = softwareList;
+    }
+
+    private static Guid? GetDeviceId()
+    {
+        if (File.Exists(TelemetryPaths.ComputerId))
+        {
+            var deviceIdText = File.ReadAllText(TelemetryPaths.ComputerId);
+            return deviceIdText.To<Guid>();
+        }
+
+        return null;
+    }
+
+    private static OperationSystem GetOperatingSystem()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
             return OperationSystem.Windows;
-        }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
             return OperationSystem.Linux;
-        }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
             return OperationSystem.MacOS;
-        }
 
         return OperationSystem.Unknown;
     }
 
-    public DeviceType GetDeviceType()
+    private static DeviceType GetDeviceType()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
             return DetectDeviceTypeOnWindows();
-        }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
             return DetectDeviceTypeOnLinux();
-        }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
             return DetectDeviceTypeOnMacOS();
-        }
 
         if (RuntimeInformation.OSDescription.ToLower().Contains("ios"))
-        {
             return DeviceType.Laptop;
-        }
 
         return DeviceType.Unknown;
     }
 
-    public string GetLanguage()
+    private static string GetLanguage()
     {
         return CultureInfo.CurrentUICulture.Name;
     }
 
-    public string GetCountry()
+    private static string GetCountry()
     {
         var culture = CultureInfo.CurrentUICulture;
         if (culture.IsNeutralCulture)
@@ -121,33 +120,40 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
         return region.TwoLetterISORegionName;
     }
 
-    private DeviceType DetectDeviceTypeOnWindows()
+    private static DeviceType DetectDeviceTypeOnWindows()
     {
+#if WINDOWS
         try
         {
             using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_SystemEnclosure");
             foreach (var obj in searcher.Get())
             {
-                var chassisTypes = obj["ChassisTypes"] as ushort[];
-                if (chassisTypes != null && chassisTypes.Any(t => t is 8 or 9 or 10 or 14))
+                if (obj["ChassisTypes"] is ushort[] chassisTypes &&
+                    chassisTypes.Any(t => t is 8 or 9 or 10 or 14))
                 {
                     return DeviceType.Laptop;
                 }
             }
         }
-        catch { }
-
+        catch
+        {
+            // ignored
+        }
+#endif
         return DeviceType.Desktop;
     }
 
-    private DeviceType DetectDeviceTypeOnLinux()
+    private static DeviceType DetectDeviceTypeOnLinux()
     {
         try
         {
-            var type = File.ReadAllText("/sys/class/dmi/id/chassis_type");
-            if (int.TryParse(type.Trim(), out var code) && code is 8 or 9 or 10 or 14)
+            if (File.Exists("/sys/class/dmi/id/chassis_type"))
             {
-                return DeviceType.Laptop;
+                var type = File.ReadAllText("/sys/class/dmi/id/chassis_type");
+                if (int.TryParse(type.Trim(), out var code) && code is 8 or 9 or 10 or 14)
+                {
+                    return DeviceType.Laptop;
+                }
             }
         }
         catch
@@ -158,11 +164,11 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
         return DeviceType.Desktop;
     }
 
-    private DeviceType DetectDeviceTypeOnMacOS()
+    private static DeviceType DetectDeviceTypeOnMacOS()
     {
         try
         {
-            var process = new Process
+            using var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
@@ -179,14 +185,10 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
             process.WaitForExit();
 
             if (output.Contains("MacBook"))
-            {
                 return DeviceType.Laptop;
-            }
 
             if (output.Contains("iMac") || output.Contains("Mac Pro"))
-            {
                 return DeviceType.Desktop;
-            }
         }
         catch
         {
@@ -195,6 +197,4 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
 
         return DeviceType.Unknown;
     }
-
-   
 }
