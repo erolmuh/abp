@@ -18,4 +18,5 @@ public interface ITelemetryActivityStorage
     Task<bool> ShouldAddDeviceInfoAsync();
     Task<bool> ShouldAddSolutionInformation(Guid solutionId);
     Task<bool> ShouldAddApplicationInfoAsync(Guid applicationId);
+    Task<bool> ShouldSendActivitiesAsync();
 }

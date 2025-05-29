@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
@@ -15,9 +16,15 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 {
     private const int MaxFileRetries = 5;
     private const int RetryDelayMs = 100;
-    private static readonly TimeSpan InfoExpirationPeriod = TimeSpan.FromDays(7);
-    
+
+    private readonly TelemetryActivityStorageOptions _options;
     private TelemetryActivityStorageState? _cachedState;
+
+    public TelemetryActivityStorage(IOptions<TelemetryActivityStorageOptions> options)
+    {
+        _options = options?.Value ?? new TelemetryActivityStorageOptions();
+
+    }
 
     public async Task BufferActivityAsync(ActivityData activityData)
     {
@@ -48,15 +55,15 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public async Task<(Guid SessionId, bool IsFirstSession)> GetOrCreateSessionAsync()
     {
         var isFirstSession = !File.Exists(TelemetryPaths.ActivityStorage);
-        
+
         var state = await GetStateAsync();
-        
+
         if (state.SessionId is null)
         {
             state.SessionId = Guid.NewGuid();
             await SaveAsync();
         }
-        
+
         return (state.SessionId.Value, isFirstSession);
     }
 
@@ -108,6 +115,12 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return ShouldAddInfo(lastSend);
     }
 
+    public virtual async Task<bool> ShouldSendActivitiesAsync()
+    {
+        var lastActivitySendTime = await GetLastActivitySendTimeAsync();
+        return lastActivitySendTime is null || DateTimeOffset.UtcNow - lastActivitySendTime > _options.ActivitySendPeriod;
+    }
+
     private async Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid solutionId)
     {
         var state = await GetStateAsync();
@@ -138,7 +151,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         {
             using var reader = new StreamReader(stream, Encoding.UTF8);
             var json = await reader.ReadToEndAsync();
-            return JsonSerializer.Deserialize<TelemetryActivityStorageState?>(json, GetJsonSerializerOptions()) 
+            return JsonSerializer.Deserialize<TelemetryActivityStorageState?>(json, GetJsonSerializerOptions())
                    ?? new TelemetryActivityStorageState();
         }) ?? new TelemetryActivityStorageState();
         return _cachedState;
@@ -218,8 +231,8 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         };
     }
 
-    private static bool ShouldAddInfo(DateTimeOffset? lastSend)
+    private bool ShouldAddInfo(DateTimeOffset? lastSend)
     {
-        return lastSend is null || DateTimeOffset.UtcNow - lastSend > InfoExpirationPeriod;
+        return lastSend is null || DateTimeOffset.UtcNow - lastSend > _options.InfoExpirationPeriod;
     }
 }

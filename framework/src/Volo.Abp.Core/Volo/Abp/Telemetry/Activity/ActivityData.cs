@@ -7,6 +7,7 @@ public class ActivityData : Dictionary<string, object>
 {
     public ActivityData()
     {
+        Time = DateTimeOffset.UtcNow;
     }
 
     public ActivityData(string activityName, string? details = null)
@@ -18,6 +19,7 @@ public class ActivityData : Dictionary<string, object>
 
         ActivityName = activityName;
         ActivityDetails = details;
+        Time = DateTimeOffset.UtcNow;
     }
 
     public string ActivityName {
@@ -55,5 +57,8 @@ public class ActivityData : Dictionary<string, object>
         }
     }
 
-    public DateTimeOffset Time = DateTimeOffset.UtcNow;
+    public DateTimeOffset Time {
+        get => TryGetValue(nameof(Time), out var value) ? (DateTimeOffset)value : DateTimeOffset.UtcNow;
+        set => this[nameof(Time)] = value;
+    }
 }

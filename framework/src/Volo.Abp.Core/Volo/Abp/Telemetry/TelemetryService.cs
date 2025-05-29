@@ -54,7 +54,7 @@ public class TelemetryService : ITelemetryService, IScopedDependency
         });
     }
 
-  
+
 
     public Task AddActivityAsync(ActivityData data)
     {
@@ -70,7 +70,10 @@ public class TelemetryService : ITelemetryService, IScopedDependency
                     await _telemetryActivityStorage.EndSessionAsync();
                 }
 
-                await SendActivityIfDueAsync();
+                if (await _telemetryActivityStorage.ShouldSendActivitiesAsync())
+                {
+                    await _telemetryDataSender.SendAsync();
+                }
             }
             catch
             {
@@ -96,7 +99,7 @@ public class TelemetryService : ITelemetryService, IScopedDependency
         await AddActivityAsync(activityData);
     }
 
-    public async Task AddErrorActivityAsync(Action<Dictionary<string,object>> configure)
+    public async Task AddErrorActivityAsync(Action<Dictionary<string, object>> configure)
     {
         var activityData = new ActivityData(ActivityNameConsts.Error)
         {
@@ -121,13 +124,5 @@ public class TelemetryService : ITelemetryService, IScopedDependency
 
         await AddActivityAsync(activityData);
     }
-    private async Task SendActivityIfDueAsync()
-    {
-        var lastActivitySendTime = await _telemetryActivityStorage.GetLastActivitySendTimeAsync();
-
-        if (lastActivitySendTime is not null && lastActivitySendTime < DateTimeOffset.UtcNow.AddDays(-1))
-        {
-            await _telemetryDataSender.SendAsync();
-        }
-    }
+   
 }
