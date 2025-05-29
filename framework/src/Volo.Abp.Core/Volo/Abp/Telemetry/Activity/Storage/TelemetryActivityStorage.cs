@@ -45,12 +45,19 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return state.ActivitySendTime;
     }
 
-    public async Task<Guid> GetOrCreateSessionInfoAsync()
+    public async Task<(Guid SessionId, bool IsFirstSession)> GetOrCreateSessionAsync()
     {
+        var isFirstSession = !File.Exists(TelemetryPaths.ActivityStorage);
+        
         var state = await GetStateAsync();
-        state.SessionId ??= Guid.NewGuid();
-        await SaveAsync();
-        return state.SessionId.Value;
+        
+        if (state.SessionId is null)
+        {
+            state.SessionId = Guid.NewGuid();
+            await SaveAsync();
+        }
+        
+        return (state.SessionId.Value, isFirstSession);
     }
 
     public async Task MarkActivitiesAsSentAsync()

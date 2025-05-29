@@ -21,12 +21,12 @@ public class ActivityData : Dictionary<string, object>
     }
 
     public string ActivityName {
-        get => (string)this[nameof(ActivityName)];
+        get => TryGetValue(nameof(ActivityName), out var value) ? (string)value : string.Empty;
         set => this[nameof(ActivityName)] = value;
     }
 
     public string? ActivityDetails {
-        get => (string?)this[nameof(ActivityDetails)];
+        get => TryGetValue(nameof(ActivityDetails), out var value) ? (string?)value : null;
         internal set {
             if (value is not null)
             {
@@ -36,7 +36,7 @@ public class ActivityData : Dictionary<string, object>
     }
 
     public Dictionary<string, object>? AdditionalProperties {
-        get => (Dictionary<string, object>?)this[nameof(AdditionalProperties)];
+        get => TryGetValue(nameof(AdditionalProperties), out var value) ? (Dictionary<string, object>?)value : null;
         set {
             if (value is not null)
             {
@@ -46,7 +46,7 @@ public class ActivityData : Dictionary<string, object>
     }
 
     public long? ActivityDuration {
-        get => (long?)this[nameof(ActivityDuration)];
+        get => TryGetValue(nameof(ActivityDuration), out var value) ? (long?)value : null;
         internal set {
             if (value is not null)
             {

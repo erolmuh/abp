@@ -22,10 +22,10 @@ public class TelemetryActivityDataBuilder : ITelemetryActivityDataBuilder, ISing
     {
         var telemetrySessionTypeProvider = _serviceProvider.GetRequiredService<ITelemetrySessionTypeProvider>();
         var telemetryActivityStorage = _serviceProvider.GetRequiredService<ITelemetryActivityStorage>();
-        
+        var (sessionId, isFirstSession) = await telemetryActivityStorage.GetOrCreateSessionAsync();
         activity[ActivityPropertyNames.SessionType] = telemetrySessionTypeProvider.SessionType;
-        activity[ActivityPropertyNames.SessionId] = await telemetryActivityStorage.GetOrCreateSessionInfoAsync();
-        activity[ActivityPropertyNames.IsFirstSession] = !File.Exists(TelemetryPaths.ActivityStorage);
+        activity[ActivityPropertyNames.SessionId] = sessionId;
+        activity[ActivityPropertyNames.IsFirstSession] = isFirstSession;
         
         var activityDataEnrichers = _serviceProvider.GetRequiredService<IEnumerable<ITelemetryActivityDataEnricher>>();
 
