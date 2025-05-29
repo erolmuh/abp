@@ -17,7 +17,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
 
     public TelemetryApplicationInfoEnricher(
         ITelemetrySessionTypeProvider telemetrySessionTypeProvider,
-        IEnumerable<ITelemetryApplicationInfoContributor> telemetryApplicationInfoContributors, 
+        IEnumerable<ITelemetryApplicationInfoContributor> telemetryApplicationInfoContributors,
         ITelemetryActivityStorage telemetryActivityStorage)
     {
         _telemetrySessionTypeProvider = telemetrySessionTypeProvider;
@@ -45,7 +45,11 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
                 return;
             }
 
-            await ContributeApplicationInfoAsync(activity);
+            foreach (var contributor in _telemetryApplicationInfoContributors)
+            {
+                await contributor.ContributeAsync(activity);
+            }
+
             activity.Remove(ActivityPropertyNames.Assembly);
             await _telemetryActivityStorage.MarkApplicationInfoAsAddedAsync(projectId.Value);
         }
@@ -57,34 +61,19 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
 
     private bool ShouldEnrichActivity(ActivityData activity)
     {
-        return activity.ContainsKey(ActivityPropertyNames.Assembly) && 
+        return activity.ContainsKey(ActivityPropertyNames.Assembly) &&
                _telemetrySessionTypeProvider.SessionType == SessionType.ApplicationRuntime;
     }
 
     private static Guid? ExtractProjectId(ActivityData activity)
     {
-        if (!activity.TryGetValue(ActivityPropertyNames.ProjectId, out var projectIdObj) || 
-            projectIdObj is not string projectIdStr || 
+        if (!activity.TryGetValue(ActivityPropertyNames.ProjectId, out var projectIdObj) ||
+            projectIdObj is not string projectIdStr ||
             !Guid.TryParse(projectIdStr, out var projectId))
         {
             return null;
         }
 
         return projectId;
-    }
-
-    private async Task ContributeApplicationInfoAsync(ActivityData activity)
-    {
-        foreach (var contributor in _telemetryApplicationInfoContributors)
-        {
-            try
-            {
-                await contributor.ContributeAsync(activity);
-            }
-            catch
-            {
-                // ignored
-            }
-        }
     }
 }

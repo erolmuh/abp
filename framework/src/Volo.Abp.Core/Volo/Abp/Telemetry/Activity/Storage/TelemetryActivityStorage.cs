@@ -79,7 +79,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public async Task MarkApplicationInfoAsAddedAsync(Guid applicationId)
     {
         var state = await GetStateAsync();
-        state.ApplicationInfos[applicationId] = DateTimeOffset.UtcNow;
+        state.Applications[applicationId] = DateTimeOffset.UtcNow;
         await SaveAsync();
     }
 
@@ -117,7 +117,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     private async Task<DateTimeOffset?> GetLastApplicationInfoSendTimeAsync(Guid applicationId)
     {
         var state = await GetStateAsync();
-        return state.ApplicationInfos.TryGetValue(applicationId, out var date) ? date : null;
+        return state.Applications.TryGetValue(applicationId, out var date) ? date : null;
     }
 
     private async Task<DateTimeOffset?> GetLastDeviceInfoSendTimeAsync()

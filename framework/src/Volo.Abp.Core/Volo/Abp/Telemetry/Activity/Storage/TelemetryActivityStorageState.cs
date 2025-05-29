@@ -11,7 +11,7 @@ public class TelemetryActivityStorageState
     public List<ActivityData> Activities { get; set; } = new();
     public Dictionary<Guid,DateTimeOffset> Solutions { get; set; } = new();
 
-    public Dictionary<Guid, DateTimeOffset> ApplicationInfos { get; set; } = new();
+    public Dictionary<Guid, DateTimeOffset> Applications { get; set; } = new();
 }
 
 
