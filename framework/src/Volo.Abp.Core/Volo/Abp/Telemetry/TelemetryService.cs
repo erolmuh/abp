@@ -26,6 +26,7 @@ public class TelemetryService : ITelemetryService, IScopedDependency
 
     public IAsyncDisposable TrackActivity(string activityName, Action<ActivityData>? configure = null)
     {
+        Check.NotNullOrEmpty(activityName, nameof(activityName));
         var stopwatch = Stopwatch.StartNew();
         var activityData = new ActivityData(activityName);
 
@@ -87,6 +88,7 @@ public class TelemetryService : ITelemetryService, IScopedDependency
 
     public async Task AddActivityAsync(string activityName, Action<ActivityData> configure)
     {
+        Check.NotNullOrEmpty(activityName, nameof(activityName));
         var activityData = new ActivityData(activityName);
 
         configure?.Invoke(activityData);

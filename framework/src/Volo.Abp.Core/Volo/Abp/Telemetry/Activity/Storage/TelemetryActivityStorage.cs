@@ -13,6 +13,10 @@ namespace Volo.Abp.Telemetry.Activity.Storage;
 
 public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDependency
 {
+    private const int MaxFileRetries = 5;
+    private const int RetryDelayMs = 100;
+    private static readonly TimeSpan InfoExpirationPeriod = TimeSpan.FromDays(7);
+    
     private TelemetryActivityStorageState? _cachedState;
 
     public async Task BufferActivityAsync(ActivityData activityData)
@@ -31,18 +35,15 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public async Task EndSessionAsync()
     {
         var state = await GetStateAsync();
-
         state.SessionId = null;
         await SaveAsync();
     }
-
 
     public async Task<DateTimeOffset?> GetLastActivitySendTimeAsync()
     {
         var state = await GetStateAsync();
         return state.ActivitySendTime;
     }
-
 
     public async Task<Guid> GetOrCreateSessionInfoAsync()
     {
@@ -58,7 +59,6 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         state.ActivitySendTime = DateTimeOffset.UtcNow;
         state.Activities.Clear();
         state.SessionId = null;
-
         await SaveAsync();
     }
 
@@ -68,29 +68,12 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         state.Solutions[solutionId] = DateTimeOffset.UtcNow;
         await SaveAsync();
     }
-    public async Task MarkApplicationInfoAsAddedAsync(Guid applicationInfo)
+
+    public async Task MarkApplicationInfoAsAddedAsync(Guid applicationId)
     {
         var state = await GetStateAsync();
-        state.Solutions[applicationInfo] = DateTimeOffset.UtcNow;
+        state.ApplicationInfos[applicationId] = DateTimeOffset.UtcNow;
         await SaveAsync();
-    }
-    
-    private async Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid id)
-    {
-        var state = await GetStateAsync();
-
-        if (state.Solutions.TryGetValue(id, out var date))
-        {
-            return date;
-        }
-
-        return null;
-    }
-
-    private async Task<DateTimeOffset?> GetLastDeviceInfoSendTimeAsync()
-    {
-        var state = await GetStateAsync();
-        return state.LastDeviceInfoAddTime;
     }
 
     public async Task MarkDeviceInfoAsAddedAsync()
@@ -99,22 +82,41 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         state.LastDeviceInfoAddTime = DateTimeOffset.UtcNow;
         await SaveAsync();
     }
-    
+
     public virtual async Task<bool> ShouldAddDeviceInfoAsync()
     {
         var lastSend = await GetLastDeviceInfoSendTimeAsync();
-        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
+        return ShouldAddInfo(lastSend);
     }
 
     public virtual async Task<bool> ShouldAddSolutionInformation(Guid solutionId)
     {
         var lastSend = await GetLastSolutionInfoSendTimeAsync(solutionId);
-        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
+        return ShouldAddInfo(lastSend);
     }
+
     public virtual async Task<bool> ShouldAddApplicationInfoAsync(Guid applicationId)
     {
         var lastSend = await GetLastApplicationInfoSendTimeAsync(applicationId);
-        return lastSend is null || DateTimeOffset.UtcNow - lastSend > TimeSpan.FromDays(7);
+        return ShouldAddInfo(lastSend);
+    }
+
+    private async Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid solutionId)
+    {
+        var state = await GetStateAsync();
+        return state.Solutions.TryGetValue(solutionId, out var date) ? date : null;
+    }
+
+    private async Task<DateTimeOffset?> GetLastApplicationInfoSendTimeAsync(Guid applicationId)
+    {
+        var state = await GetStateAsync();
+        return state.ApplicationInfos.TryGetValue(applicationId, out var date) ? date : null;
+    }
+
+    private async Task<DateTimeOffset?> GetLastDeviceInfoSendTimeAsync()
+    {
+        var state = await GetStateAsync();
+        return state.LastDeviceInfoAddTime;
     }
 
     private async Task<TelemetryActivityStorageState> GetStateAsync()
@@ -129,19 +131,15 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         {
             using var reader = new StreamReader(stream, Encoding.UTF8);
             var json = await reader.ReadToEndAsync();
-            return JsonSerializer.Deserialize<TelemetryActivityStorageState?>(json,
-                       new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }) ??
-                   new TelemetryActivityStorageState();
-        });
+            return JsonSerializer.Deserialize<TelemetryActivityStorageState?>(json, GetJsonSerializerOptions()) 
+                   ?? new TelemetryActivityStorageState();
+        }) ?? new TelemetryActivityStorageState();
         return _cachedState;
     }
 
-    private async Task<TResult> WithExclusiveFileLockAsync<TResult>(Func<FileStream, Task<TResult>> action)
+    private async Task<TResult?> WithExclusiveFileLockAsync<TResult>(Func<FileStream, Task<TResult>> action)
     {
-        const int maxRetries = 5;
-        const int retryDelayMs = 100;
-
-        for (int i = 0; i < maxRetries; i++)
+        for (int i = 0; i < MaxFileRetries; i++)
         {
             try
             {
@@ -156,26 +154,28 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
             }
             catch (IOException)
             {
-                if (i == maxRetries - 1)
+                if (i == MaxFileRetries - 1)
                 {
-                    throw;
+                    return default;
                 }
 
-                await Task.Delay(retryDelayMs);
+                await Task.Delay(RetryDelayMs);
+            }
+            catch
+            {
+                return default;
             }
         }
 
-        throw new IOException("Unable to acquire file lock for ActivityStorage.");
+        return default;
     }
 
     private Task SaveAsync()
     {
-        var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(),
-            new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(), GetJsonSerializerOptions());
         File.WriteAllText(TelemetryPaths.ActivityStorage, json, Encoding.UTF8);
         return Task.CompletedTask;
     }
-
 
     private Task EnsureFileExistsAsync()
     {
@@ -190,31 +190,29 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
             if (!File.Exists(TelemetryPaths.ActivityStorage))
             {
-                var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(),
-                    new JsonSerializerOptions
-                    {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true
-                    });
+                var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(), GetJsonSerializerOptions());
                 File.WriteAllText(TelemetryPaths.ActivityStorage, json, Encoding.UTF8);
             }
         }
         catch
         {
-            //ignored
+            // Ignored intentionally
         }
 
         return Task.CompletedTask;
     }
 
-    private async Task<DateTimeOffset?> GetLastApplicationInfoSendTimeAsync(Guid applicationId)
+    private static JsonSerializerOptions GetJsonSerializerOptions()
     {
-        var state = await GetStateAsync();
-        if (state.ApplicationInfos.TryGetValue(applicationId, out var lastActivitySendTime))
+        return new JsonSerializerOptions
         {
-            return lastActivitySendTime;
-        }
-
-        return null;
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true
+        };
     }
-   
+
+    private static bool ShouldAddInfo(DateTimeOffset? lastSend)
+    {
+        return lastSend is null || DateTimeOffset.UtcNow - lastSend > InfoExpirationPeriod;
+    }
 }
