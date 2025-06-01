@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
+using Volo.Abp.Telemetry.Constants.Enums;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
@@ -20,12 +21,10 @@ public class TelemetryActivityDataBuilder : ITelemetryActivityDataBuilder, ISing
 
     public virtual async Task BuildAsync(ActivityData activity)
     {
-        var telemetrySessionTypeProvider = _serviceProvider.GetRequiredService<ITelemetrySessionTypeProvider>();
-        var telemetryActivityStorage = _serviceProvider.GetRequiredService<ITelemetryActivityStorage>();
-        var (sessionId, isFirstSession) = await telemetryActivityStorage.GetOrCreateSessionAsync();
-        activity[ActivityPropertyNames.SessionType] = telemetrySessionTypeProvider.SessionType;
-        activity[ActivityPropertyNames.SessionId] = sessionId;
-        activity[ActivityPropertyNames.IsFirstSession] = isFirstSession;
+       
+        var sessionProvider = _serviceProvider.GetRequiredService<ITelemetrySessionProvider>();
+        
+        sessionProvider.AddSessionInfo(activity);
         
         var activityDataEnrichers = _serviceProvider.GetRequiredService<IEnumerable<ITelemetryActivityDataEnricher>>();
 

@@ -68,6 +68,8 @@ public static class ActivityNameConsts
     public const string AbpCliCommandsInstallModule = "AbpCli.Comands.InstallModule";
     public const string AbpCliCommandsInstallLocalModule = "AbpCli.Comands.InstallLocalModule";
     public const string AbpCliCommandsListModules = "AbpCli.Comands.ListModules";
+    public const string AbpCliRun = "AbpCli.Run";
+    public const string AbpCliExit = "AbpCli.Exit";
     public const string ApplicationRun = "Application.Run";
     public const string AbpStudioBrowserOpen = "AbpStudio.Browser.Open";
     public const string Error = "Error";

@@ -11,16 +11,13 @@ namespace Volo.Abp.Telemetry.Activity.Providers;
 [ExposeServices(typeof(ITelemetryActivityDataEnricher))]
 public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, ISingletonDependency
 {
-    private readonly ITelemetrySessionTypeProvider _telemetrySessionTypeProvider;
     private readonly IEnumerable<ITelemetryApplicationInfoContributor> _telemetryApplicationInfoContributors;
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
 
     public TelemetryApplicationInfoEnricher(
-        ITelemetrySessionTypeProvider telemetrySessionTypeProvider,
         IEnumerable<ITelemetryApplicationInfoContributor> telemetryApplicationInfoContributors,
         ITelemetryActivityStorage telemetryActivityStorage)
     {
-        _telemetrySessionTypeProvider = telemetrySessionTypeProvider;
         _telemetryApplicationInfoContributors = telemetryApplicationInfoContributors;
         _telemetryActivityStorage = telemetryActivityStorage;
     }
@@ -61,8 +58,10 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
 
     private bool ShouldEnrichActivity(ActivityData activity)
     {
-        return activity.ContainsKey(ActivityPropertyNames.Assembly) &&
-               _telemetrySessionTypeProvider.SessionType == SessionType.ApplicationRuntime;
+        return activity.ContainsKey(ActivityPropertyNames.Assembly)
+               && activity.TryGetValue(ActivityPropertyNames.SessionType, out var sessionTypeObj)
+               && Enum.TryParse<SessionType>(sessionTypeObj?.ToString(), out var parsed)
+               && parsed == SessionType.ApplicationRuntime;
     }
 
     private static Guid? ExtractProjectId(ActivityData activity)

@@ -14,5 +14,6 @@ public interface ITelemetryService
     Task AddActivityAsync(string activityName, string? details = null);
     Task AddActivityAsync(string activityName, Action<ActivityData> configure);
     Task AddErrorActivityAsync(Action<Dictionary<string, object>> configure);
+    Task AddErrorActivityAsync(string errorMessage);
     Task AddErrorForActivityAsync(string failingActivity, string errorMessage);
 }

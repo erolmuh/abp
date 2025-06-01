@@ -369,13 +369,15 @@ public abstract class AbpApplicationBase : IAbpApplication
     
     protected void ConfigureTelemetry(IServiceProvider serviceProvider)
     {
+        var abpHostEnvironment = serviceProvider.GetRequiredService<IAbpHostEnvironment>();
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-        if (configuration.GetValue<bool?>("Abp:Telemetry:IsEnabled") == false)
+        
+        if (!abpHostEnvironment.IsDevelopment() || configuration.GetValue<bool?>("Abp:Telemetry:IsEnabled") == false)
         {
             return;
         }
         
-        Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
             try
             {

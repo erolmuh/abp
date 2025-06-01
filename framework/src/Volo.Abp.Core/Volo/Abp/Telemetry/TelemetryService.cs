@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity;
@@ -107,6 +106,19 @@ public class TelemetryService : ITelemetryService, IScopedDependency
         };
 
         configure?.Invoke(activityData.AdditionalProperties);
+
+        await AddActivityAsync(activityData);
+    }
+
+    public async Task AddErrorActivityAsync(string errorMessage)
+    {
+        var activityData = new ActivityData(ActivityNameConsts.Error)
+        {
+            AdditionalProperties = new Dictionary<string, object>
+            {
+                { "ErrorMessage", errorMessage },
+            }
+        };
 
         await AddActivityAsync(activityData);
     }

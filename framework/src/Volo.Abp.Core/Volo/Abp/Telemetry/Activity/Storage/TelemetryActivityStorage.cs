@@ -52,10 +52,8 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return state.ActivitySendTime;
     }
 
-    public async Task<(Guid SessionId, bool IsFirstSession)> GetOrCreateSessionAsync()
+    public async Task<Guid> GetOrCreateSessionAsync()
     {
-        var isFirstSession = !File.Exists(TelemetryPaths.ActivityStorage);
-
         var state = await GetStateAsync();
 
         if (state.SessionId is null)
@@ -64,7 +62,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
             await SaveAsync();
         }
 
-        return (state.SessionId.Value, isFirstSession);
+        return state.SessionId.Value;
     }
 
     public async Task MarkActivitiesAsSentAsync()
@@ -72,7 +70,6 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         var state = await GetStateAsync();
         state.ActivitySendTime = DateTimeOffset.UtcNow;
         state.Activities.Clear();
-        state.SessionId = null;
         await SaveAsync();
     }
 
