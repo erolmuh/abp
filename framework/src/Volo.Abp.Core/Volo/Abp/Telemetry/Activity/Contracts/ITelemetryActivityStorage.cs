@@ -6,8 +6,7 @@ namespace Volo.Abp.Telemetry.Activity.Contracts;
 
 public interface ITelemetryActivityStorage
 {
-    Task<DateTimeOffset?> GetLastActivitySendTimeAsync();
-    Task<(Guid SessionId, bool IsFirstSession)> GetOrCreateSessionAsync();
+    Task<Guid> GetOrCreateSessionAsync();
     Task MarkActivitiesAsSentAsync();
     Task MarkDeviceInfoAsAddedAsync();
     Task MarkSolutionInfoAsAddedAsync(Guid solutionId);
