@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Volo.Abp.DependencyInjection;
@@ -16,9 +17,11 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 {
     private const int MaxFileRetries = 5;
     private const int RetryDelayMs = 100;
+    private const int MutexTimeoutMs = 5000; // 5 seconds timeout
 
     private readonly TelemetryActivityStorageOptions _options;
     private TelemetryActivityStorageState? _cachedState;
+    private static readonly string MutexName = "Global\\TelemetryActivityStorage";
 
     public TelemetryActivityStorage(IOptions<TelemetryActivityStorageOptions> options)
     {
@@ -156,18 +159,65 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
     private async Task<TResult?> WithExclusiveFileLockAsync<TResult>(Func<FileStream, Task<TResult>> action)
     {
+        using var mutex = new Mutex(false, MutexName);
+
         for (int i = 0; i < MaxFileRetries; i++)
         {
             try
             {
-                using var stream = new FileStream(
-                    TelemetryPaths.ActivityStorage,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None
-                );
+                // Wait for mutex with timeout
+                if (!mutex.WaitOne(MutexTimeoutMs))
+                {
+                    if (i == MaxFileRetries - 1)
+                    {
+                        return default;
+                    }
+                    await Task.Delay(RetryDelayMs);
+                    continue;
+                }
 
-                return await action(stream);
+                try
+                {
+                    using var stream = new FileStream(
+                        TelemetryPaths.ActivityStorage,
+                        FileMode.OpenOrCreate,
+                        FileAccess.ReadWrite,
+                        FileShare.Read // Allow read sharing since we have mutex protection
+                    );
+
+                    return await action(stream);
+                }
+                finally
+                {
+                    mutex.ReleaseMutex();
+                }
+            }
+            catch (AbandonedMutexException)
+            {
+                // Previous process crashed, mutex is now owned by us
+                try
+                {
+                    using var stream = new FileStream(
+                        TelemetryPaths.ActivityStorage,
+                        FileMode.OpenOrCreate,
+                        FileAccess.ReadWrite,
+                        FileShare.Read
+                    );
+
+                    return await action(stream);
+                }
+                catch
+                {
+                    if (i == MaxFileRetries - 1)
+                    {
+                        return default;
+                    }
+                    await Task.Delay(RetryDelayMs);
+                }
+                finally
+                {
+                    try { mutex.ReleaseMutex(); } catch { }
+                }
             }
             catch (IOException)
             {
@@ -175,7 +225,6 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
                 {
                     return default;
                 }
-
                 await Task.Delay(RetryDelayMs);
             }
             catch
