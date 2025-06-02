@@ -12,7 +12,7 @@ using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry;
 
-public class TelemetryDataSender : ITelemetryDataSender, IScopedDependency
+public class TelemetryDataSender : ITelemetryDataSender, ISingletonDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private const int ActivityBatchSize = 50;

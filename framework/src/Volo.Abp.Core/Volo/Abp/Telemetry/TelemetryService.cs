@@ -9,7 +9,7 @@ using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry;
 
-public class TelemetryService : ITelemetryService, IScopedDependency
+public class TelemetryService : ITelemetryService, ISingletonDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private readonly ITelemetryDataSender _telemetryDataSender;

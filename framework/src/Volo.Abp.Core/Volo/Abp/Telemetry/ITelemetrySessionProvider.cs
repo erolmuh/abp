@@ -1,8 +1,9 @@
-﻿using Volo.Abp.Telemetry.Activity;
+﻿using System.Threading.Tasks;
+using Volo.Abp.Telemetry.Activity;
 
 namespace Volo.Abp.Telemetry;
 
 public interface ITelemetrySessionProvider
 {
-    void AddSessionInfo(ActivityData activity);
+    Task AddSessionInfoAsync(ActivityData activity);
 }
