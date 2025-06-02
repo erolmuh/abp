@@ -17,7 +17,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 {
     private const int MaxFileRetries = 5;
     private const int RetryDelayMs = 100;
-    private const int MutexTimeoutMs = 5000; // 5 seconds timeout
+    private const int MutexTimeoutMs = 5000; 
 
     private readonly TelemetryActivityStorageOptions _options;
     private TelemetryActivityStorageState? _cachedState;
@@ -32,7 +32,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public async Task BufferActivityAsync(ActivityData activityData)
     {
         var state = await GetStateAsync();
-        state.Activities.Add(activityData);
+        state.Activities.Insert(0, activityData);
         await SaveAsync();
     }
 
