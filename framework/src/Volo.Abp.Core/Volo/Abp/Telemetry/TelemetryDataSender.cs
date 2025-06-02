@@ -15,6 +15,7 @@ namespace Volo.Abp.Telemetry;
 public class TelemetryDataSender : ITelemetryDataSender, ISingletonDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
+    
     private const int ActivityBatchSize = 50;
 
     public TelemetryDataSender(ITelemetryActivityStorage telemetryActivityStorage)
@@ -26,16 +27,11 @@ public class TelemetryDataSender : ITelemetryDataSender, ISingletonDependency
     {
         try
         {
-            using var httpClient = new HttpClient();
-            AddAbpAuthenticationTokenAsync(httpClient);
-
             var activities = await _telemetryActivityStorage.GetBufferedActivitiesAsync();
-            if (activities.Count == 0)
-            {
-                return;
-            }
 
-
+            using var httpClient = new HttpClient();
+            AddJwtTokenIfAuthenticated(httpClient);
+            
             for (var i = 0; i < activities.Count; i += ActivityBatchSize)
             {
                 var activityBatch = activities.Skip(i).Take(ActivityBatchSize).ToList();
@@ -53,7 +49,7 @@ public class TelemetryDataSender : ITelemetryDataSender, ISingletonDependency
     }
 
 
-    private static void AddAbpAuthenticationTokenAsync(HttpClient httpClient)
+    private static void AddJwtTokenIfAuthenticated(HttpClient httpClient)
     {
         if (!File.Exists(TelemetryPaths.AccessToken))
         {

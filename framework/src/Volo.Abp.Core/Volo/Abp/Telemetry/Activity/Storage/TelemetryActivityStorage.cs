@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -18,10 +19,12 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     private const int MaxFileRetries = 5;
     private const int RetryDelayMs = 100;
     private const int MutexTimeoutMs = 5000; 
+    private const string MutexName = "Global\\TelemetryActivityStorage";
+    private readonly static byte[] EncryptionKey = "AbpTelemetryStorageKey"u8.ToArray(); 
 
     private readonly TelemetryActivityStorageOptions _options;
     private TelemetryActivityStorageState? _cachedState;
-    private static readonly string MutexName = "Global\\TelemetryActivityStorage";
+    
 
     public TelemetryActivityStorage(IOptions<TelemetryActivityStorageOptions> options)
     {
@@ -150,7 +153,14 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         _cachedState = await WithExclusiveFileLockAsync(async stream =>
         {
             using var reader = new StreamReader(stream, Encoding.UTF8);
-            var json = await reader.ReadToEndAsync();
+            var encryptedJson = await reader.ReadToEndAsync();
+            
+            if (string.IsNullOrEmpty(encryptedJson))
+            {
+                return new TelemetryActivityStorageState();
+            }
+            
+            var json = DecryptData(encryptedJson);
             return JsonSerializer.Deserialize<TelemetryActivityStorageState?>(json, GetJsonSerializerOptions())
                    ?? new TelemetryActivityStorageState();
         }) ?? new TelemetryActivityStorageState();
@@ -159,72 +169,73 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
     private async Task<TResult?> WithExclusiveFileLockAsync<TResult>(Func<FileStream, Task<TResult>> action)
     {
+        return await RetryWithMutexAsync(async () =>
+        {
+            using var stream = new FileStream(
+                TelemetryPaths.ActivityStorage,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.Read
+            );
+            return await action(stream);
+        });
+    }
+
+    private async Task<TResult?> RetryWithMutexAsync<TResult>(Func<Task<TResult>> operation)
+    {
         using var mutex = new Mutex(false, MutexName);
 
-        for (int i = 0; i < MaxFileRetries; i++)
+        for (int attempt = 1; attempt <= MaxFileRetries; attempt++)
         {
             try
             {
-                // Wait for mutex with timeout
-                if (!mutex.WaitOne(MutexTimeoutMs))
+                if (!await WaitForMutexAsync(mutex))
                 {
-                    if (i == MaxFileRetries - 1)
+                    if (attempt == MaxFileRetries)
                     {
                         return default;
                     }
+
                     await Task.Delay(RetryDelayMs);
                     continue;
                 }
 
                 try
                 {
-                    using var stream = new FileStream(
-                        TelemetryPaths.ActivityStorage,
-                        FileMode.OpenOrCreate,
-                        FileAccess.ReadWrite,
-                        FileShare.Read // Allow read sharing since we have mutex protection
-                    );
-
-                    return await action(stream);
+                    return await operation();
                 }
                 finally
                 {
-                    mutex.ReleaseMutex();
+                    ReleaseMutexSafely(mutex);
                 }
             }
             catch (AbandonedMutexException)
             {
-                // Previous process crashed, mutex is now owned by us
                 try
                 {
-                    using var stream = new FileStream(
-                        TelemetryPaths.ActivityStorage,
-                        FileMode.OpenOrCreate,
-                        FileAccess.ReadWrite,
-                        FileShare.Read
-                    );
-
-                    return await action(stream);
+                    return await operation();
                 }
                 catch
                 {
-                    if (i == MaxFileRetries - 1)
+                    if (attempt == MaxFileRetries)
                     {
                         return default;
                     }
+
                     await Task.Delay(RetryDelayMs);
                 }
                 finally
                 {
-                    try { mutex.ReleaseMutex(); } catch { }
+                    ReleaseMutexSafely(mutex);
                 }
             }
             catch (IOException)
             {
-                if (i == MaxFileRetries - 1)
+                if (attempt == MaxFileRetries)
                 {
                     return default;
                 }
+
                 await Task.Delay(RetryDelayMs);
             }
             catch
@@ -236,10 +247,28 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return default;
     }
 
+    private async Task<bool> WaitForMutexAsync(Mutex mutex)
+    {
+        return await Task.Run(() => mutex.WaitOne(MutexTimeoutMs));
+    }
+
+    private static void ReleaseMutexSafely(Mutex mutex)
+    {
+        try
+        {
+            mutex.ReleaseMutex();
+        }
+        catch
+        {
+            // Ignore release errors
+        }
+    }
+
     private Task SaveAsync()
     {
         var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(), GetJsonSerializerOptions());
-        File.WriteAllText(TelemetryPaths.ActivityStorage, json, Encoding.UTF8);
+        var encryptedJson = EncryptData(json);
+        File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
         return Task.CompletedTask;
     }
 
@@ -257,7 +286,8 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
             if (!File.Exists(TelemetryPaths.ActivityStorage))
             {
                 var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(), GetJsonSerializerOptions());
-                File.WriteAllText(TelemetryPaths.ActivityStorage, json, Encoding.UTF8);
+                var encryptedJson = EncryptData(json);
+                File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
             }
         }
         catch
@@ -280,5 +310,66 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     private bool ShouldAddInfo(DateTimeOffset? lastSend)
     {
         return lastSend is null || DateTimeOffset.UtcNow - lastSend > _options.InfoExpirationPeriod;
+    }
+    
+    private static string EncryptData(string plainText)
+    {
+        try
+        {
+            using var aes = Aes.Create();
+            aes.Key = EncryptionKey;
+            aes.GenerateIV();
+
+            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            
+            using var msEncrypt = new MemoryStream();
+            using var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
+            using var swEncrypt = new StreamWriter(csEncrypt);
+            
+            swEncrypt.Write(plainText);
+            csEncrypt.FlushFinalBlock();
+            
+            var encrypted = msEncrypt.ToArray();
+            var result = new byte[aes.IV.Length + encrypted.Length];
+            Array.Copy(aes.IV, 0, result, 0, aes.IV.Length);
+            Array.Copy(encrypted, 0, result, aes.IV.Length, encrypted.Length);
+            
+            return Convert.ToBase64String(result);
+        }
+        catch
+        {
+            return plainText;
+        }
+    }
+    
+    private static string DecryptData(string cipherText)
+    {
+        try
+        {
+            var fullCipher = Convert.FromBase64String(cipherText);
+            
+            using var aes = Aes.Create();
+            aes.Key = EncryptionKey;
+            
+            var iv = new byte[aes.IV.Length];
+            var cipher = new byte[fullCipher.Length - iv.Length];
+            
+            Array.Copy(fullCipher, 0, iv, 0, iv.Length);
+            Array.Copy(fullCipher, iv.Length, cipher, 0, cipher.Length);
+            
+            aes.IV = iv;
+            
+            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            
+            using var msDecrypt = new MemoryStream(cipher);
+            using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
+            using var srDecrypt = new StreamReader(csDecrypt);
+            
+            return srDecrypt.ReadToEnd();
+        }
+        catch
+        {
+            return cipherText;
+        }
     }
 }
