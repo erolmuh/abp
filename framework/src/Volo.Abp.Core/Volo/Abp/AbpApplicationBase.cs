@@ -372,7 +372,7 @@ public abstract class AbpApplicationBase : IAbpApplication
         var abpHostEnvironment = serviceProvider.GetRequiredService<IAbpHostEnvironment>();
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
         
-        if (!abpHostEnvironment.IsDevelopment() || configuration.GetValue<bool?>("Abp:Telemetry:IsEnabled") == false)
+        if (!abpHostEnvironment.IsDevelopment() || configuration.GetValue<bool?>("Abp:Telemetry:IsEnabled") != true)
         {
             return;
         }
