@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
@@ -22,14 +21,20 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     private const string MutexName = "Global\\TelemetryActivityStorage";
     private const string EncryptionKey = "AbpTelemetryStorageKey"; 
 
-    private readonly TelemetryActivityStorageOptions _options;
+    private static TimeSpan _infoExpirationPeriod = TimeSpan.FromDays(7);
+    private static TimeSpan _activitySendPeriod = TimeSpan.FromDays(1);
+    
     private TelemetryActivityStorageState? _cachedState;
     
 
-    public TelemetryActivityStorage(IOptions<TelemetryActivityStorageOptions> options)
+    public TelemetryActivityStorage()
     {
-        _options = options?.Value ?? new TelemetryActivityStorageOptions();
-
+        var enableTelemetryEnvironmentVariable = Environment.GetEnvironmentVariable("ABP_STUDIO_ENABLE_TELEMETRY" , EnvironmentVariableTarget.User);
+        if (bool.TryParse(enableTelemetryEnvironmentVariable, out var enableTelemetry) && enableTelemetry)
+        {
+            _infoExpirationPeriod = TimeSpan.FromMinutes(1);
+            _activitySendPeriod = TimeSpan.FromSeconds(5);
+        }
     }
 
     public async Task BufferActivityAsync(ActivityData activityData)
@@ -52,7 +57,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         await SaveAsync();
     }
 
-    public async Task<DateTimeOffset?> GetLastActivitySendTimeAsync()
+    private async Task<DateTimeOffset?> GetLastActivitySendTimeAsync()
     {
         var state = await GetStateAsync();
         return state.ActivitySendTime;
@@ -121,7 +126,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public virtual async Task<bool> ShouldSendActivitiesAsync()
     {
         var lastActivitySendTime = await GetLastActivitySendTimeAsync();
-        return lastActivitySendTime is null || DateTimeOffset.UtcNow - lastActivitySendTime > _options.ActivitySendPeriod;
+        return lastActivitySendTime is null || DateTimeOffset.UtcNow - lastActivitySendTime > _activitySendPeriod;
     }
 
     private async Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid solutionId)
@@ -278,9 +283,9 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         {
             var directory = Path.GetDirectoryName(TelemetryPaths.ActivityStorage);
 
-            if (!Directory.Exists(directory) && !directory.IsNullOrEmpty())
+            if (!Directory.Exists(directory))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(directory!);
             }
 
             if (!File.Exists(TelemetryPaths.ActivityStorage))
@@ -309,7 +314,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
     private bool ShouldAddInfo(DateTimeOffset? lastSend)
     {
-        return lastSend is null || DateTimeOffset.UtcNow - lastSend > _options.InfoExpirationPeriod;
+        return lastSend is null || DateTimeOffset.UtcNow - lastSend > _infoExpirationPeriod;
     }
 
     private static string Encrypt(string plainText)
