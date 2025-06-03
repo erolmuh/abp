@@ -20,7 +20,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     private const int RetryDelayMs = 100;
     private const int MutexTimeoutMs = 5000; 
     private const string MutexName = "Global\\TelemetryActivityStorage";
-    private readonly static byte[] EncryptionKey = "AbpTelemetryStorageKey"u8.ToArray(); 
+    private const string EncryptionKey = "AbpTelemetryStorageKey"; 
 
     private readonly TelemetryActivityStorageOptions _options;
     private TelemetryActivityStorageState? _cachedState;
@@ -160,7 +160,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
                 return new TelemetryActivityStorageState();
             }
             
-            var json = DecryptData(encryptedJson);
+            var json = Decrypt(encryptedJson);
             return JsonSerializer.Deserialize<TelemetryActivityStorageState?>(json, GetJsonSerializerOptions())
                    ?? new TelemetryActivityStorageState();
         }) ?? new TelemetryActivityStorageState();
@@ -267,7 +267,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     private Task SaveAsync()
     {
         var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(), GetJsonSerializerOptions());
-        var encryptedJson = EncryptData(json);
+        var encryptedJson = Encrypt(json);
         File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
         return Task.CompletedTask;
     }
@@ -286,7 +286,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
             if (!File.Exists(TelemetryPaths.ActivityStorage))
             {
                 var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(), GetJsonSerializerOptions());
-                var encryptedJson = EncryptData(json);
+                var encryptedJson = Encrypt(json);
                 File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
             }
         }
@@ -311,65 +311,32 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     {
         return lastSend is null || DateTimeOffset.UtcNow - lastSend > _options.InfoExpirationPeriod;
     }
-    
-    private static string EncryptData(string plainText)
-    {
-        try
-        {
-            using var aes = Aes.Create();
-            aes.Key = EncryptionKey;
-            aes.GenerateIV();
 
-            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-            
-            using var msEncrypt = new MemoryStream();
-            using var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
-            using var swEncrypt = new StreamWriter(csEncrypt);
-            
-            swEncrypt.Write(plainText);
-            csEncrypt.FlushFinalBlock();
-            
-            var encrypted = msEncrypt.ToArray();
-            var result = new byte[aes.IV.Length + encrypted.Length];
-            Array.Copy(aes.IV, 0, result, 0, aes.IV.Length);
-            Array.Copy(encrypted, 0, result, aes.IV.Length, encrypted.Length);
-            
-            return Convert.ToBase64String(result);
-        }
-        catch
-        {
-            return plainText;
-        }
-    }
-    
-    private static string DecryptData(string cipherText)
+    private static string Encrypt(string plainText)
     {
-        try
-        {
-            var fullCipher = Convert.FromBase64String(cipherText);
-            
-            using var aes = Aes.Create();
-            aes.Key = EncryptionKey;
-            
-            var iv = new byte[aes.IV.Length];
-            var cipher = new byte[fullCipher.Length - iv.Length];
-            
-            Array.Copy(fullCipher, 0, iv, 0, iv.Length);
-            Array.Copy(fullCipher, iv.Length, cipher, 0, cipher.Length);
-            
-            aes.IV = iv;
-            
-            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-            
-            using var msDecrypt = new MemoryStream(cipher);
-            using var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
-            using var srDecrypt = new StreamReader(csDecrypt);
-            
-            return srDecrypt.ReadToEnd();
-        }
-        catch
-        {
-            return cipherText;
-        }
+        using var aes = Aes.Create();
+        using var sha256 = SHA256.Create();
+        aes.Key = sha256.ComputeHash(Encoding.UTF8.GetBytes(EncryptionKey));
+        aes.Mode = CipherMode.ECB;
+        aes.Padding = PaddingMode.PKCS7;
+
+        var encryptor = aes.CreateEncryptor();
+        var inputBytes = Encoding.UTF8.GetBytes(plainText);
+        var encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+        return Convert.ToBase64String(encryptedBytes);
+    }
+
+    private static string Decrypt(string cipherText)
+    {
+        using var aes = Aes.Create();
+        using var sha256 = SHA256.Create();
+        aes.Key = sha256.ComputeHash(Encoding.UTF8.GetBytes(EncryptionKey));
+        aes.Mode = CipherMode.ECB;
+        aes.Padding = PaddingMode.PKCS7;
+
+        var decryptor = aes.CreateDecryptor();
+        var inputBytes = Convert.FromBase64String(cipherText);
+        var decryptedBytes = decryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
+        return Encoding.UTF8.GetString(decryptedBytes);
     }
 }
