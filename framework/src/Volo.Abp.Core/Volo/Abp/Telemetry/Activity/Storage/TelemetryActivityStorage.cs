@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
     public TelemetryActivityStorage()
     {
-        var enableTelemetryEnvironmentVariable = Environment.GetEnvironmentVariable("ABP_STUDIO_ENABLE_TELEMETRY" , EnvironmentVariableTarget.User);
+        var enableTelemetryEnvironmentVariable = Environment.GetEnvironmentVariable("ABP_TELEMETRY_TEST_MODE" , EnvironmentVariableTarget.User);
         if (bool.TryParse(enableTelemetryEnvironmentVariable, out var enableTelemetry) && enableTelemetry)
         {
             _infoExpirationPeriod = TimeSpan.FromMinutes(1);
@@ -308,7 +309,8 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
+            WriteIndented = true,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
     }
 
