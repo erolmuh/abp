@@ -48,7 +48,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public async Task<List<ActivityData>> GetBufferedActivitiesAsync()
     {
         var state = await GetStateAsync();
-        return state.Activities.OrderBy(x => x.Time).ToList();
+        return state.Activities;
     }
 
     public async Task EndSessionAsync()
