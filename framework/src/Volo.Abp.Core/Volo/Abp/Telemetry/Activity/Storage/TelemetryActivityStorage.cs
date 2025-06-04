@@ -30,8 +30,8 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
     public TelemetryActivityStorage()
     {
-        var enableTelemetryEnvironmentVariable = Environment.GetEnvironmentVariable("ABP_TELEMETRY_TEST_MODE" , EnvironmentVariableTarget.User);
-        if (bool.TryParse(enableTelemetryEnvironmentVariable, out var enableTelemetry) && enableTelemetry)
+        var enableTelemetryTestModeVariable = Environment.GetEnvironmentVariable("ABP_TELEMETRY_TEST_MODE" , EnvironmentVariableTarget.User);
+        if (bool.TryParse(enableTelemetryTestModeVariable, out var enableTelemetryTestMode) && enableTelemetryTestMode)
         {
             _infoExpirationPeriod = TimeSpan.FromMinutes(1);
             _activitySendPeriod = TimeSpan.FromSeconds(5);
