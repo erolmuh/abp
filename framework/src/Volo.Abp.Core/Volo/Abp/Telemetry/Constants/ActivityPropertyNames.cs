@@ -53,9 +53,9 @@ public static class ActivityPropertyNames
     public const string ActivityDetails = nameof(ActivityDetails);
     public const string ApplicationId = nameof(ApplicationId);
     public const string Time = nameof(Time);
-    public const string SoftwareName = nameof(SoftwareName);
-    public const string SoftwareVersion = nameof(SoftwareVersion);
-    public const string SoftwareUiTheme = nameof(SoftwareUiTheme);
+    public const string SoftwareName = "Name";
+    public const string SoftwareVersion = "Version";
+    public const string SoftwareUiTheme = "UiTheme";
     public const string SoftwareType = nameof(SoftwareType);
     public const string UserDeviceId = nameof(UserDeviceId);
     public const string SolutionTemplate = nameof(SolutionTemplate);
@@ -76,5 +76,4 @@ public static class ActivityPropertyNames
     public const string ApplicationType = nameof(ApplicationType);
     public const string AbpModuleCount = nameof(AbpModuleCount);
     public const string ExtraProperties = nameof(ExtraProperties);
-
 }

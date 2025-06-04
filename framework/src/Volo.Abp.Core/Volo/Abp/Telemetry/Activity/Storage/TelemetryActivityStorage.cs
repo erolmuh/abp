@@ -1,48 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
+using Volo.Abp.Telemetry.Helpers;
 
 namespace Volo.Abp.Telemetry.Activity.Storage;
 
 public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDependency
 {
-    private const int MaxFileRetries = 5;
-    private const int RetryDelayMs = 100;
-    private const int MutexTimeoutMs = 5000; 
     private const string MutexName = "Global\\TelemetryActivityStorage";
-    private const string EncryptionKey = "AbpTelemetryStorageKey"; 
+    private const string TestModeEnvironmentVariable = "ABP_TELEMETRY_TEST_MODE";
 
-    private static TimeSpan _infoExpirationPeriod = TimeSpan.FromDays(7);
-    private static TimeSpan _activitySendPeriod = TimeSpan.FromDays(1);
-    
+    private readonly static TimeSpan DefaultInfoExpirationPeriod = TimeSpan.FromDays(7);
+    private readonly static TimeSpan DefaultActivitySendPeriod = TimeSpan.FromDays(1);
+    private readonly static TimeSpan TestModeInfoExpirationPeriod = TimeSpan.FromMinutes(1);
+    private readonly static TimeSpan TestModeActivitySendPeriod = TimeSpan.FromSeconds(5);
+
+    private readonly TimeSpan _infoExpirationPeriod;
+    private readonly TimeSpan _activitySendPeriod;
     private TelemetryActivityStorageState? _cachedState;
-    
 
     public TelemetryActivityStorage()
     {
-        var enableTelemetryTestModeVariable = Environment.GetEnvironmentVariable("ABP_TELEMETRY_TEST_MODE" , EnvironmentVariableTarget.User);
-        if (bool.TryParse(enableTelemetryTestModeVariable, out var enableTelemetryTestMode) && enableTelemetryTestMode)
-        {
-            _infoExpirationPeriod = TimeSpan.FromMinutes(1);
-            _activitySendPeriod = TimeSpan.FromSeconds(5);
-        }
+        var isTestMode = IsTestModeEnabled();
+        _infoExpirationPeriod = isTestMode ? TestModeInfoExpirationPeriod : DefaultInfoExpirationPeriod;
+        _activitySendPeriod = isTestMode ? TestModeActivitySendPeriod : DefaultActivitySendPeriod;
     }
 
     public async Task BufferActivityAsync(ActivityData activityData)
     {
-        var state = await GetStateAsync();
-        state.Activities.Insert(0, activityData);
-        await SaveAsync();
+        await ModifyStateAsync(state =>
+        {
+            state.Activities.Insert(0, activityData);
+        });
     }
 
     public async Task<List<ActivityData>> GetBufferedActivitiesAsync()
@@ -53,57 +49,59 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
     public async Task EndSessionAsync()
     {
-        var state = await GetStateAsync();
-        state.SessionId = null;
-        await SaveAsync();
-    }
-
-    private async Task<DateTimeOffset?> GetLastActivitySendTimeAsync()
-    {
-        var state = await GetStateAsync();
-        return state.ActivitySendTime;
+        await ModifyStateAsync(state =>
+        {
+            state.SessionId = null;
+        });
     }
 
     public async Task<Guid> GetOrCreateSessionAsync()
     {
         var state = await GetStateAsync();
 
-        if (state.SessionId is null)
+        if (state.SessionId.HasValue)
         {
-            state.SessionId = Guid.NewGuid();
-            await SaveAsync();
+            return state.SessionId.Value;
         }
 
-        return state.SessionId.Value;
+        await ModifyStateAsync(s =>
+        {
+            s.SessionId = Guid.NewGuid();
+        });
+        return state.SessionId!.Value;
     }
 
     public async Task MarkActivitiesAsSentAsync()
     {
-        var state = await GetStateAsync();
-        state.ActivitySendTime = DateTimeOffset.UtcNow;
-        state.Activities.Clear();
-        await SaveAsync();
+        await ModifyStateAsync(state =>
+        {
+            state.ActivitySendTime = DateTimeOffset.UtcNow;
+            state.Activities.Clear();
+        });
     }
 
     public async Task MarkSolutionInfoAsAddedAsync(Guid solutionId)
     {
-        var state = await GetStateAsync();
-        state.Solutions[solutionId] = DateTimeOffset.UtcNow;
-        await SaveAsync();
+        await ModifyStateAsync(state =>
+        {
+            state.Solutions[solutionId] = DateTimeOffset.UtcNow;
+        });
     }
 
     public async Task MarkApplicationInfoAsAddedAsync(Guid applicationId)
     {
-        var state = await GetStateAsync();
-        state.Applications[applicationId] = DateTimeOffset.UtcNow;
-        await SaveAsync();
+        await ModifyStateAsync(state =>
+        {
+            state.Applications[applicationId] = DateTimeOffset.UtcNow;
+        });
     }
 
     public async Task MarkDeviceInfoAsAddedAsync()
     {
-        var state = await GetStateAsync();
-        state.LastDeviceInfoAddTime = DateTimeOffset.UtcNow;
-        await SaveAsync();
+        await ModifyStateAsync(state =>
+        {
+            state.LastDeviceInfoAddTime = DateTimeOffset.UtcNow;
+        });
     }
 
     public virtual async Task<bool> ShouldAddDeviceInfoAsync()
@@ -130,6 +128,26 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return lastActivitySendTime is null || DateTimeOffset.UtcNow - lastActivitySendTime > _activitySendPeriod;
     }
 
+    private static bool IsTestModeEnabled()
+    {
+        var testModeVariable =
+            Environment.GetEnvironmentVariable(TestModeEnvironmentVariable, EnvironmentVariableTarget.User);
+        return bool.TryParse(testModeVariable, out var isTestMode) && isTestMode;
+    }
+
+    private async Task ModifyStateAsync(Action<TelemetryActivityStorageState> modifyAction)
+    {
+        var state = await GetStateAsync();
+        modifyAction(state);
+        await SaveAsync();
+    }
+
+    private async Task<DateTimeOffset?> GetLastActivitySendTimeAsync()
+    {
+        var state = await GetStateAsync();
+        return state.ActivitySendTime;
+    }
+
     private async Task<DateTimeOffset?> GetLastSolutionInfoSendTimeAsync(Guid solutionId)
     {
         var state = await GetStateAsync();
@@ -148,6 +166,11 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return state.LastDeviceInfoAddTime;
     }
 
+    private bool ShouldAddInfo(DateTimeOffset? lastSend)
+    {
+        return lastSend is null || DateTimeOffset.UtcNow - lastSend > _infoExpirationPeriod;
+    }
+
     private async Task<TelemetryActivityStorageState> GetStateAsync()
     {
         if (_cachedState != null)
@@ -155,27 +178,76 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
             return _cachedState;
         }
 
-        await EnsureFileExistsAsync();
-        _cachedState = await WithExclusiveFileLockAsync(async stream =>
+        EnsureFileExists();
+        _cachedState = await LoadStateFromFileAsync() ?? new TelemetryActivityStorageState();
+        return _cachedState;
+    }
+
+    private async Task<TelemetryActivityStorageState?> LoadStateFromFileAsync()
+    {
+        return await WithExclusiveFileLockAsync(async stream =>
         {
             using var reader = new StreamReader(stream, Encoding.UTF8);
             var encryptedJson = await reader.ReadToEndAsync();
-            
+
             if (string.IsNullOrEmpty(encryptedJson))
             {
                 return new TelemetryActivityStorageState();
             }
-            
-            var json = Decrypt(encryptedJson);
+
+            var json = EncryptionHelper.Decrypt(encryptedJson);
             return JsonSerializer.Deserialize<TelemetryActivityStorageState?>(json, GetJsonSerializerOptions())
                    ?? new TelemetryActivityStorageState();
-        }) ?? new TelemetryActivityStorageState();
-        return _cachedState;
+        });
+    }
+
+    private Task SaveAsync()
+    {
+        var state = _cachedState ?? new TelemetryActivityStorageState();
+        var json = JsonSerializer.Serialize(state, GetJsonSerializerOptions());
+        var encryptedJson = EncryptionHelper.Encrypt(json);
+
+        File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
+        return Task.CompletedTask;
+    }
+
+    private void EnsureFileExists()
+    {
+        try
+        {
+            EnsureDirectoryExists();
+
+            if (!File.Exists(TelemetryPaths.ActivityStorage))
+            {
+                CreateInitialFile();
+            }
+        }
+        catch
+        {
+            // Ignored intentionally
+        }
+    }
+
+    private void EnsureDirectoryExists()
+    {
+        var directory = Path.GetDirectoryName(TelemetryPaths.ActivityStorage);
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory!);
+        }
+    }
+
+    private void CreateInitialFile()
+    {
+        var initialState = _cachedState ?? new TelemetryActivityStorageState();
+        var json = JsonSerializer.Serialize(initialState, GetJsonSerializerOptions());
+        var encryptedJson = EncryptionHelper.Encrypt(json);
+        File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
     }
 
     private async Task<TResult?> WithExclusiveFileLockAsync<TResult>(Func<FileStream, Task<TResult>> action)
     {
-        return await RetryWithMutexAsync(async () =>
+        return await MutexExecutor.ExecuteAsync(MutexName, async () =>
         {
             using var stream = new FileStream(
                 TelemetryPaths.ActivityStorage,
@@ -187,122 +259,6 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         });
     }
 
-    private async Task<TResult?> RetryWithMutexAsync<TResult>(Func<Task<TResult>> operation)
-    {
-        using var mutex = new Mutex(false, MutexName);
-
-        for (int attempt = 1; attempt <= MaxFileRetries; attempt++)
-        {
-            try
-            {
-                if (!await WaitForMutexAsync(mutex))
-                {
-                    if (attempt == MaxFileRetries)
-                    {
-                        return default;
-                    }
-
-                    await Task.Delay(RetryDelayMs);
-                    continue;
-                }
-
-                try
-                {
-                    return await operation();
-                }
-                finally
-                {
-                    ReleaseMutexSafely(mutex);
-                }
-            }
-            catch (AbandonedMutexException)
-            {
-                try
-                {
-                    return await operation();
-                }
-                catch
-                {
-                    if (attempt == MaxFileRetries)
-                    {
-                        return default;
-                    }
-
-                    await Task.Delay(RetryDelayMs);
-                }
-                finally
-                {
-                    ReleaseMutexSafely(mutex);
-                }
-            }
-            catch (IOException)
-            {
-                if (attempt == MaxFileRetries)
-                {
-                    return default;
-                }
-
-                await Task.Delay(RetryDelayMs);
-            }
-            catch
-            {
-                return default;
-            }
-        }
-
-        return default;
-    }
-
-    private async Task<bool> WaitForMutexAsync(Mutex mutex)
-    {
-        return await Task.Run(() => mutex.WaitOne(MutexTimeoutMs));
-    }
-
-    private static void ReleaseMutexSafely(Mutex mutex)
-    {
-        try
-        {
-            mutex.ReleaseMutex();
-        }
-        catch
-        {
-            // Ignore release errors
-        }
-    }
-
-    private Task SaveAsync()
-    {
-        var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(), GetJsonSerializerOptions());
-        var encryptedJson = Encrypt(json);
-        File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
-        return Task.CompletedTask;
-    }
-
-    private Task EnsureFileExistsAsync()
-    {
-        try
-        {
-            var directory = Path.GetDirectoryName(TelemetryPaths.ActivityStorage);
-
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory!);
-            }
-
-            if (!File.Exists(TelemetryPaths.ActivityStorage))
-            {
-                var json = JsonSerializer.Serialize(_cachedState ?? new TelemetryActivityStorageState(), GetJsonSerializerOptions());
-                var encryptedJson = Encrypt(json);
-                File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
-            }
-        }
-        catch
-        {
-            // Ignored intentionally
-        }
-
-        return Task.CompletedTask;
-    }
 
     private static JsonSerializerOptions GetJsonSerializerOptions()
     {
@@ -312,38 +268,5 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
             WriteIndented = true,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
-    }
-
-    private bool ShouldAddInfo(DateTimeOffset? lastSend)
-    {
-        return lastSend is null || DateTimeOffset.UtcNow - lastSend > _infoExpirationPeriod;
-    }
-
-    private static string Encrypt(string plainText)
-    {
-        using var aes = Aes.Create();
-        using var sha256 = SHA256.Create();
-        aes.Key = sha256.ComputeHash(Encoding.UTF8.GetBytes(EncryptionKey));
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-
-        var encryptor = aes.CreateEncryptor();
-        var inputBytes = Encoding.UTF8.GetBytes(plainText);
-        var encryptedBytes = encryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
-        return Convert.ToBase64String(encryptedBytes);
-    }
-
-    private static string Decrypt(string cipherText)
-    {
-        using var aes = Aes.Create();
-        using var sha256 = SHA256.Create();
-        aes.Key = sha256.ComputeHash(Encoding.UTF8.GetBytes(EncryptionKey));
-        aes.Mode = CipherMode.ECB;
-        aes.Padding = PaddingMode.PKCS7;
-
-        var decryptor = aes.CreateDecryptor();
-        var inputBytes = Convert.FromBase64String(cipherText);
-        var decryptedBytes = decryptor.TransformFinalBlock(inputBytes, 0, inputBytes.Length);
-        return Encoding.UTF8.GetString(decryptedBytes);
     }
 }

@@ -78,8 +78,6 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
 
             AddSolutionInformation(activityData, root.GetProperty("creatingStudioConfiguration"));
 
-            activityData[ActivityPropertyNames.LicenseType] = await GetLicenseTypeAsync();
-
             if (root.TryGetProperty("modules", out var modulesElement) &&
                 modulesElement.ValueKind == JsonValueKind.Object)
             {
@@ -248,32 +246,4 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
         };
     }
 
-    private async Task<int> GetLicenseTypeAsync()
-    {
-        if (!File.Exists(TelemetryPaths.AccessToken))
-        {
-            return 0;
-        }
-
-        try
-        {
-            using var httpClient = new HttpClient();
-            var accessToken = File.ReadAllText(TelemetryPaths.AccessToken);
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            var response = await httpClient.GetAsync($"{AbpPlatformUrls.AbpIoUrl}api/license/api-key");
-            if (!response.IsSuccessStatusCode)
-            {
-                return 0;
-            }
-
-            var content = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(content);
-            return doc.RootElement.GetProperty("licenseType").GetInt32();
-        }
-        catch
-        {
-            return 0;
-        }
-    }
 }

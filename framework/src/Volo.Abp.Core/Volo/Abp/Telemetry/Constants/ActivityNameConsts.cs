@@ -38,6 +38,7 @@ public static class ActivityNameConsts
     public const string AbpStudioSolutionRunnerAddProfile = "AbpStudio.SolutionRunner.Add.Profile";
     public const string AbpStudioSolutionRunnerAppManageMetadata = "AbpStudio.SolutionRunner.App.Manage.Metadata";
     public const string AbpStudioSolutionRunnerAppManageSecrets = "AbpStudio.SolutionRunner.App.Manage.Secrets";
+    public const string AbpStudioSolutionOpen = "AbpStudio.Solution.Open";
     public const string AbpStudioMonitoringBrowse = "AbpStudio.Monitoring.Browse";
     public const string AbpStudioMonitoringHttpRequests = "AbpStudio.Monitoring.HttpRequests";
     public const string AbpStudioMonitoringHttpRequestsDetail = "AbpStudio.Monitoring.HttpRequests.Detail";
