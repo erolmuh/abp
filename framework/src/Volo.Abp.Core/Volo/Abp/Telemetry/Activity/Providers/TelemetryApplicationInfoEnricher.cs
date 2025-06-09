@@ -48,6 +48,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
             }
 
             activity.Remove(ActivityPropertyNames.Assembly);
+            activity[ActivityPropertyNames.HasProjectInfo] = true;
             await _telemetryActivityStorage.MarkApplicationInfoAsAddedAsync(projectId.Value);
         }
         catch

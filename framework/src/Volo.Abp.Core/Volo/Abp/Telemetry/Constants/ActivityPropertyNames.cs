@@ -69,4 +69,8 @@ public static class ActivityPropertyNames
     public const string ModuleVersion = nameof(ModuleVersion);
     public const string ModuleInstallationTime = nameof(ModuleInstallationTime);
     public const string ExtraProperties = nameof(ExtraProperties);
+    public const string HasSolutionInfo = nameof(HasSolutionInfo);
+    public const string HasDeviceInfo = nameof(HasDeviceInfo);
+    public const string HasProjectInfo = nameof(HasProjectInfo);
+    
 }

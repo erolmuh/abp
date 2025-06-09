@@ -44,6 +44,7 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
 
         EnrichWithDeviceInfo(activity);
         await EnrichWithSoftwareInfoAsync(activity);
+        activity[ActivityPropertyNames.HasDeviceInfo] = true;
         await _telemetryActivityStorage.MarkDeviceInfoAsAddedAsync();
     }
 
