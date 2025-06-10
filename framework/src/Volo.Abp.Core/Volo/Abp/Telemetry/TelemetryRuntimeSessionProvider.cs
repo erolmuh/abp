@@ -11,7 +11,7 @@ namespace Volo.Abp.Telemetry;
 [ExposeServices(typeof(ITelemetrySessionProvider))]
 public class TelemetryRuntimeSessionProvider : ITelemetrySessionProvider, ISingletonDependency
 {
-    public Task AddSessionInfoAsync(ActivityData activity)
+    public Task AddSessionInfoAsync(ActivityEvent activity)
     {
         activity[ActivityPropertyNames.SessionType] = SessionType.ApplicationRuntime;
         activity[ActivityPropertyNames.SessionId] = Guid.NewGuid();

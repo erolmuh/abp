@@ -16,7 +16,7 @@ public class TelemetryActivityDataBuilder : ITelemetryActivityDataBuilder, ISing
         _serviceProvider = serviceProvider;
     }
 
-    public virtual async Task BuildAsync(ActivityData activity)
+    public virtual async Task BuildAsync(ActivityEvent activity)
     {
        
         var sessionProvider = _serviceProvider.GetRequiredService<ITelemetrySessionProvider>();

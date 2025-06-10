@@ -22,7 +22,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
         _telemetryActivityStorage = telemetryActivityStorage;
     }
 
-    public async Task EnrichAsync(ActivityData activity)
+    public async Task EnrichAsync(ActivityEvent activity)
     {
         if (!ShouldEnrichActivity(activity))
         {
@@ -57,7 +57,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
         }
     }
 
-    private bool ShouldEnrichActivity(ActivityData activity)
+    private bool ShouldEnrichActivity(ActivityEvent activity)
     {
         return activity.ContainsKey(ActivityPropertyNames.Assembly)
                && activity.TryGetValue(ActivityPropertyNames.SessionType, out var sessionTypeObj)
@@ -65,7 +65,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
                && parsed == SessionType.ApplicationRuntime;
     }
 
-    private static Guid? ExtractProjectId(ActivityData activity)
+    private static Guid? ExtractProjectId(ActivityEvent activity)
     {
         if (!activity.TryGetValue(ActivityPropertyNames.ProjectId, out var projectIdObj) ||
             projectIdObj is not string projectIdStr ||

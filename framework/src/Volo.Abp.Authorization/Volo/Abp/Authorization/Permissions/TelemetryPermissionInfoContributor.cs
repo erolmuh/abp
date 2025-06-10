@@ -16,9 +16,9 @@ public class TelemetryPermissionInfoContributor : ITelemetryApplicationInfoContr
         _permissionDefinitionManager = permissionDefinitionManager;
     }
 
-    public async Task ContributeAsync(ActivityData activityData)
+    public async Task ContributeAsync(ActivityEvent activityEvent)
     {
         var permissions = await _permissionDefinitionManager.GetPermissionsAsync();
-        activityData[ActivityPropertyNames.PermissionCount] = permissions.Count;
+        activityEvent[ActivityPropertyNames.PermissionCount] = permissions.Count;
     }
 }

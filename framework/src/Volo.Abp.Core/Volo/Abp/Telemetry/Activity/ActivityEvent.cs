@@ -3,9 +3,13 @@ using System.Collections.Generic;
 
 namespace Volo.Abp.Telemetry.Activity;
 
-public class ActivityData : Dictionary<string, object>
+public class ActivityEvent : Dictionary<string, object>
 {
-    public ActivityData(string activityName, string? details = null)
+    private ActivityEvent()
+    {
+    }
+    
+    public ActivityEvent(string activityName, string? details = null)
     {
         if (activityName.IsNullOrWhiteSpace())
         {

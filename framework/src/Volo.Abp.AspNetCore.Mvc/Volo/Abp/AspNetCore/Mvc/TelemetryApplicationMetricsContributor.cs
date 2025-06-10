@@ -12,9 +12,9 @@ namespace Volo.Abp.AspNetCore.Mvc;
 [ExposeServices(typeof(ITelemetryApplicationInfoContributor))]
 public class TelemetryApplicationMetricsContributor : ITelemetryApplicationInfoContributor, ISingletonDependency
 {
-    public Task ContributeAsync(ActivityData activityData)
+    public Task ContributeAsync(ActivityEvent activityEvent)
     {
-        if (activityData.TryGetValue(ActivityPropertyNames.Assembly, out var assemblyPath))
+        if (activityEvent.TryGetValue(ActivityPropertyNames.Assembly, out var assemblyPath))
         {
             var assembly = Assembly.LoadFrom((string)assemblyPath);
             var types = assembly.GetTypes();
@@ -27,8 +27,8 @@ public class TelemetryApplicationMetricsContributor : ITelemetryApplicationInfoC
                 typeof(AbpController).IsAssignableFrom(t) &&
                 !t.IsAbstract);
 
-            activityData[ActivityPropertyNames.AppServiceCount] = appServiceCount;
-            activityData[ActivityPropertyNames.ControllerCount] = controllerCount;
+            activityEvent[ActivityPropertyNames.AppServiceCount] = appServiceCount;
+            activityEvent[ActivityPropertyNames.ControllerCount] = controllerCount;
         }
         return Task.CompletedTask;
     }

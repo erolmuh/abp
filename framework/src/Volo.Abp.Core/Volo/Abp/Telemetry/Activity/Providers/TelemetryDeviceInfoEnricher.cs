@@ -30,7 +30,7 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
         _deviceId = new Lazy<Guid?>(GetDeviceId);
     }
 
-    public async Task EnrichAsync(ActivityData activity)
+    public async Task EnrichAsync(ActivityEvent activity)
     {
         if (_deviceId.Value.HasValue)
         {
@@ -48,7 +48,7 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
         await _telemetryActivityStorage.MarkDeviceInfoAsAddedAsync();
     }
 
-    private void EnrichWithDeviceInfo(ActivityData activity)
+    private void EnrichWithDeviceInfo(ActivityEvent activity)
     {
         activity[ActivityPropertyNames.DeviceType] = GetDeviceType();
         activity[ActivityPropertyNames.DeviceLanguage] = GetLanguage();
@@ -56,7 +56,7 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISing
         activity[ActivityPropertyNames.CountryIsoCode] = GetCountry();
     }
 
-    private async Task EnrichWithSoftwareInfoAsync(ActivityData activity)
+    private async Task EnrichWithSoftwareInfoAsync(ActivityEvent activity)
     {
         var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
         activity[ActivityPropertyNames.InstalledSoftwares] = softwareList;

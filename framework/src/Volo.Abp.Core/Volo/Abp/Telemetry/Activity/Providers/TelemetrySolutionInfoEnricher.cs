@@ -24,7 +24,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
 
   
 
-    public async Task EnrichAsync(ActivityData activity)
+    public async Task EnrichAsync(ActivityEvent activity)
     {
         var solutionId = GetSolutionId(activity);
         if (solutionId.HasValue)
@@ -40,7 +40,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
         }
     }
 
-    private Guid? GetSolutionId(ActivityData activity)
+    private Guid? GetSolutionId(ActivityEvent activity)
     {
         if (TryGetSolutionIdFromActivity(activity, out var solutionId))
         {
@@ -55,11 +55,11 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
 
         return null;
     }
-    private async Task FillSolutionInfoAsync(ActivityData activityData)
+    private async Task FillSolutionInfoAsync(ActivityEvent activityEvent)
     {
         try
         {
-            if (!activityData.TryGetValue(ActivityPropertyNames.SolutionPath, out var rawSolutionPath)
+            if (!activityEvent.TryGetValue(ActivityPropertyNames.SolutionPath, out var rawSolutionPath)
                 || string.IsNullOrWhiteSpace(rawSolutionPath?.ToString())
                 || !File.Exists(rawSolutionPath?.ToString()))
             {
@@ -77,13 +77,13 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
             using var doc = JsonDocument.Parse(jsonContent);
             var root = doc.RootElement;
 
-            AddSolutionInformation(activityData, root.GetProperty("creatingStudioConfiguration"));
+            AddSolutionInformation(activityEvent, root.GetProperty("creatingStudioConfiguration"));
 
             if (root.TryGetProperty("modules", out var modulesElement) &&
                 modulesElement.ValueKind == JsonValueKind.Object)
             {
                 var directoryPath = Path.GetDirectoryName(solutionPath)!;
-                activityData[ActivityPropertyNames.InstalledModules] = ExtractModules(directoryPath, modulesElement);
+                activityEvent[ActivityPropertyNames.InstalledModules] = ExtractModules(directoryPath, modulesElement);
             }
         }
         catch
@@ -92,7 +92,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
         }
     }
 
-    private bool TryGetSolutionIdFromActivity(ActivityData activity, out Guid solutionId)
+    private bool TryGetSolutionIdFromActivity(ActivityEvent activity, out Guid solutionId)
     {
         solutionId = Guid.Empty;
 
@@ -106,7 +106,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
         return false;
     }
 
-    private bool TryGetSolutionIdFromFile(ActivityData activity, out Guid solutionId)
+    private bool TryGetSolutionIdFromFile(ActivityEvent activity, out Guid solutionId)
     {
         solutionId = Guid.Empty;
 

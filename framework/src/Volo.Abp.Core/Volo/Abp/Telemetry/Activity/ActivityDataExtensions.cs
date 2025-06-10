@@ -4,46 +4,46 @@ namespace Volo.Abp.Telemetry.Activity;
 
 public static class ActivityDataExtensions
 {
-    public static ActivityData WithAdditionalProperty(this ActivityData activityData, string key, object value)
+    public static ActivityEvent WithAdditionalProperty(this ActivityEvent activityEvent, string key, object value)
     {
-        activityData.AdditionalProperties ??= new Dictionary<string, object>();
-        activityData.AdditionalProperties[key] = value;
-        return activityData;
+        activityEvent.AdditionalProperties ??= new Dictionary<string, object>();
+        activityEvent.AdditionalProperties[key] = value;
+        return activityEvent;
     }
 
-    public static ActivityData WithAdditionalProperties(this ActivityData activityData, Dictionary<string, object> properties)
+    public static ActivityEvent WithAdditionalProperties(this ActivityEvent activityEvent, Dictionary<string, object> properties)
     {
-        activityData.AdditionalProperties ??= new Dictionary<string, object>();
+        activityEvent.AdditionalProperties ??= new Dictionary<string, object>();
         foreach (var property in properties)
         {
-            activityData.AdditionalProperties[property.Key] = property.Value;
+            activityEvent.AdditionalProperties[property.Key] = property.Value;
         }
-        return activityData;
+        return activityEvent;
     }
 
-    public static ActivityData WithAdditionalProperties(this ActivityData activityData, params (string key, object value)[] properties)
+    public static ActivityEvent WithAdditionalProperties(this ActivityEvent activityEvent, params (string key, object value)[] properties)
     {
-        activityData.AdditionalProperties ??= new Dictionary<string, object>();
+        activityEvent.AdditionalProperties ??= new Dictionary<string, object>();
         foreach (var (key, value) in properties)
         {
-            activityData.AdditionalProperties[key] = value;
+            activityEvent.AdditionalProperties[key] = value;
         }
-        return activityData;
+        return activityEvent;
     }
 
-    public static ActivityData WithAdditionalProperties(this ActivityData activityData, object properties)
+    public static ActivityEvent WithAdditionalProperties(this ActivityEvent activityEvent, object properties)
     {
-        activityData.AdditionalProperties ??= new Dictionary<string, object>();
+        activityEvent.AdditionalProperties ??= new Dictionary<string, object>();
         
         foreach (var property in properties.GetType().GetProperties())
         {
             var value = property.GetValue(properties);
             if (value != null)
             {
-                activityData.AdditionalProperties[property.Name] = value;
+                activityEvent.AdditionalProperties[property.Name] = value;
             }
         }
         
-        return activityData;
+        return activityEvent;
     }
 } 

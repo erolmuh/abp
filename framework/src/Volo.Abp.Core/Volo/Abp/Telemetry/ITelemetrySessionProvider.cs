@@ -5,5 +5,5 @@ namespace Volo.Abp.Telemetry;
 
 public interface ITelemetrySessionProvider
 {
-    Task AddSessionInfoAsync(ActivityData activity);
+    Task AddSessionInfoAsync(ActivityEvent activity);
 }

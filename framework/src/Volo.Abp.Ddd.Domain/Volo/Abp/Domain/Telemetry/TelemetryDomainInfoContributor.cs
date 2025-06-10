@@ -12,15 +12,15 @@ namespace Volo.Abp.Domain.Telemetry;
 [ExposeServices(typeof(ITelemetryApplicationInfoContributor))]
 public class TelemetryDomainInfoContributor : ITelemetryApplicationInfoContributor , ISingletonDependency
 {
-    public Task ContributeAsync(ActivityData activityData)
+    public Task ContributeAsync(ActivityEvent activityEvent)
     {
-        if (activityData.TryGetValue(ActivityPropertyNames.Assembly, out var assemblyPath))
+        if (activityEvent.TryGetValue(ActivityPropertyNames.Assembly, out var assemblyPath))
         {
             var assembly = Assembly.LoadFrom((string)assemblyPath);
 
             var entityCount = assembly.GetTypes().Count(t => typeof(IEntity).IsAssignableFrom(t) && !t.IsAbstract);
 
-            activityData[ActivityPropertyNames.EntityCount] =  entityCount;
+            activityEvent[ActivityPropertyNames.EntityCount] =  entityCount;
         }
 
         return Task.CompletedTask;

@@ -28,15 +28,15 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         _activitySendPeriod = isTestMode ? TimeSpan.FromSeconds(5) : TimeSpan.FromDays(1);
     }
 
-    public async Task BufferActivityAsync(ActivityData activityData)
+    public async Task BufferActivityAsync(ActivityEvent activityEvent)
     {
         await ModifyStateAsync(state =>
         {
-            state.Activities.Insert(0, activityData);
+            state.Activities.Insert(0, activityEvent);
         });
     }
 
-    public async Task<List<ActivityData>> GetBufferedActivitiesAsync()
+    public async Task<List<ActivityEvent>> GetBufferedActivitiesAsync()
     {
         var state = await GetStateAsync();
         return state.Activities;

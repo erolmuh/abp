@@ -5,5 +5,5 @@ namespace Volo.Abp.Telemetry;
 
 public interface ITelemetryApplicationInfoContributor
 {
-    Task ContributeAsync(ActivityData activityData);
+    Task ContributeAsync(ActivityEvent activityEvent);
 }

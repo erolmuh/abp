@@ -11,8 +11,8 @@ public interface ITelemetryActivityStorage
     Task MarkDeviceInfoAsAddedAsync();
     Task MarkSolutionInfoAsAddedAsync(Guid solutionId);
     Task MarkApplicationInfoAsAddedAsync(Guid applicationInfo);
-    Task BufferActivityAsync(ActivityData activityData);
-    Task<List<ActivityData>> GetBufferedActivitiesAsync();
+    Task BufferActivityAsync(ActivityEvent activityEvent);
+    Task<List<ActivityEvent>> GetBufferedActivitiesAsync();
     Task EndSessionAsync();
     Task<bool> ShouldAddDeviceInfoAsync();
     Task<bool> ShouldAddSolutionInformation(Guid solutionId);
