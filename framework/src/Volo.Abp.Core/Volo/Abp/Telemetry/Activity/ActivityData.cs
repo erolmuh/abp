@@ -5,11 +5,6 @@ namespace Volo.Abp.Telemetry.Activity;
 
 public class ActivityData : Dictionary<string, object>
 {
-    public ActivityData()
-    {
-        Time = DateTimeOffset.UtcNow;
-    }
-
     public ActivityData(string activityName, string? details = null)
     {
         if (activityName.IsNullOrWhiteSpace())
@@ -20,6 +15,7 @@ public class ActivityData : Dictionary<string, object>
         ActivityName = activityName;
         ActivityDetails = details;
         Time = DateTimeOffset.UtcNow;
+        Id = Guid.NewGuid();
     }
 
     public string ActivityName {
@@ -60,5 +56,10 @@ public class ActivityData : Dictionary<string, object>
     public DateTimeOffset Time {
         get => TryGetValue(nameof(Time), out var value) ? (DateTimeOffset)value : DateTimeOffset.UtcNow;
         set => this[nameof(Time)] = value;
+    }
+
+    public Guid Id {
+        get => TryGetValue(nameof(Id), out var value) ? (Guid)value : Guid.NewGuid();
+        set => this[nameof(Id)] = value;
     }
 }

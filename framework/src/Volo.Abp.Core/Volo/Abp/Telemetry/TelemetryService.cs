@@ -43,7 +43,6 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
     public IAsyncDisposable TrackActivity(ActivityData activityData)
     {
         var stopwatch = Stopwatch.StartNew();
-        activityData.Time = DateTimeOffset.UtcNow;
 
         return new AsyncDisposeFunc(async () =>
         {
