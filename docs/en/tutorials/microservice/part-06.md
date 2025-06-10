@@ -298,7 +298,7 @@ Open the `Index.cshtml` file (the `Index.cshtml` file under the `Pages/Orders` f
             {
                 <abp-list-group-item>
                     <strong>Customer:</strong> @order.CustomerName <br />
-                    <strong>Product:</strong> @order.ProductName <br />
+                    //changed line <strong>Product:</strong> @order.ProductName <br />
                     <strong>State:</strong> @order.State
                 </abp-list-group-item>
             }

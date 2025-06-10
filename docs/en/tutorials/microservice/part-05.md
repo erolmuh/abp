@@ -356,6 +356,8 @@ Now, we will create the user interface for the Ordering module. We will use the 
 
 ### Creating the Orders Page
 
+Create `Orders.razor` file under the `Pages` folder in the `CloudCrm.Blazor` project.
+
 ```html
 @page "/orders"
 @using CloudCrm.OrderingService.Services
@@ -429,7 +431,7 @@ It will open the *Generate C# Proxies* window. Select the `CloudCrm.OrderingServ
 
 ![abp-studio-generate-proxy-window-ordering-module](images/abp-studio-generate-proxy-window-ordering-module.png)
 
-Lastly, we need to configure the use of a static HTTP client for the `OrderingService` in the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} project. Open the `CloudCrmWebModule.cs` file in the `Web` project and add the following line to the `ConfigureServices` method:
+Lastly, we need to configure the use of a static HTTP client for the `OrderingService` in the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} project. Open the {{if UI == "MVC"}} `CloudCrmWebModule.cs`  {{else}} `CloudCrmBlazorModule.cs` {{end}} file in the {{if UI == "MVC"}} `Web` {{else}} `Blazor` {{end}} project and add the following line to the `ConfigureServices` method:
 
 ```csharp
 //...
@@ -447,7 +449,7 @@ public override void ConfigureServices(ServiceConfigurationContext context)
 
 > ABP provides a modular navigation [menu system](../../framework/ui/mvc-razor-pages/navigation-menu.md) that allows you to define the menu items in a modular way.
 
-Finally, we need to add a menu item to the sidebar to navigate to the `Orders` page. Open the `CloudCrmMenus` file in the `Navigation` folder of the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor` {{end}} project and edit with the following code:
+Finally, we need to add a menu item to the sidebar to navigate to the `Orders` page. Open the `CloudCrmMenus` file in the `Navigation` folder of the {{if UI == "MVC"}} `CloudCrm.Web` {{else}} `CloudCrm.Blazor.Client` {{end}} project and edit with the following code:
 
 ```csharp
 namespace CloudCrm.Web.Navigation;
