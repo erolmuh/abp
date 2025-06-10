@@ -33,9 +33,10 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
             {
                 await FillSolutionInfoAsync(activity);
                 await _telemetryActivityStorage.MarkSolutionInfoAsAddedAsync(solutionId.Value);
+                activity[ActivityPropertyNames.HasSolutionInfo] = true;
+                activity.Remove(ActivityPropertyNames.SolutionPath); 
             }
-            activity[ActivityPropertyNames.HasSolutionInfo] = true;
-            activity.Remove(ActivityPropertyNames.SolutionPath);
+          
         }
     }
 

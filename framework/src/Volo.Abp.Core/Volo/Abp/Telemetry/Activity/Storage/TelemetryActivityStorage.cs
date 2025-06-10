@@ -17,11 +17,6 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     private const string MutexName = "Global\\TelemetryActivityStorage";
     private const string TestModeEnvironmentVariable = "ABP_TELEMETRY_TEST_MODE";
 
-    private readonly static TimeSpan DefaultInfoExpirationPeriod = TimeSpan.FromDays(7);
-    private readonly static TimeSpan DefaultActivitySendPeriod = TimeSpan.FromDays(1);
-    private readonly static TimeSpan TestModeInfoExpirationPeriod = TimeSpan.FromMinutes(1);
-    private readonly static TimeSpan TestModeActivitySendPeriod = TimeSpan.FromSeconds(5);
-
     private readonly TimeSpan _infoExpirationPeriod;
     private readonly TimeSpan _activitySendPeriod;
     private TelemetryActivityStorageState? _cachedState;
@@ -29,8 +24,8 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public TelemetryActivityStorage()
     {
         var isTestMode = IsTestModeEnabled();
-        _infoExpirationPeriod = isTestMode ? TestModeInfoExpirationPeriod : DefaultInfoExpirationPeriod;
-        _activitySendPeriod = isTestMode ? TestModeActivitySendPeriod : DefaultActivitySendPeriod;
+        _infoExpirationPeriod = isTestMode ? TimeSpan.FromSeconds(15) : TimeSpan.FromDays(7);
+        _activitySendPeriod = isTestMode ? TimeSpan.FromSeconds(5) : TimeSpan.FromDays(1);
     }
 
     public async Task BufferActivityAsync(ActivityData activityData)
