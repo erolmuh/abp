@@ -11,11 +11,7 @@ public class ActivityEvent : Dictionary<string, object>
     
     public ActivityEvent(string activityName, string? details = null)
     {
-        if (activityName.IsNullOrWhiteSpace())
-        {
-            throw new ArgumentNullException(nameof(activityName));
-        }
-
+        Check.NotNullOrWhiteSpace(activityName, nameof(activityName));
         ActivityName = activityName;
         ActivityDetails = details;
         Time = DateTimeOffset.UtcNow;
