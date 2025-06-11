@@ -7,8 +7,10 @@ using System.Text.Json;
 
 namespace Volo.Abp.Telemetry.Helpers;
 
-public static class AbpProjectMetadataReader
+static internal class AbpProjectMetadataReader
 {
+    private const string AbpPackageSearchPattern = "*.abppkg";
+    private const string AbpSolutionSearchPattern = "*.abpsln";
     public static AbpPackageMetadata? ReadProjectMetadata(Assembly assembly)
     {
         var assemblyPath = assembly.Location;
@@ -20,7 +22,7 @@ public static class AbpProjectMetadataReader
                 return null;
             }
 
-            var abppkgPath = FindFileUpwards(dir, "*.abppkg");
+            var abppkgPath = FindFileUpwards(dir, AbpPackageSearchPattern);
             if (abppkgPath == null)
             {
                 return null;
@@ -28,7 +30,7 @@ public static class AbpProjectMetadataReader
 
             var metadata = ReadOrCreateMetadata(abppkgPath);
 
-            var abpslnPath = FindFileUpwards(dir, "*.abpsln");
+            var abpslnPath = FindFileUpwards(dir, AbpSolutionSearchPattern);
             if (!string.IsNullOrEmpty(abpslnPath))
             {
                 metadata.AbpSlnPath = abpslnPath;
