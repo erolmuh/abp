@@ -26,7 +26,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher,
     {
         try
         {
-            if (!ShouldEnrichActivity(activity))
+            if (!IsValidActivity(activity))
             {
                 return;
             }
@@ -51,7 +51,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher,
         }
     }
 
-    private bool ShouldEnrichActivity(ActivityEvent activity)
+    private bool IsValidActivity(ActivityEvent activity)
     {
         return activity.ContainsKey(ActivityPropertyNames.Assembly)
                && activity.TryGetValue(ActivityPropertyNames.SessionType, out var sessionTypeObj)
