@@ -12,8 +12,8 @@ using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
-[ExposeServices(typeof(ITelemetryActivityDataEnricher))]
-public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISingletonDependency
+[ExposeServices(typeof(ITelemetryActivityEventEnricher))]
+public class TelemetrySolutionInfoEnricher : ITelemetryActivityEventEnricher, ISingletonDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
 

@@ -7,11 +7,11 @@ using Volo.Abp.Telemetry.Activity.Contracts;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
-public class TelemetryActivityDataBuilder : ITelemetryActivityDataBuilder, ISingletonDependency
+public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISingletonDependency
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public TelemetryActivityDataBuilder(IServiceProvider serviceProvider)
+    public TelemetryActivityEventBuilder(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
@@ -23,7 +23,7 @@ public class TelemetryActivityDataBuilder : ITelemetryActivityDataBuilder, ISing
         
         await sessionProvider.AddSessionInfoAsync(activity);
         
-        var activityDataEnrichers = _serviceProvider.GetRequiredService<IEnumerable<ITelemetryActivityDataEnricher>>();
+        var activityDataEnrichers = _serviceProvider.GetRequiredService<IEnumerable<ITelemetryActivityEventEnricher>>();
 
         foreach (var activityDataEnricher in activityDataEnrichers)
         {

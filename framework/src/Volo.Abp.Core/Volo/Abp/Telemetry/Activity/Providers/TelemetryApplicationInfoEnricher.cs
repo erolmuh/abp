@@ -8,8 +8,8 @@ using Volo.Abp.Telemetry.Constants.Enums;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
-[ExposeServices(typeof(ITelemetryActivityDataEnricher))]
-public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, ISingletonDependency
+[ExposeServices(typeof(ITelemetryActivityEventEnricher))]
+public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher, ISingletonDependency
 {
     private readonly IEnumerable<ITelemetryApplicationInfoContributor> _telemetryApplicationInfoContributors;
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;

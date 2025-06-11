@@ -2,7 +2,7 @@
 
 namespace Volo.Abp.Telemetry.Activity.Contracts;
 
-public interface ITelemetryActivityDataBuilder
+public interface ITelemetryActivityEventBuilder
 {
     Task BuildAsync(ActivityEvent activity);
 }

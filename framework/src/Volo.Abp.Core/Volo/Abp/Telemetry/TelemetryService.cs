@@ -13,15 +13,15 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private readonly ITelemetryActivitySender _telemetryActivitySender;
-    private readonly ITelemetryActivityDataBuilder _telemetryActivityDataBuilder;
+    private readonly ITelemetryActivityEventBuilder _telemetryActivityEventBuilder;
 
     public TelemetryService(ITelemetryActivityStorage telemetryActivityStorage,
         ITelemetryActivitySender telemetryActivitySender,
-        ITelemetryActivityDataBuilder telemetryActivityDataBuilder)
+        ITelemetryActivityEventBuilder telemetryActivityEventBuilder)
     {
         _telemetryActivityStorage = telemetryActivityStorage;
         _telemetryActivitySender = telemetryActivitySender;
-        _telemetryActivityDataBuilder = telemetryActivityDataBuilder;
+        _telemetryActivityEventBuilder = telemetryActivityEventBuilder;
     }
 
     public IAsyncDisposable TrackActivity(string activityName, Action<ActivityEvent>? configure = null)
@@ -60,7 +60,7 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
         {
             try
             {
-                await _telemetryActivityDataBuilder.BuildAsync(@event);
+                await _telemetryActivityEventBuilder.BuildAsync(@event);
                 await _telemetryActivityStorage.BufferActivityAsync(@event);
 
                 if (@event.ActivityName == ActivityNameConsts.AbpStudioClose)

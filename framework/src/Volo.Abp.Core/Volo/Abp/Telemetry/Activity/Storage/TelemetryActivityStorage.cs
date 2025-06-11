@@ -190,7 +190,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
                 return new TelemetryActivityStorageState();
             }
 
-            var json = EncryptionHelper.Decrypt(encryptedJson);
+            var json = Cryptography.Decrypt(encryptedJson);
             return JsonSerializer.Deserialize<TelemetryActivityStorageState>(json, JsonSerializerOptions) 
                    ?? new TelemetryActivityStorageState();
         }) ?? new TelemetryActivityStorageState();
@@ -202,7 +202,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     {
         var state = _cachedState ?? new TelemetryActivityStorageState();
         var json = JsonSerializer.Serialize(state, JsonSerializerOptions);
-        var encryptedJson = EncryptionHelper.Encrypt(json);
+        var encryptedJson = Cryptography.Encrypt(json);
 
         File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
     }
@@ -237,7 +237,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     {
         var initialState = _cachedState ?? new TelemetryActivityStorageState();
         var json = JsonSerializer.Serialize(initialState, JsonSerializerOptions);
-        var encryptedJson = EncryptionHelper.Encrypt(json);
+        var encryptedJson = Cryptography.Encrypt(json);
         File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
     }
 

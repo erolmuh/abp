@@ -16,8 +16,8 @@ using System.Management;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
-[ExposeServices(typeof(ITelemetryActivityDataEnricher))]
-public class TelemetryDeviceInfoEnricher : ITelemetryActivityDataEnricher, ISingletonDependency
+[ExposeServices(typeof(ITelemetryActivityEventEnricher))]
+public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISingletonDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private readonly ISoftwareInfoProvider _softwareInfoProvider;

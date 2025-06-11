@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Volo.Abp.Telemetry.Helpers;
 
-static internal class EncryptionHelper
+static internal class Cryptography
 {
     private const string EncryptionKey = "AbpTelemetryStorageKey"; 
 

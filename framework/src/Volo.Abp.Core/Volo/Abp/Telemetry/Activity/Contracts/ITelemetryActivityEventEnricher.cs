@@ -2,7 +2,7 @@
 
 namespace Volo.Abp.Telemetry.Activity.Contracts;
 
-public interface ITelemetryActivityDataEnricher
+public interface ITelemetryActivityEventEnricher
 {
     Task EnrichAsync(ActivityEvent activity);
 }
