@@ -22,7 +22,7 @@ internal class AbpStudioDetector : SoftwareDetector
 
             return Task.FromResult<SoftwareInfo?>(new SoftwareInfo(Name, version, uiTheme, SoftwareType.AbpStudio));
         }
-        catch (Exception e)
+        catch
         {
             return Task.FromResult<SoftwareInfo?>(null);
         }
