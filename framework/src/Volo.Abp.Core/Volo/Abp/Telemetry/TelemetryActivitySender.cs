@@ -12,13 +12,13 @@ using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry;
 
-public class TelemetryDataSender : ITelemetryDataSender, ISingletonDependency
+public class TelemetryActivitySender : ITelemetryActivitySender, ISingletonDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     
-    private const int ActivityBatchSize = 50;
+    private const int ActivitySendBatchSize = 50;
 
-    public TelemetryDataSender(ITelemetryActivityStorage telemetryActivityStorage)
+    public TelemetryActivitySender(ITelemetryActivityStorage telemetryActivityStorage)
     {
         _telemetryActivityStorage = telemetryActivityStorage;
     }
@@ -32,9 +32,9 @@ public class TelemetryDataSender : ITelemetryDataSender, ISingletonDependency
             using var httpClient = new HttpClient();
             AddJwtTokenIfAuthenticated(httpClient);
             
-            for (var i = 0; i < activities.Count; i += ActivityBatchSize)
+            for (var i = 0; i < activities.Count; i += ActivitySendBatchSize)
             {
-                var activityBatch = activities.Skip(i).Take(ActivityBatchSize).ToList();
+                var activityBatch = activities.Skip(i).Take(ActivitySendBatchSize).ToList();
 
                 await httpClient.PostAsync($"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect",
                     new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));

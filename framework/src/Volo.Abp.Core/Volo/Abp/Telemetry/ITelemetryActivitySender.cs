@@ -2,7 +2,7 @@
 
 namespace Volo.Abp.Telemetry;
 
-public interface ITelemetryDataSender
+public interface ITelemetryActivitySender
 {
     Task SendAsync();
 }

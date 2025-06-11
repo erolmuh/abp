@@ -72,5 +72,7 @@ public static class ActivityPropertyNames
     public const string HasSolutionInfo = nameof(HasSolutionInfo);
     public const string HasDeviceInfo = nameof(HasDeviceInfo);
     public const string HasProjectInfo = nameof(HasProjectInfo);
-    
+    public const string ErrorMessage = nameof(ErrorMessage);
+    public const string FailingActivity  = nameof(FailingActivity);
+
 }

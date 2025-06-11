@@ -50,7 +50,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         });
     }
 
-    public async Task<Guid> GetOrCreateSessionAsync()
+    public async Task<Guid> InitializeOrGetSessionAsync()
     {
         var state = await GetStateAsync();
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Telemetry.Activity;
 using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
 using ActivityEvent = Volo.Abp.Telemetry.Activity.ActivityEvent;
@@ -13,14 +12,15 @@ namespace Volo.Abp.Telemetry;
 public class TelemetryService : ITelemetryService, ISingletonDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
-    private readonly ITelemetryDataSender _telemetryDataSender;
+    private readonly ITelemetryActivitySender _telemetryActivitySender;
     private readonly ITelemetryActivityDataBuilder _telemetryActivityDataBuilder;
 
-    public TelemetryService(ITelemetryActivityStorage telemetryActivityStorage, ITelemetryDataSender telemetryDataSender,
+    public TelemetryService(ITelemetryActivityStorage telemetryActivityStorage,
+        ITelemetryActivitySender telemetryActivitySender,
         ITelemetryActivityDataBuilder telemetryActivityDataBuilder)
     {
         _telemetryActivityStorage = telemetryActivityStorage;
-        _telemetryDataSender = telemetryDataSender;
+        _telemetryActivitySender = telemetryActivitySender;
         _telemetryActivityDataBuilder = telemetryActivityDataBuilder;
     }
 
@@ -54,7 +54,6 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
     }
 
 
-
     public Task AddActivityAsync(ActivityEvent @event)
     {
         _ = Task.Run(async () =>
@@ -71,7 +70,7 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
 
                 if (await _telemetryActivityStorage.ShouldSendActivitiesAsync())
                 {
-                    await _telemetryDataSender.SendAsync();
+                    await _telemetryActivitySender.SendAsync();
                 }
             }
             catch
@@ -116,7 +115,7 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
         {
             AdditionalProperties = new Dictionary<string, object>
             {
-                { "ErrorMessage", errorMessage },
+                { ActivityPropertyNames.ErrorMessage, errorMessage },
             }
         };
 
@@ -129,12 +128,11 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
         {
             AdditionalProperties = new Dictionary<string, object>
             {
-                { "ErrorMessage", errorMessage },
-                { "FailingActivity", failingActivity },
+                { ActivityPropertyNames.ErrorMessage, errorMessage },
+                { ActivityPropertyNames.FailingActivity, failingActivity },
             }
         };
 
         await AddActivityAsync(activityData);
     }
-   
 }

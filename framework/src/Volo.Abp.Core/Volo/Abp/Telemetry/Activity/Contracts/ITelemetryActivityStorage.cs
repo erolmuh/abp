@@ -6,7 +6,7 @@ namespace Volo.Abp.Telemetry.Activity.Contracts;
 
 public interface ITelemetryActivityStorage
 {
-    Task<Guid> GetOrCreateSessionAsync();
+    Task<Guid> InitializeOrGetSessionAsync();
     Task MarkActivitiesAsSentAsync();
     Task MarkDeviceInfoAsAddedAsync();
     Task MarkSolutionInfoAsAddedAsync(Guid solutionId);

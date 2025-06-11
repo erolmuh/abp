@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Volo.Abp.Telemetry.Activity;
 
-public static class ActivityDataExtensions
+public static class ActivityEventExtensions
 {
     public static ActivityEvent WithAdditionalProperty(this ActivityEvent activityEvent, string key, object value)
     {
