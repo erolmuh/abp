@@ -11,32 +11,33 @@ static internal class AbpProjectMetadataReader
 {
     private const string AbpPackageSearchPattern = "*.abppkg";
     private const string AbpSolutionSearchPattern = "*.abpsln";
+    
     public static AbpPackageMetadata? ReadProjectMetadata(Assembly assembly)
     {
         var assemblyPath = assembly.Location;
         try
         {
-            var dir = Path.GetDirectoryName(assemblyPath);
-            if (dir == null)
+            var directoryName = Path.GetDirectoryName(assemblyPath);
+            if (directoryName == null)
             {
                 return null;
             }
 
-            var abppkgPath = FindFileUpwards(dir, AbpPackageSearchPattern);
+            var abppkgPath = FindFileUpwards(directoryName, AbpPackageSearchPattern);
             if (abppkgPath == null)
             {
                 return null;
             }
 
-            var metadata = ReadOrCreateMetadata(abppkgPath);
+            var packageMetadata = ReadOrCreateMetadata(abppkgPath);
 
-            var abpslnPath = FindFileUpwards(dir, AbpSolutionSearchPattern);
+            var abpslnPath = FindFileUpwards(directoryName, AbpSolutionSearchPattern);
             if (!string.IsNullOrEmpty(abpslnPath))
             {
-                metadata.AbpSlnPath = abpslnPath;
+                packageMetadata.AbpSlnPath = abpslnPath;
             }
 
-            return metadata;
+            return packageMetadata;
         }
         catch
         {
@@ -46,13 +47,16 @@ static internal class AbpProjectMetadataReader
 
     private static AbpPackageMetadata ReadOrCreateMetadata(string path)
     {
-        var json = File.ReadAllText(path);
-        var doc = JsonSerializer.Deserialize<Dictionary<string, object>>(json) ?? new();
+        var fileContent = File.ReadAllText(path);
+        
+        //TODO: Instead of converting to a dictionary, directly work with JSON objects
+        var doc = JsonSerializer.Deserialize<Dictionary<string, object>>(fileContent) ?? new();
 
         var metadata = new AbpPackageMetadata();
 
-        if (doc.TryGetValue("projectId", out var existingProjectId) && existingProjectId.ToString() != null)
+        if (doc.TryGetValue("projectId", out var existingProjectId) && existingProjectId?.ToString() != null)
         {
+            //TODO: Ensure that the projectId is GUID
             metadata.ProjectId = existingProjectId.ToString()!;
         }
         else
@@ -61,42 +65,38 @@ static internal class AbpProjectMetadataReader
             doc["projectId"] = metadata.ProjectId;
         }
 
-        if (doc.TryGetValue("role", out var existingRole) && existingRole.ToString() != null)
+        if (doc.TryGetValue("role", out var existingRole) && existingRole?.ToString() != null)
         {
             metadata.Role = existingRole.ToString()!;
         }
 
+        //TODO: Instead of serializing a dictionary, directly work with JSON objects
+        //TODO: Save only if we modified
         var updatedJson = JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         File.WriteAllText(path, updatedJson);
 
         return metadata;
     }
 
-    private static string? FindFileUpwards(string startingDir, string searchPattern)
+    private static string? FindFileUpwards(string initialDirectory, string searchPattern)
     {
-        var currentDir = new DirectoryInfo(startingDir);
         const int maxDepth = 10;
+
+        var currentDirectory = new DirectoryInfo(initialDirectory);
         var currentDepth = 0;
 
-        while (currentDir != null && currentDepth < maxDepth)
+        while (currentDirectory != null && currentDepth < maxDepth)
         {
-            var file = currentDir.GetFiles(searchPattern).FirstOrDefault();
+            var file = currentDirectory.GetFiles(searchPattern).FirstOrDefault();
             if (file != null)
             {
                 return file.FullName;
             }
 
-            currentDir = currentDir.Parent;
+            currentDirectory = currentDirectory.Parent;
             currentDepth++;
         }
 
         return null;
     }
-}
-
-public class AbpPackageMetadata
-{
-    public string? ProjectId { get; set; }
-    public string? Role { get; set; }
-    public string? AbpSlnPath { get; set; }
 }

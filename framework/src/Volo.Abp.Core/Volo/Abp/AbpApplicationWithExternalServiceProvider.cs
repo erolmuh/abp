@@ -48,10 +48,8 @@ internal class AbpApplicationWithExternalServiceProvider : AbpApplicationBase, I
         Check.NotNull(serviceProvider, nameof(serviceProvider));
 
         SetServiceProvider(serviceProvider);
-
         await InitializeModulesAsync();
-
-        ConfigureTelemetry(serviceProvider);
+        ConfigureTelemetry();
     }
 
     public void Initialize([NotNull] IServiceProvider serviceProvider)
@@ -59,10 +57,8 @@ internal class AbpApplicationWithExternalServiceProvider : AbpApplicationBase, I
         Check.NotNull(serviceProvider, nameof(serviceProvider));
 
         SetServiceProvider(serviceProvider);
-
         InitializeModules();
-        
-        ConfigureTelemetry(serviceProvider);
+        ConfigureTelemetry();
         
     }
  

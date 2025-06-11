@@ -23,17 +23,24 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityEventEnricher, IS
 
     public async Task EnrichAsync(ActivityEvent activity)
     {
-        if (TryGetSolutionId(activity, out var solutionId))
+        if (!TryGetSolutionId(activity, out var solutionId))
         {
-            if (await _telemetryActivityStorage.ShouldAddSolutionInformation(solutionId))
-            {
-                activity[ActivityPropertyNames.SolutionId] = solutionId;
-                AddSolutionInfo(activity);
-                await _telemetryActivityStorage.MarkSolutionInfoAsAddedAsync(solutionId);
-                activity[ActivityPropertyNames.HasSolutionInfo] = true;
-                activity.Remove(ActivityPropertyNames.SolutionPath);
-            }
+            return;
         }
+
+        if (!await _telemetryActivityStorage.ShouldAddSolutionInformation(solutionId))
+        {
+            return;
+        }
+
+        activity[ActivityPropertyNames.SolutionId] = solutionId;
+        
+        AddSolutionInfo(activity);
+        
+        await _telemetryActivityStorage.MarkSolutionInfoAsAddedAsync(solutionId);
+        
+        activity[ActivityPropertyNames.HasSolutionInfo] = true;
+        activity.Remove(ActivityPropertyNames.SolutionPath);
     }
 
     private bool TryGetSolutionId(ActivityEvent activity, out Guid solutionId)

@@ -367,48 +367,66 @@ public abstract class AbpApplicationBase : IAbpApplication
         }
     }
     
-    protected void ConfigureTelemetry(IServiceProvider serviceProvider)
+    protected void ConfigureTelemetry()
     {
-        var abpHostEnvironment = serviceProvider.GetRequiredService<IAbpHostEnvironment>();
-        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-        
-        if (!abpHostEnvironment.IsDevelopment() || configuration.GetValue<bool?>("Abp:Telemetry:IsEnabled") != true)
+        if (!ShouldSendTelemetryData())
         {
             return;
         }
-        
+
         _ = Task.Run(async () =>
         {
             try
             {
-                using var scope = serviceProvider.CreateScope();
-
                 var assembly = Assembly.GetEntryAssembly()!;
 
                 var projectMetaData = AbpProjectMetadataReader.ReadProjectMetadata(assembly);
-
-                if (projectMetaData != null)
+                if (projectMetaData == null)
                 {
-                    var telemetryService = scope.ServiceProvider.GetRequiredService<ITelemetryService>();
-
-                    await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
-                    {
-                        activity[ActivityPropertyNames.Assembly] = assembly.Location;
-                        activity[ActivityPropertyNames.ProjectId] = projectMetaData.ProjectId!;
-                        activity[ActivityPropertyNames.ProjectType] = projectMetaData.Role!;
-                        if (!projectMetaData.AbpSlnPath.IsNullOrEmpty())
-                        {
-                            activity[ActivityPropertyNames.SolutionPath] = projectMetaData.AbpSlnPath;
-                        }
-                    });
-
+                    return;
                 }
+
+                if (projectMetaData.AbpSlnPath.IsNullOrWhiteSpace()) // TODO: ???
+                {
+                    return;
+                }
+
+                using var scope = ServiceProvider.CreateScope();
+                var telemetryService = scope.ServiceProvider.GetRequiredService<ITelemetryService>();
+
+                await using var _ = telemetryService.TrackActivity(ActivityNameConsts.ApplicationRun, activity =>
+                {
+                    activity[ActivityPropertyNames.Assembly] = assembly.Location;
+                    activity[ActivityPropertyNames.ProjectId] = projectMetaData.ProjectId!;
+                    activity[ActivityPropertyNames.ProjectType] = projectMetaData.Role!;
+                    
+                    if (!projectMetaData.AbpSlnPath.IsNullOrEmpty())
+                    {
+                        activity[ActivityPropertyNames.SolutionPath] = projectMetaData.AbpSlnPath;
+                    }
+                });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                var logger = serviceProvider.GetRequiredService<ILogger<AbpApplicationWithExternalServiceProvider>>();
-                logger.LogError(e, "An error occurred while configuring telemetry.");
+                try
+                {
+                    using var scope = ServiceProvider.CreateScope();
+                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<AbpApplicationBase>>();
+                    logger.LogException(ex, LogLevel.Trace);
+                }
+                catch { }
             }
         });
+    }
+
+    private bool ShouldSendTelemetryData()
+    {
+        using var scope = ServiceProvider.CreateScope();
+        
+        var abpHostEnvironment = scope.ServiceProvider.GetRequiredService<IAbpHostEnvironment>();
+        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        
+        return abpHostEnvironment.IsDevelopment() &&
+               configuration.GetValue<bool?>("Abp:Telemetry:IsEnabled") == true;
     }
 }

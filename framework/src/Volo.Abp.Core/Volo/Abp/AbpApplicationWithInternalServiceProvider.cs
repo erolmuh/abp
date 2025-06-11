@@ -50,16 +50,14 @@ internal class AbpApplicationWithInternalServiceProvider : AbpApplicationBase, I
     {
         CreateServiceProvider();
         await InitializeModulesAsync();
-
-        ConfigureTelemetry(ServiceProvider);
+        ConfigureTelemetry();
     }
 
     public void Initialize()
     {
         CreateServiceProvider();
         InitializeModules();
-
-        ConfigureTelemetry(ServiceProvider);
+        ConfigureTelemetry();
     }
 
     public override void Dispose()

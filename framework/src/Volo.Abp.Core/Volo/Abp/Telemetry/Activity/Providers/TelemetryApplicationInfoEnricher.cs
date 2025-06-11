@@ -31,7 +31,8 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher,
                 return;
             }
 
-            if (!TryGetProjectId(activity, out var projectId) && !await _telemetryActivityStorage.ShouldAddApplicationInfoAsync(projectId))
+            if (!TryGetProjectId(activity, out var projectId) &&
+                !await _telemetryActivityStorage.ShouldAddApplicationInfoAsync(projectId)) //TODO: projectId always Guid.Empty???!!! 
             {
                 return;
             }
@@ -51,7 +52,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher,
         }
     }
 
-    private bool IsValidActivity(ActivityEvent activity)
+    private static bool IsValidActivity(ActivityEvent activity)
     {
         return activity.ContainsKey(ActivityPropertyNames.Assembly)
                && activity.TryGetValue(ActivityPropertyNames.SessionType, out var sessionTypeObj)
@@ -63,7 +64,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher,
     {
         if (!activity.TryGetValue(ActivityPropertyNames.ProjectId, out var projectIdObj) ||
             projectIdObj is not string projectIdStr ||
-            !Guid.TryParse(projectIdStr, out projectId))
+            !Guid.TryParse(projectIdStr, out projectId)) //TODO: No need to check GUID if we are sure if it is a GUID value
         {
             projectId = Guid.Empty;
             return false;

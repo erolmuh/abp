@@ -53,7 +53,7 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISin
     {
         if (TryGetDeviceId(out var deviceId))
         {
-            activity[ActivityPropertyNames.DeviceId] = deviceId;
+            activity[ActivityPropertyNames.DeviceId] = deviceId; //TODO: We can cancel the operation if we can't get this
         }
 
         activity[ActivityPropertyNames.DeviceLanguage] = CultureInfo.CurrentUICulture.Name;
@@ -72,7 +72,7 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISin
     {
         try
         {
-            if (File.Exists(TelemetryPaths.ComputerId))
+            if (File.Exists(TelemetryPaths.ComputerId)) //TODO: Align device id logic with our licencing system
             {
                 var deviceIdText = File.ReadAllText(TelemetryPaths.ComputerId);
                 deviceId = deviceIdText.To<Guid>();
@@ -135,6 +135,8 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISin
 
     private static string GetCountry()
     {
+        // TODO: Get actual region from computer, not culture
+        
         var culture = CultureInfo.CurrentUICulture;
         if (culture.IsNeutralCulture)
         {

@@ -12,7 +12,7 @@ internal class DotnetSdkDetector : SoftwareDetector
 
     public async override Task<SoftwareInfo?> DetectAsync()
     {
-        var output = await ExecuteCommandAsync("dotnet", "--version");
+        var output = await ExecuteCommandAsync("dotnet", "--version"); //TODO: Get from Environment or somewhere else
         if (output.IsNullOrWhiteSpace())
         {
             return null;

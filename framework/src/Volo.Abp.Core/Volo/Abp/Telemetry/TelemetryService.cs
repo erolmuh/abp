@@ -27,6 +27,7 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
     public IAsyncDisposable TrackActivity(string activityName, Action<ActivityEvent>? configure = null)
     {
         Check.NotNullOrEmpty(activityName, nameof(activityName));
+        
         var stopwatch = Stopwatch.StartNew();
         var activityData = new ActivityEvent(activityName);
 
@@ -56,7 +57,7 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
 
     public Task AddActivityAsync(ActivityEvent @event)
     {
-        _ = Task.Run(async () =>
+        _ = Task.Run(async () => // TODO: For runtime, no need to a new thread
         {
             try
             {

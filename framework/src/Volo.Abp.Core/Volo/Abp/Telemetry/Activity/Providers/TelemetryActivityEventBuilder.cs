@@ -7,7 +7,7 @@ using Volo.Abp.Telemetry.Activity.Contracts;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
-public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISingletonDependency
+public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISingletonDependency //TODO: Transient?
 {
     private readonly IServiceProvider _serviceProvider;
 
@@ -18,12 +18,11 @@ public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISi
 
     public virtual async Task BuildAsync(ActivityEvent activity)
     {
-       
-        var sessionProvider = _serviceProvider.GetRequiredService<ITelemetrySessionProvider>();
+        var scope = _serviceProvider.CreateScope();
+        var sessionProvider = scope.ServiceProvider.GetRequiredService<ITelemetrySessionProvider>();
+        var activityDataEnrichers = scope.ServiceProvider.GetRequiredService<IEnumerable<ITelemetryActivityEventEnricher>>();
         
         await sessionProvider.AddSessionInfoAsync(activity);
-        
-        var activityDataEnrichers = _serviceProvider.GetRequiredService<IEnumerable<ITelemetryActivityEventEnricher>>();
 
         foreach (var activityDataEnricher in activityDataEnrichers)
         {
