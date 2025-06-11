@@ -24,20 +24,19 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
 
     public async Task EnrichAsync(ActivityEvent activity)
     {
-        if (!ShouldEnrichActivity(activity))
-        {
-            return;
-        }
-
-        var projectId = ExtractProjectId(activity);
-        if (projectId == null)
-        {
-            return;
-        }
-
         try
         {
-            if (!await _telemetryActivityStorage.ShouldAddApplicationInfoAsync(projectId.Value))
+            if (!ShouldEnrichActivity(activity))
+            {
+                return;
+            }
+
+            if (!TryGetProjectId(activity, out var projectId))
+            {
+                return;
+            }
+
+            if (!await _telemetryActivityStorage.ShouldAddApplicationInfoAsync(projectId))
             {
                 return;
             }
@@ -49,7 +48,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
 
             activity.Remove(ActivityPropertyNames.Assembly);
             activity[ActivityPropertyNames.HasProjectInfo] = true;
-            await _telemetryActivityStorage.MarkApplicationInfoAsAddedAsync(projectId.Value);
+            await _telemetryActivityStorage.MarkApplicationInfoAsAddedAsync(projectId);
         }
         catch
         {
@@ -65,15 +64,16 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityDataEnricher, 
                && parsed == SessionType.ApplicationRuntime;
     }
 
-    private static Guid? ExtractProjectId(ActivityEvent activity)
+    private static bool TryGetProjectId(ActivityEvent activity, out Guid projectId)
     {
         if (!activity.TryGetValue(ActivityPropertyNames.ProjectId, out var projectIdObj) ||
             projectIdObj is not string projectIdStr ||
-            !Guid.TryParse(projectIdStr, out var projectId))
+            !Guid.TryParse(projectIdStr, out projectId))
         {
-            return null;
+            projectId = Guid.Empty;
+            return false;
         }
 
-        return projectId;
+        return true;
     }
 }
