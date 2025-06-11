@@ -22,79 +22,72 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
         _telemetryActivityStorage = telemetryActivityStorage;
     }
 
-  
 
     public async Task EnrichAsync(ActivityEvent activity)
     {
-        var solutionId = GetSolutionId(activity);
-        if (solutionId.HasValue)
+        if (TryGetSolutionId(activity, out var solutionId))
         {
-            if (await _telemetryActivityStorage.ShouldAddSolutionInformation(solutionId.Value))
+            if (await _telemetryActivityStorage.ShouldAddSolutionInformation(solutionId))
             {
+                activity[ActivityPropertyNames.SolutionId] = solutionId;
                 await FillSolutionInfoAsync(activity);
-                await _telemetryActivityStorage.MarkSolutionInfoAsAddedAsync(solutionId.Value);
+                await _telemetryActivityStorage.MarkSolutionInfoAsAddedAsync(solutionId);
                 activity[ActivityPropertyNames.HasSolutionInfo] = true;
-                activity.Remove(ActivityPropertyNames.SolutionPath); 
+                activity.Remove(ActivityPropertyNames.SolutionPath);
             }
-          
         }
     }
 
-    private Guid? GetSolutionId(ActivityEvent activity)
+    private bool TryGetSolutionId(ActivityEvent activity, out Guid solutionId)
     {
-        if (TryGetSolutionIdFromActivity(activity, out var solutionId))
+        if (TryGetSolutionIdFromActivity(activity, out solutionId))
         {
-            return solutionId;
+            return true;
         }
 
-        if (TryGetSolutionIdFromFile(activity, out var idFromFile))
+        if (TryGetSolutionIdFromFile(activity, out solutionId))
         {
-            activity[ActivityPropertyNames.SolutionId] = idFromFile;
-            return idFromFile;
+            return true;
         }
 
-        return null;
+        solutionId = Guid.Empty;
+        return false;
     }
-    private async Task FillSolutionInfoAsync(ActivityEvent activityEvent)
+
+    private Task FillSolutionInfoAsync(ActivityEvent activity)
     {
         try
         {
-            if (!activityEvent.TryGetValue(ActivityPropertyNames.SolutionPath, out var rawSolutionPath)
+            if (!activity.TryGetValue(ActivityPropertyNames.SolutionPath, out var rawSolutionPath)
                 || string.IsNullOrWhiteSpace(rawSolutionPath?.ToString())
                 || !File.Exists(rawSolutionPath?.ToString()))
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            var solutionPath = rawSolutionPath!.ToString();
-
-            if (!File.Exists(solutionPath))
-            {
-                return;
-            }
-
+            var solutionPath = rawSolutionPath!.ToString()!;
             var jsonContent = File.ReadAllText(solutionPath);
             using var doc = JsonDocument.Parse(jsonContent);
             var root = doc.RootElement;
 
-            AddSolutionInformation(activityEvent, root.GetProperty("creatingStudioConfiguration"));
+            AddSolutionInformation(activity, root.GetProperty("creatingStudioConfiguration"));
 
-            if (root.TryGetProperty("modules", out var modulesElement) &&
-                modulesElement.ValueKind == JsonValueKind.Object)
+            if (root.TryGetProperty("modules", out var modulesElement) && modulesElement.ValueKind == JsonValueKind.Object)
             {
                 var directoryPath = Path.GetDirectoryName(solutionPath)!;
-                activityEvent[ActivityPropertyNames.InstalledModules] = ExtractModules(directoryPath, modulesElement);
+                activity[ActivityPropertyNames.InstalledModules] = ExtractModules(directoryPath, modulesElement);
             }
         }
         catch
         {
             // ignored
         }
+
+        return Task.CompletedTask;
     }
 
     private bool TryGetSolutionIdFromActivity(ActivityEvent activity, out Guid solutionId)
     {
-        solutionId = Guid.Empty;
 
         if (activity.TryGetValue(ActivityPropertyNames.SolutionId, out var value) &&
             Guid.TryParse(value?.ToString(), out var parsedId))
@@ -102,14 +95,15 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
             solutionId = parsedId;
             return true;
         }
-
+        
+        solutionId = Guid.Empty;
         return false;
     }
 
     private bool TryGetSolutionIdFromFile(ActivityEvent activity, out Guid solutionId)
     {
         solutionId = Guid.Empty;
-
+        
         if (!activity.TryGetValue(ActivityPropertyNames.SolutionPath, out var value))
         {
             return false;
@@ -134,9 +128,9 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
         }
         catch
         {
-            // ignore malformed json etc.
+            // ignored
         }
-
+        
         return false;
     }
 
@@ -246,5 +240,4 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityDataEnricher, ISi
             _ => false
         };
     }
-
 }
