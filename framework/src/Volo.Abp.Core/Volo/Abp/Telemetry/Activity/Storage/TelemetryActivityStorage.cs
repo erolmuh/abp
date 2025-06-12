@@ -92,7 +92,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     {
         await UpdateStateAsync(state =>
         {
-            state.Applications[applicationId] = DateTimeOffset.UtcNow;
+            state.Projects[applicationId] = DateTimeOffset.UtcNow;
         });
     }
 
@@ -116,9 +116,9 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return ShouldAddInfo(lastSend);
     }
 
-    public virtual async Task<bool> ShouldAddApplicationInfoAsync(Guid applicationId)
+    public virtual async Task<bool> ShouldAddProjectInfoAsync(Guid projectId)
     {
-        var lastSend = await GetLastApplicationInfoSendTimeAsync(applicationId);
+        var lastSend = await GetLastProjectInfoSendTimeAsync(projectId);
         return ShouldAddInfo(lastSend);
     }
 
@@ -154,10 +154,10 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return state.Solutions.TryGetValue(solutionId, out var date) ? date : null;
     }
 
-    private async Task<DateTimeOffset?> GetLastApplicationInfoSendTimeAsync(Guid applicationId)
+    private async Task<DateTimeOffset?> GetLastProjectInfoSendTimeAsync(Guid applicationId)
     {
         var state = await GetStateAsync();
-        return state.Applications.TryGetValue(applicationId, out var date) ? date : null;
+        return state.Projects.TryGetValue(applicationId, out var date) ? date : null;
     }
 
     private async Task<DateTimeOffset?> GetLastDeviceInfoSendTimeAsync()
