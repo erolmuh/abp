@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 
 namespace Volo.Abp.Telemetry.Helpers;
@@ -11,32 +12,35 @@ static internal class AbpProjectMetadataReader
 {
     private const string AbpPackageSearchPattern = "*.abppkg";
     private const string AbpSolutionSearchPattern = "*.abpsln";
-    public static AbpPackageMetadata? ReadProjectMetadata(Assembly assembly)
+    private const int MaxDepth = 5; 
+    public static AbpProjectMetaData? ReadProjectMetadata(Assembly assembly)
     {
         var assemblyPath = assembly.Location;
         try
         {
-            var dir = Path.GetDirectoryName(assemblyPath);
-            if (dir == null)
+            var projectDirectory = Path.GetDirectoryName(assemblyPath);
+            if (projectDirectory == null)
             {
                 return null;
             }
 
-            var abppkgPath = FindFileUpwards(dir, AbpPackageSearchPattern);
-            if (abppkgPath == null)
+            var abpPackagePath = FindFileUpwards(projectDirectory, AbpPackageSearchPattern);
+
+            if (abpPackagePath.IsNullOrEmpty())
             {
                 return null;
             }
+            
+            var projectMetaData = ReadOrCreateMetadata(abpPackagePath);
 
-            var metadata = ReadOrCreateMetadata(abppkgPath);
-
-            var abpslnPath = FindFileUpwards(dir, AbpSolutionSearchPattern);
-            if (!string.IsNullOrEmpty(abpslnPath))
+            var abpSolutionPath = FindFileUpwards(projectDirectory, AbpSolutionSearchPattern);
+            
+            if (!abpSolutionPath.IsNullOrEmpty())
             {
-                metadata.AbpSlnPath = abpslnPath;
+                projectMetaData.AbpSlnPath = abpSolutionPath;
             }
 
-            return metadata;
+            return projectMetaData;
         }
         catch
         {
@@ -44,41 +48,66 @@ static internal class AbpProjectMetadataReader
         }
     }
 
-    private static AbpPackageMetadata ReadOrCreateMetadata(string path)
+    private static AbpProjectMetaData ReadOrCreateMetadata(string packagePath)
     {
-        var json = File.ReadAllText(path);
-        var doc = JsonSerializer.Deserialize<Dictionary<string, object>>(json) ?? new();
+        
+        var fileContent = File.ReadAllText(packagePath);
+        var metadata = new AbpProjectMetaData();
 
-        var metadata = new AbpPackageMetadata();
+        using var document = JsonDocument.Parse(fileContent);
+        var root = document.RootElement;
 
-        if (doc.TryGetValue("projectId", out var existingProjectId) && existingProjectId.ToString() != null)
+        if (TryGetProjectId(root,out var projectId))
         {
-            metadata.ProjectId = existingProjectId.ToString()!;
+            metadata.ProjectId = projectId;
         }
         else
         {
-            metadata.ProjectId = Guid.NewGuid().ToString();
-            doc["projectId"] = metadata.ProjectId;
+            metadata.ProjectId = Guid.NewGuid();
+            WriteProjectIdToPackageFile(root, packagePath, projectId);
         }
 
-        if (doc.TryGetValue("role", out var existingRole) && existingRole.ToString() != null)
+        if (root.TryGetProperty("role", out var roleElement) && 
+            roleElement.ValueKind == JsonValueKind.String)
         {
-            metadata.Role = existingRole.ToString()!;
+            metadata.Role = roleElement.GetString()!;
+        }
+        
+        return metadata;
+    }
+
+    private static void WriteProjectIdToPackageFile(JsonElement root, string packagePath, Guid projectId)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+        {
+            writer.WriteStartObject();
+                
+            if (root.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in root.EnumerateObject())
+                {
+                    if (property.Name != "projectId")
+                    {
+                        property.WriteTo(writer);
+                    }
+                }
+            }
+                
+            writer.WriteString("projectId", projectId.ToString());
+            writer.WriteEndObject();
         }
 
-        var updatedJson = JsonSerializer.Serialize(doc, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-        File.WriteAllText(path, updatedJson);
-
-        return metadata;
+        var json = Encoding.UTF8.GetString(stream.ToArray());
+        File.WriteAllText(packagePath, json);
     }
 
     private static string? FindFileUpwards(string startingDir, string searchPattern)
     {
         var currentDir = new DirectoryInfo(startingDir);
-        const int maxDepth = 10;
         var currentDepth = 0;
 
-        while (currentDir != null && currentDepth < maxDepth)
+        while (currentDir != null && currentDepth < MaxDepth)
         {
             var file = currentDir.GetFiles(searchPattern).FirstOrDefault();
             if (file != null)
@@ -92,11 +121,16 @@ static internal class AbpProjectMetadataReader
 
         return null;
     }
-}
+    private static bool TryGetProjectId(JsonElement element, out Guid projectId)
+    {
+        if (element.TryGetProperty("projectId", out var projectIdElement) && 
+            projectIdElement.ValueKind == JsonValueKind.String &&
+            Guid.TryParse(projectIdElement.GetString(), out projectId))
+        {
+            return true;
+        }
 
-public class AbpPackageMetadata
-{
-    public string? ProjectId { get; set; }
-    public string? Role { get; set; }
-    public string? AbpSlnPath { get; set; }
+        projectId = Guid.Empty;
+        return false;
+    }
 }
