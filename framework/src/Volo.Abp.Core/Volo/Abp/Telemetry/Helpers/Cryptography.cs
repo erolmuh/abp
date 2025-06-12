@@ -10,6 +10,7 @@ static internal class Cryptography
 
     public static string Encrypt(string plainText)
     {
+        Check.NotNullOrEmpty(plainText, nameof(plainText));
         using var aes = Aes.Create();
         using var sha256 = SHA256.Create();
 
@@ -25,6 +26,7 @@ static internal class Cryptography
 
     public static string Decrypt(string cipherText)
     {
+        Check.NotNullOrEmpty(cipherText, nameof(cipherText));
         using var aes = Aes.Create();
         using var sha256 = SHA256.Create();
 
