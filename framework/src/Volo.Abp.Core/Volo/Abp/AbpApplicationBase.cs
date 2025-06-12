@@ -390,7 +390,7 @@ public abstract class AbpApplicationBase : IAbpApplication
             var assembly = Assembly.GetEntryAssembly()!;
 
             var projectMetaData = AbpProjectMetadataReader.ReadProjectMetadata(assembly);
-
+           
             if (projectMetaData is { ProjectId: not null, AbpSlnPath: not null })
             {
                 using var scope = ServiceProvider.CreateScope();
@@ -409,7 +409,8 @@ public abstract class AbpApplicationBase : IAbpApplication
         {
             try
             {
-                var logger = ServiceProvider.GetRequiredService<ILogger<AbpApplicationBase>>();
+                using var scope = ServiceProvider.CreateScope();  
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<AbpApplicationBase>>();
                 logger.LogException(ex, LogLevel.Trace);
             }
             catch
