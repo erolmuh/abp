@@ -51,7 +51,7 @@ internal class AbpApplicationWithExternalServiceProvider : AbpApplicationBase, I
 
         await InitializeModulesAsync();
 
-        ConfigureTelemetry(serviceProvider);
+        SetupTelemetryTracking();
     }
 
     public void Initialize([NotNull] IServiceProvider serviceProvider)
@@ -62,7 +62,7 @@ internal class AbpApplicationWithExternalServiceProvider : AbpApplicationBase, I
 
         InitializeModules();
         
-        ConfigureTelemetry(serviceProvider);
+        SetupTelemetryTracking();
         
     }
  
