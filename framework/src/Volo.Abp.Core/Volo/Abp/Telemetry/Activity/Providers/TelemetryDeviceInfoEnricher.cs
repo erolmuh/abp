@@ -57,7 +57,6 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISin
         }
 
         activity[ActivityPropertyNames.DeviceLanguage] = CultureInfo.CurrentUICulture.Name;
-        activity[ActivityPropertyNames.DeviceType] = GetDeviceType();
         activity[ActivityPropertyNames.OperatingSystem] = GetOperatingSystem();
         activity[ActivityPropertyNames.CountryIsoCode] = GetCountry();
     }
@@ -108,31 +107,7 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISin
         return OperationSystem.Unknown;
     }
 
-    private static DeviceType GetDeviceType()
-    {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            return DetectDeviceTypeOnWindows();
-        }
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            return DetectDeviceTypeOnLinux();
-        }
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            return DetectDeviceTypeOnMacOS();
-        }
-
-        if (RuntimeInformation.OSDescription.ToLower().Contains("ios"))
-        {
-            return DeviceType.Laptop;
-        }
-
-        return DeviceType.Unknown;
-    }
-
+  
     private static string GetCountry()
     {
         var culture = CultureInfo.CurrentUICulture;
@@ -143,85 +118,5 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISin
 
         var region = new RegionInfo(culture.Name);
         return region.TwoLetterISORegionName;
-    }
-
-    private static DeviceType DetectDeviceTypeOnWindows()
-    {
-#if WINDOWS
-        try
-        {
-            using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_SystemEnclosure");
-            foreach (var obj in searcher.Get())
-            {
-                if (obj["ChassisTypes"] is ushort[] chassisTypes &&
-                    chassisTypes.Any(t => t is 8 or 9 or 10 or 14))
-                {
-                    return DeviceType.Laptop;
-                }
-            }
-        }
-        catch
-        {
-            // ignored
-        }
-#endif
-        return DeviceType.Desktop;
-    }
-
-    private static DeviceType DetectDeviceTypeOnLinux()
-    {
-        try
-        {
-            if (File.Exists("/sys/class/dmi/id/chassis_type"))
-            {
-                var type = File.ReadAllText("/sys/class/dmi/id/chassis_type");
-                if (int.TryParse(type.Trim(), out var code) && code is 8 or 9 or 10 or 14)
-                {
-                    return DeviceType.Laptop;
-                }
-            }
-        }
-        catch
-        {
-            // ignored
-        }
-
-        return DeviceType.Desktop;
-    }
-
-    private static DeviceType DetectDeviceTypeOnMacOS()
-    {
-        try
-        {
-            using var process = new Process();
-            process.StartInfo = new ProcessStartInfo
-            {
-                FileName = "system_profiler",
-                Arguments = "SPHardwareDataType",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            if (output.Contains("MacBook"))
-            {
-                return DeviceType.Laptop;
-            }
-
-            if (output.Contains("iMac") || output.Contains("Mac Pro"))
-            {
-                return DeviceType.Desktop;
-            }
-        }
-        catch
-        {
-            // ignored
-        }
-
-        return DeviceType.Unknown;
     }
 }

@@ -12,7 +12,6 @@ public static class ActivityPropertyNames
     public const string IpAddress =  nameof(IpAddress);
     public const string IsFirstSession = nameof(IsFirstSession);
     public const string DeviceId = nameof(DeviceId);
-    public const string DeviceType = nameof(DeviceType);
     public const string DeviceLanguage = nameof(DeviceLanguage);
     public const string OperatingSystem = nameof(OperatingSystem);
     public const string CountryIsoCode = nameof(CountryIsoCode);
