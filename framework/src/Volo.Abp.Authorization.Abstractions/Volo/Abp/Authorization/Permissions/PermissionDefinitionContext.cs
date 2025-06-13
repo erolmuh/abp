@@ -35,12 +35,14 @@ public class PermissionDefinitionContext : IPermissionDefinitionContext
             throw new AbpException($"There is already an existing permission group with name: {name}");
         }
         
-        var group = Groups[name] = new PermissionGroupDefinition(name, displayName);
+        var group = new PermissionGroupDefinition(name, displayName);
 
         if (CurrentProvider != null)
         {
             group[KnownPropertyNames.CurrentProviderName] = CurrentProvider.GetType().FullName;
         }
+
+        Groups[name] = group;
         
         return group;
     }
