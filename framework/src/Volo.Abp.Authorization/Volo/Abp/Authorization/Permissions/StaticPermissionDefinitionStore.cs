@@ -99,6 +99,8 @@ public class StaticPermissionDefinitionStore : IStaticPermissionDefinitionStore,
                 context.CurrentProvider = provider;
                 provider.PostDefine(context);
             }
+            
+            context.CurrentProvider = null;
 
             return context.Groups;
         }
