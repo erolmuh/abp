@@ -31,7 +31,7 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher,
                 return;
             }
 
-            if (!TryGetProjectId(activity, out var projectId) && !await _telemetryActivityStorage.ShouldAddApplicationInfoAsync(projectId))
+            if (!TryGetProjectId(activity, out var projectId) && !await _telemetryActivityStorage.ShouldAddProjectInfoAsync(projectId))
             {
                 return;
             }
