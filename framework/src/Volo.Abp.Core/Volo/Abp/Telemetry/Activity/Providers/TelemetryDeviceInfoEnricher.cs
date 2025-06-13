@@ -53,11 +53,15 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISin
     {
         if (TryGetDeviceId(out var deviceId))
         {
+            //TODO: Get deviceid with the same logic with our license server
             activity[ActivityPropertyNames.DeviceId] = deviceId; //TODO: We can cancel the operation if we can't get this
         }
 
         activity[ActivityPropertyNames.DeviceLanguage] = CultureInfo.CurrentUICulture.Name;
-        activity[ActivityPropertyNames.DeviceType] = GetDeviceType();
+        
+        //TODO: Remove DeviceType completely
+        //TODO: Instead, add CPU architecture (x64, ARM, x86...)
+        activity[ActivityPropertyNames.DeviceType] = GetDeviceType(); 
         activity[ActivityPropertyNames.OperatingSystem] = GetOperatingSystem();
         activity[ActivityPropertyNames.CountryIsoCode] = GetCountry();
     }

@@ -40,7 +40,7 @@ internal class AbpStudioDetector : SoftwareDetector
             return null;
         }
 
-        var json = File.ReadAllText(ideStateJsonPath);
+        var json = File.ReadAllText(ideStateJsonPath); // TODO: Can we optimize this to read only one value
         using var doc = JsonDocument.Parse(json);
 
         return doc.RootElement.TryGetProperty("theme", out var themeElement) ? themeElement.GetString() : null;
@@ -48,6 +48,10 @@ internal class AbpStudioDetector : SoftwareDetector
 
     private string? GetAbpStudioVersion()
     {
+        // TODO: Can we optimize this to read only one value
+        
+        // TODO: Can we find a simpler and better way to get ABP Studio version?
+        
         var extensionsFilePath = Path.Combine(TelemetryPaths.Studio, "extensions.json");
 
         if (!File.Exists(extensionsFilePath))

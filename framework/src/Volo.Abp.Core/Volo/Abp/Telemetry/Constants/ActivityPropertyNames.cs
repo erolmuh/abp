@@ -2,6 +2,9 @@
 
 public static class ActivityPropertyNames
 {
+    //TODO: Don't use nameof, example:
+    // public const string SessionId =  "SessionId";
+    
     public const string SessionId =  nameof(SessionId);
     public const string ActivityName =  nameof(ActivityName);
     public const string Error =  nameof(Error);

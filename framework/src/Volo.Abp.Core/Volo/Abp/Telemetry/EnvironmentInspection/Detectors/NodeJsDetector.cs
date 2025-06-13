@@ -14,6 +14,8 @@ internal class NodeJsDetector : SoftwareDetector
     {
         try
         {
+            //TODO: Can we eleminate terminal commands? Otherwise, ensure that no window is open
+            
             var output = await ExecuteCommandAsync("node", "-v");
 
             if (output.IsNullOrWhiteSpace())

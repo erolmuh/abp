@@ -18,6 +18,7 @@ public class TelemetryPermissionInfoContributor : ITelemetryApplicationInfoContr
 
     public async Task ContributeAsync(ActivityEvent activityEvent)
     {
+        // TODO: How to exclude permissions coming from pre-built ABP modules? 
         var permissions = await _permissionDefinitionManager.GetPermissionsAsync();
         activityEvent[ActivityPropertyNames.PermissionCount] = permissions.Count;
     }

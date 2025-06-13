@@ -53,6 +53,8 @@ abstract internal class SoftwareDetector: ISoftwareDetector , ISingletonDependen
             tcs.TrySetResult(true);
         };
 
+        // TODO: Cancellation token?
+        
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();

@@ -14,6 +14,9 @@ public class TelemetryDomainInfoContributor : ITelemetryApplicationInfoContribut
 {
     public Task ContributeAsync(ActivityEvent activityEvent)
     {
+        // TODO: Exclude types with namespace "Volo."
+        // TODO: Use ITypeFinder 
+        
         if (activityEvent.TryGetValue(ActivityPropertyNames.Assembly, out var assemblyPath))
         {
             var assembly = Assembly.LoadFrom((string)assemblyPath);

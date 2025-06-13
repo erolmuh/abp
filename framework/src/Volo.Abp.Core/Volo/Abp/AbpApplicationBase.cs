@@ -376,6 +376,8 @@ public abstract class AbpApplicationBase : IAbpApplication
 
         _ = Task.Run(async () =>
         {
+            // TODO: Measure duration of telemetry data collection
+            
             try
             {
                 var assembly = Assembly.GetEntryAssembly()!;
