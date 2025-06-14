@@ -11,6 +11,13 @@ public class PermissionDefinitionContext : IPermissionDefinitionContext
 
     public Dictionary<string, PermissionGroupDefinition> Groups { get; }
 
+    internal IPermissionDefinitionProvider? CurrentProvider { get; set; }
+
+    public static class KnownPropertyNames
+    {
+        public const string CurrentProviderName = "_CurrentProviderName";
+    }
+
     public PermissionDefinitionContext(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
@@ -27,8 +34,17 @@ public class PermissionDefinitionContext : IPermissionDefinitionContext
         {
             throw new AbpException($"There is already an existing permission group with name: {name}");
         }
+        
+        var group = new PermissionGroupDefinition(name, displayName);
 
-        return Groups[name] = new PermissionGroupDefinition(name, displayName);
+        if (CurrentProvider != null)
+        {
+            group[KnownPropertyNames.CurrentProviderName] = CurrentProvider.GetType().FullName;
+        }
+
+        Groups[name] = group;
+        
+        return group;
     }
 
     [NotNull]

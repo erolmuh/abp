@@ -14,8 +14,12 @@ public class AuthorizationTestPermissionDefinitionProvider : PermissionDefinitio
         }
 
         var group = context.AddGroup("TestGroup");
+        
+        group[PermissionDefinitionContext.KnownPropertyNames.CurrentProviderName].ShouldBe(typeof(AuthorizationTestPermissionDefinitionProvider).FullName);
 
-        group.AddPermission("MyAuthorizedService1");
+        var permission1 = group.AddPermission("MyAuthorizedService1");
+        
+        permission1[PermissionDefinitionContext.KnownPropertyNames.CurrentProviderName].ShouldBe(typeof(AuthorizationTestPermissionDefinitionProvider).FullName);
 
         group.AddPermission("MyPermission1").StateCheckers.Add(new TestRequireEditionPermissionSimpleStateChecker());
         group.AddPermission("MyPermission2");
