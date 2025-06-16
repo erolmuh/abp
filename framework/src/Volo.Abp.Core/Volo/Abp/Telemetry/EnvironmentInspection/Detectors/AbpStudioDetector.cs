@@ -12,6 +12,7 @@ namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 internal class AbpStudioDetector : SoftwareDetector
 {
     public override string Name => "Abp Studio";
+    private const string AbpStudioVersionExtensionName = "Volo.Abp.Studio.Extensions.StandardSolutionTemplates";
 
     public override Task<SoftwareInfo?> DetectAsync()
     {
@@ -39,9 +40,8 @@ internal class AbpStudioDetector : SoftwareDetector
         {
             return null;
         }
-
-        var json = File.ReadAllText(ideStateJsonPath);
-        using var doc = JsonDocument.Parse(json);
+        using var fs = new FileStream(ideStateJsonPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var doc = JsonDocument.Parse(fs);
 
         return doc.RootElement.TryGetProperty("theme", out var themeElement) ? themeElement.GetString() : null;
     }
@@ -55,17 +55,20 @@ internal class AbpStudioDetector : SoftwareDetector
             return null;
         }
 
-        var json = File.ReadAllText(extensionsFilePath);
-        using var doc = JsonDocument.Parse(json);
+        using var fs = new FileStream(extensionsFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var doc = JsonDocument.Parse(fs);
 
         if (doc.RootElement.TryGetProperty("Extensions", out var extensionsElement) &&
-            extensionsElement.ValueKind == JsonValueKind.Array &&
-            extensionsElement.GetArrayLength() > 0)
+            extensionsElement.ValueKind == JsonValueKind.Array)
         {
-            var firstExtension = extensionsElement[0];
-            if (firstExtension.TryGetProperty("version", out var versionElement))
+            foreach (var extension in extensionsElement.EnumerateArray())
             {
-                return versionElement.GetString();
+                if (extension.TryGetProperty("name", out var nameProp) &&
+                    nameProp.GetString() == AbpStudioVersionExtensionName &&
+                    extension.TryGetProperty("version", out var versionProp))
+                {
+                    return versionProp.GetString();
+                }
             }
         }
 

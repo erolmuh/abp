@@ -5,7 +5,7 @@ namespace Volo.Abp.Telemetry.Activity;
 
 public class ActivityEvent : Dictionary<string, object>
 {
-    private ActivityEvent()
+    public ActivityEvent()
     {
     }
     

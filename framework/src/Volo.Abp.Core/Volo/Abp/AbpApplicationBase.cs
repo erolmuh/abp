@@ -372,7 +372,7 @@ public abstract class AbpApplicationBase : IAbpApplication
 
     protected void SetupTelemetryTracking()
     {
-        if (ShouldSendTelemetryData())
+        if (!ShouldSendTelemetryData())
         {
             return;
         }
@@ -387,23 +387,9 @@ public abstract class AbpApplicationBase : IAbpApplication
     {
         try
         {
-            var assembly = Assembly.GetEntryAssembly()!;
-
-            var projectMetaData = AbpProjectMetadataReader.ReadProjectMetadata(assembly);
-           
-            if (projectMetaData is { ProjectId: not null, AbpSlnPath: not null })
-            {
-                using var scope = ServiceProvider.CreateScope();
-                var telemetryService = scope.ServiceProvider.GetRequiredService<ITelemetryService>();
-
-                await telemetryService.AddActivityAsync(ActivityNameConsts.ApplicationRun, activity =>
-                {
-                    activity[ActivityPropertyNames.Assembly] = assembly.Location;
-                    activity[ActivityPropertyNames.ProjectId] = projectMetaData.ProjectId!;
-                    activity[ActivityPropertyNames.ProjectType] = projectMetaData.Role!;
-                    activity[ActivityPropertyNames.SolutionPath] = projectMetaData.AbpSlnPath;
-                });
-            }
+            using var scope = ServiceProvider.CreateScope();
+            var telemetryService = scope.ServiceProvider.GetRequiredService<ITelemetryService>();
+            await telemetryService.AddActivityAsync(ActivityNameConsts.ApplicationRun);
         }
         catch (Exception ex)
         {

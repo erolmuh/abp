@@ -4,5 +4,5 @@ namespace Volo.Abp.Telemetry.Activity.Contracts;
 
 public interface ITelemetryActivityEventBuilder
 {
-    Task BuildAsync(ActivityEvent activity);
+    Task<ActivityEvent?> BuildAsync(ActivityContext context);
 }

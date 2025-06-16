@@ -38,6 +38,26 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         await UpdateStateAsync(state =>
         {
             state.Activities.Insert(0, activityEvent);
+            
+            if (activityEvent.ActivityName == ActivityNameConsts.AbpStudioClose)
+            {
+                state.SessionId = null;
+            }
+
+            if (activityEvent.ContainsKey(ActivityPropertyNames.HasSolutionInfo))
+            {
+                state.Solutions[Guid.Parse(activityEvent[ActivityPropertyNames.SolutionId].ToString()!)] = DateTimeOffset.UtcNow;
+            }
+            
+            if (activityEvent.ContainsKey(ActivityPropertyNames.HasProjectInfo))
+            {
+                state.Projects[Guid.Parse(activityEvent[ActivityPropertyNames.ProjectId].ToString()!)] = DateTimeOffset.UtcNow;
+            }
+
+            if (activityEvent.ContainsKey(ActivityPropertyNames.HasDeviceInfo))
+            {
+                state.LastDeviceInfoAddTime = DateTimeOffset.UtcNow;
+            }
         });
     }
 
@@ -45,14 +65,6 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     {
         var state = await GetStateAsync();
         return state.Activities;
-    }
-
-    public async Task EndSessionAsync()
-    {
-        await UpdateStateAsync(state =>
-        {
-            state.SessionId = null;
-        });
     }
 
     public async Task<Guid> InitializeOrGetSessionAsync()
@@ -77,30 +89,6 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         {
             state.ActivitySendTime = DateTimeOffset.UtcNow;
             state.Activities.Clear();
-        });
-    }
-
-    public async Task MarkSolutionInfoAsAddedAsync(Guid solutionId)
-    {
-        await UpdateStateAsync(state =>
-        {
-            state.Solutions[solutionId] = DateTimeOffset.UtcNow;
-        });
-    }
-
-    public async Task MarkApplicationInfoAsAddedAsync(Guid applicationId)
-    {
-        await UpdateStateAsync(state =>
-        {
-            state.Projects[applicationId] = DateTimeOffset.UtcNow;
-        });
-    }
-
-    public async Task MarkDeviceInfoAsAddedAsync()
-    {
-        await UpdateStateAsync(state =>
-        {
-            state.LastDeviceInfoAddTime = DateTimeOffset.UtcNow;
         });
     }
 
@@ -130,8 +118,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
     private static bool IsTestModeEnabled()
     {
-        var testModeVariable =
-            Environment.GetEnvironmentVariable(TestModeEnvironmentVariable, EnvironmentVariableTarget.User);
+        var testModeVariable = Environment.GetEnvironmentVariable(TestModeEnvironmentVariable, EnvironmentVariableTarget.User);
         return bool.TryParse(testModeVariable, out var isTestMode) && isTestMode;
     }
 
@@ -211,11 +198,19 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     {
         try
         {
-            CreateDirectoryIfNotExists(Path.GetDirectoryName(TelemetryPaths.ActivityStorage)!);
-
+            var storageDirectory = Path.GetDirectoryName(TelemetryPaths.ActivityStorage)!;
+            
+            if (!Directory.Exists(storageDirectory))
+            {
+                Directory.CreateDirectory(storageDirectory);
+            }
+            
             if (!File.Exists(TelemetryPaths.ActivityStorage))
             {
-                InitializeStorage();
+                var initialState = _cachedState ?? new TelemetryActivityStorageState();
+                var json = JsonSerializer.Serialize(initialState, JsonSerializerOptions);
+                var encryptedJson = Cryptography.Encrypt(json);
+                File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
             }
         }
         catch
@@ -224,28 +219,11 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         }
     }
 
-    private static void CreateDirectoryIfNotExists(string path)
-    {
-        if (!Directory.Exists(path))
-        {
-            Directory.CreateDirectory(path);
-        }
-    }
-
-
-    private void InitializeStorage()
-    {
-        var initialState = _cachedState ?? new TelemetryActivityStorageState();
-        var json = JsonSerializer.Serialize(initialState, JsonSerializerOptions);
-        var encryptedJson = Cryptography.Encrypt(json);
-        File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
-    }
-
     private async Task<TResult?> WithExclusiveFileLockAsync<TResult>(Func<FileStream, Task<TResult>> action)
     {
         return await MutexExecutor.ExecuteAsync(MutexName, async () =>
         {
-            using var stream = new FileStream(
+             using var stream = new FileStream(
                 TelemetryPaths.ActivityStorage,
                 FileMode.OpenOrCreate,
                 FileAccess.ReadWrite,

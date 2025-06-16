@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
-using ActivityEvent = Volo.Abp.Telemetry.Activity.ActivityEvent;
+using ActivityContext = Volo.Abp.Telemetry.Activity.ActivityContext;
 
 namespace Volo.Abp.Telemetry;
 
-public class TelemetryService : ITelemetryService, ISingletonDependency
+public class TelemetryService : ITelemetryService, IScopedDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private readonly ITelemetryActivitySender _telemetryActivitySender;
@@ -24,115 +24,70 @@ public class TelemetryService : ITelemetryService, ISingletonDependency
         _telemetryActivityEventBuilder = telemetryActivityEventBuilder;
     }
 
-    public IAsyncDisposable TrackActivity(string activityName, Action<ActivityEvent>? configure = null)
+
+    public IAsyncDisposable TrackActivityAsync(string activityName,
+        Action<Dictionary<string, object>>? additionalProperties = null)
     {
         Check.NotNullOrEmpty(activityName, nameof(activityName));
         var stopwatch = Stopwatch.StartNew();
-        var activityData = new ActivityEvent(activityName);
-
-        configure?.Invoke(activityData);
+        var context = ActivityContext.Create(activityName);
 
         return new AsyncDisposeFunc(async () =>
         {
             stopwatch.Stop();
-            activityData.ActivityDuration = stopwatch.ElapsedMilliseconds;
-
-            await AddActivityAsync(activityData);
+            context.Current[ActivityPropertyNames.ActivityDuration] = stopwatch.ElapsedMilliseconds;
+            additionalProperties?.Invoke(context.Current);
+            await AddActivityAsync(context);
         });
     }
 
-    public IAsyncDisposable TrackActivity(ActivityEvent activityEvent)
+    public async Task AddActivityAsync(string activityName,
+        Action<Dictionary<string, object>>? additionalProperties = null)
     {
-        var stopwatch = Stopwatch.StartNew();
-
-        return new AsyncDisposeFunc(async () =>
-        {
-            stopwatch.Stop();
-            activityEvent.ActivityDuration = stopwatch.ElapsedMilliseconds;
-            await AddActivityAsync(activityEvent);
-        });
+        Check.NotNullOrEmpty(activityName, nameof(activityName));
+        var context = ActivityContext.Create(activityName, additionalProperties: additionalProperties);
+        await AddActivityAsync(context);
     }
 
-
-    public Task AddActivityAsync(ActivityEvent @event)
+    public async Task AddErrorActivityAsync(Action<Dictionary<string, object>> additionalProperties)
     {
-        _ = Task.Run(async () =>
+        var context = ActivityContext.Create(ActivityNameConsts.Error, additionalProperties: additionalProperties);
+        await AddActivityAsync(context);
+    }
+
+    public async Task AddErrorActivityAsync(string errorMessage)
+    {
+        var context = ActivityContext.Create(ActivityNameConsts.Error, errorMessage);
+        await AddActivityAsync(context);
+    }
+
+    public async Task AddErrorForActivityAsync(string failingActivity, string errorMessage)
+    {
+        Check.NotNullOrEmpty(failingActivity, nameof(failingActivity));
+        var context = ActivityContext.Create(ActivityNameConsts.Error, errorMessage, configure =>
         {
-            try
+            configure[ActivityPropertyNames.FailingActivity] = failingActivity;
+        });
+        await AddActivityAsync(context);
+    }
+
+    private async Task AddActivityAsync(ActivityContext context)
+    {
+        try
+        {
+            var activityEvent = await _telemetryActivityEventBuilder.BuildAsync(context);
+            if (activityEvent is not null)
             {
-                await _telemetryActivityEventBuilder.BuildAsync(@event);
-                await _telemetryActivityStorage.BufferActivityAsync(@event);
-
-                if (@event.ActivityName == ActivityNameConsts.AbpStudioClose)
-                {
-                    await _telemetryActivityStorage.EndSessionAsync();
-                }
-
+                await _telemetryActivityStorage.BufferActivityAsync(activityEvent);
                 if (await _telemetryActivityStorage.ShouldSendActivitiesAsync())
                 {
                     await _telemetryActivitySender.SendAsync();
                 }
             }
-            catch
-            {
-                // ignored
-            }
-        });
-
-        return Task.CompletedTask;
-    }
-
-    public async Task AddActivityAsync(string activityName, string? details = null)
-    {
-        await AddActivityAsync(new ActivityEvent(activityName, details));
-    }
-
-    public async Task AddActivityAsync(string activityName, Action<ActivityEvent> configure)
-    {
-        Check.NotNullOrEmpty(activityName, nameof(activityName));
-        var activityData = new ActivityEvent(activityName);
-
-        configure?.Invoke(activityData);
-
-        await AddActivityAsync(activityData);
-    }
-
-    public async Task AddErrorActivityAsync(Action<Dictionary<string, object>> configure)
-    {
-        var activityData = new ActivityEvent(ActivityNameConsts.Error)
+        }
+        catch (Exception ex)
         {
-            AdditionalProperties = new Dictionary<string, object>()
-        };
-
-        configure?.Invoke(activityData.AdditionalProperties);
-
-        await AddActivityAsync(activityData);
-    }
-
-    public async Task AddErrorActivityAsync(string errorMessage)
-    {
-        var activityData = new ActivityEvent(ActivityNameConsts.Error)
-        {
-            AdditionalProperties = new Dictionary<string, object>
-            {
-                { ActivityPropertyNames.ErrorMessage, errorMessage },
-            }
-        };
-
-        await AddActivityAsync(activityData);
-    }
-
-    public async Task AddErrorForActivityAsync(string failingActivity, string errorMessage)
-    {
-        var activityData = new ActivityEvent(ActivityNameConsts.Error)
-        {
-            AdditionalProperties = new Dictionary<string, object>
-            {
-                { ActivityPropertyNames.ErrorMessage, errorMessage },
-                { ActivityPropertyNames.FailingActivity, failingActivity },
-            }
-        };
-
-        await AddActivityAsync(activityData);
+           //ignored
+        }
     }
 }

@@ -11,7 +11,7 @@ using Volo.Abp.Telemetry.Constants;
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
 [ExposeServices(typeof(ITelemetryActivityEventEnricher))]
-public class TelemetrySolutionInfoEnricher : ITelemetryActivityEventEnricher, ISingletonDependency
+public class TelemetrySolutionInfoEnricher : ITelemetryActivityEventEnricher, IScopedDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
 
@@ -20,122 +20,68 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityEventEnricher, IS
         _telemetryActivityStorage = telemetryActivityStorage;
     }
 
+    public bool IsFirstRun => true;
+    public Type? DependsOn => typeof(TelemetrySessionInfoEnricher);
 
-    public async Task EnrichAsync(ActivityEvent activity)
+    public async Task<bool> CanExecuteAsync(ActivityContext context)
     {
-        if (TryGetSolutionId(activity, out var solutionId))
+        if (context.SolutionId.HasValue && !context.SolutionPath.IsNullOrEmpty())
         {
-            if (await _telemetryActivityStorage.ShouldAddSolutionInformation(solutionId))
-            {
-                activity[ActivityPropertyNames.SolutionId] = solutionId;
-                AddSolutionInfo(activity);
-                await _telemetryActivityStorage.MarkSolutionInfoAsAddedAsync(solutionId);
-                activity[ActivityPropertyNames.HasSolutionInfo] = true;
-                activity.Remove(ActivityPropertyNames.SolutionPath);
-            }
-        }
-    }
-
-    private bool TryGetSolutionId(ActivityEvent activity, out Guid solutionId)
-    {
-        if (TryGetSolutionIdFromActivity(activity, out solutionId))
-        {
-            return true;
+            return await _telemetryActivityStorage.ShouldAddSolutionInformation(context.SolutionId.Value);
         }
 
-        if (TryGetSolutionIdFromFile(activity, out solutionId))
-        {
-            return true;
-        }
-
-        solutionId = Guid.Empty;
         return false;
     }
 
-    private void AddSolutionInfo(ActivityEvent activity)
+    public Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context)
     {
         try
         {
-            var solutionPath = activity[ActivityPropertyNames.SolutionPath]!.ToString()!;
+            var result = new Dictionary<string, object>();
 
-            var jsonContent = File.ReadAllText(solutionPath);
+            var jsonContent = File.ReadAllText(context.SolutionPath!);
             using var doc = JsonDocument.Parse(jsonContent);
             var root = doc.RootElement;
 
-            AddSolutionCreationConfiguration(activity, root.GetProperty("creatingStudioConfiguration"));
+            AddSolutionCreationConfiguration(result, root.GetProperty("creatingStudioConfiguration"));
 
             if (root.TryGetProperty("modules", out var modulesElement) &&
                 modulesElement.ValueKind == JsonValueKind.Object)
             {
-                activity[ActivityPropertyNames.InstalledModules] = ExtractModules(solutionPath, modulesElement);
+                result[ActivityPropertyNames.InstalledModules] = ExtractModules(context.SolutionPath!, modulesElement);
             }
+
+            result[ActivityPropertyNames.HasSolutionInfo] = true;
+
+            return Task.FromResult<Dictionary<string, object>?>(result);
         }
-        catch
+        catch 
         {
-            // ignored
+            return Task.FromResult<Dictionary<string, object>?>(null);
         }
     }
 
-    private bool TryGetSolutionIdFromActivity(ActivityEvent activity, out Guid solutionId)
+   
+
+    private void AddSolutionCreationConfiguration(Dictionary<string, object> result, JsonElement config)
     {
-        if (activity.TryGetValue(ActivityPropertyNames.SolutionId, out var value) &&
-            Guid.TryParse(value?.ToString(), out var parsedId))
-        {
-            solutionId = parsedId;
-            return true;
-        }
-
-        solutionId = Guid.Empty;
-        return false;
-    }
-
-    private bool TryGetSolutionIdFromFile(ActivityEvent activity, out Guid solutionId)
-    {
-        if (activity.TryGetValue(ActivityPropertyNames.SolutionPath, out var pathValue) &&
-            pathValue is string &&
-            File.Exists(pathValue.ToString()))
-        {
-            try
-            {
-                var solutionPath = pathValue.ToString()!;
-                var json = File.ReadAllText(solutionPath);
-                using var doc = JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("id", out var idProp) &&
-                    Guid.TryParse(idProp.GetString(), out var parsedId))
-                {
-                    solutionId = parsedId;
-                    return true;
-                }
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
-        solutionId = Guid.Empty;
-        return false;
-    }
-
-    private void AddSolutionCreationConfiguration(ActivityEvent activity, JsonElement config)
-    {
-        activity[ActivityPropertyNames.Template] = config.GetProperty("template").GetString() ?? string.Empty;
-        activity[ActivityPropertyNames.CreatedAbpStudioVersion] = config.GetProperty("createdAbpStudioVersion").GetString()!;
-        activity[ActivityPropertyNames.MultiTenancy] = ParseBool(config.GetProperty("multiTenancy"));
-        activity[ActivityPropertyNames.UiFramework] = config.GetProperty("uiFramework").GetString() ?? string.Empty;
-        activity[ActivityPropertyNames.DatabaseProvider] = config.GetProperty("databaseProvider").GetString() ?? string.Empty;
-        activity[ActivityPropertyNames.Theme] = config.GetProperty("theme").GetString() ?? string.Empty;
-        activity[ActivityPropertyNames.ThemeStyle] = config.GetProperty("themeStyle").GetString() ?? string.Empty;
-        activity[ActivityPropertyNames.HasPublicWebsite] = ParseBool(config.GetProperty("publicWebsite"));
-        activity[ActivityPropertyNames.IsTiered] = ParseBool(config.GetProperty("tiered"));
-        activity[ActivityPropertyNames.SocialLogins] = ParseBool(config.GetProperty("socialLogin"));
-        activity[ActivityPropertyNames.DatabaseManagementSystem] = config.GetProperty("databaseManagementSystem").GetString() ?? string.Empty;
-        activity[ActivityPropertyNames.IsSeparateTenantSchema] = ParseBool(config.GetProperty("separateTenantSchema"));
-        activity[ActivityPropertyNames.MobileFramework] = config.GetProperty("mobileFramework").GetString() ?? string.Empty;
-        activity[ActivityPropertyNames.IncludeTests] = ParseBool(config.GetProperty("includeTests"));
-        activity[ActivityPropertyNames.DynamicLocalization] = ParseBool(config.GetProperty("dynamicLocalization"));
-        activity[ActivityPropertyNames.KubernetesConfiguration] = ParseBool(config.GetProperty("kubernetesConfiguration"));
-        activity[ActivityPropertyNames.GrafanaDashboard] = ParseBool(config.GetProperty("grafanaDashboard"));
+        result[ActivityPropertyNames.Template] = config.TryGetProperty("template", out var template) ? template.GetRawText() : string.Empty;
+        result[ActivityPropertyNames.CreatedAbpStudioVersion] = config.TryGetProperty("createdAbpStudioVersion", out var createdAbpStudioVersion) ? createdAbpStudioVersion.GetRawText() : string.Empty;
+        result[ActivityPropertyNames.MultiTenancy] = config.TryGetProperty("multiTenancy", out var multiTenancy) && ParseBool(multiTenancy);
+        result[ActivityPropertyNames.UiFramework] = config.TryGetProperty("uiFramework", out var uiFramework) ? uiFramework.GetRawText() : string.Empty;
+        result[ActivityPropertyNames.DatabaseProvider] = config.TryGetProperty("databaseProvider", out var databaseProvider) ? databaseProvider.GetRawText() : string.Empty;
+        result[ActivityPropertyNames.Theme] = config.TryGetProperty("theme", out var theme) ? theme.GetRawText() : string.Empty;
+        result[ActivityPropertyNames.ThemeStyle] = config.TryGetProperty("themeStyle", out var themeStyle) ? themeStyle.GetRawText() : string.Empty;
+        result[ActivityPropertyNames.HasPublicWebsite] = config.TryGetProperty("publicWebsite", out var publicWebsite) && ParseBool(publicWebsite);
+        result[ActivityPropertyNames.IsTiered] = config.TryGetProperty("tiered", out var tiered) && ParseBool(tiered);
+        result[ActivityPropertyNames.SocialLogins] = config.TryGetProperty("socialLogin", out var socialLogin) && ParseBool(socialLogin);
+        result[ActivityPropertyNames.DatabaseManagementSystem] = config.TryGetProperty("databaseManagementSystem", out var databaseManagementSystem) ? databaseManagementSystem.GetRawText() : string.Empty;
+        result[ActivityPropertyNames.IsSeparateTenantSchema] = config.TryGetProperty("separateTenantSchema", out var separateTenantSchema) && ParseBool(separateTenantSchema);
+        result[ActivityPropertyNames.MobileFramework] = config.TryGetProperty("mobileFramework", out var mobileFramework) ? mobileFramework.GetRawText() : string.Empty;
+        result[ActivityPropertyNames.IncludeTests] = config.TryGetProperty("includeTests", out var includeTests) && ParseBool(includeTests);
+        result[ActivityPropertyNames.DynamicLocalization] =  config.TryGetProperty("dynamicLocalization", out var dynamicLocalization) && ParseBool(dynamicLocalization);
+        result[ActivityPropertyNames.KubernetesConfiguration] = config.TryGetProperty("kubernetesConfiguration", out var kubernetesConfiguration) && ParseBool(kubernetesConfiguration);
+        result[ActivityPropertyNames.GrafanaDashboard] =  config.TryGetProperty("grafanaDashboard", out var grafanaDashboard) && ParseBool(grafanaDashboard);
     }
 
     private List<Dictionary<string, object>> ExtractModules(string solutionPath, JsonElement modulesElement)

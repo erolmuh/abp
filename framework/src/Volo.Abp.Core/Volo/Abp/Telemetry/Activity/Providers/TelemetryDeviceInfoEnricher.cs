@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
@@ -10,14 +9,11 @@ using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
 using Volo.Abp.Telemetry.Constants.Enums;
 using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
-#if WINDOWS
-using System.Management;
-#endif
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
 [ExposeServices(typeof(ITelemetryActivityEventEnricher))]
-public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISingletonDependency
+public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, IScopedDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private readonly ISoftwareInfoProvider _softwareInfoProvider;
@@ -29,62 +25,56 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISin
         _softwareInfoProvider = softwareInfoProvider;
     }
 
-    public async Task EnrichAsync(ActivityEvent activity)
+    public bool IsFirstRun => true;
+    public Type? DependsOn => null;
+    
+    public Task<bool> CanExecuteAsync(ActivityContext context)
+    {
+        return Task.FromResult(true);
+    }
+    
+
+    public async Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context)
     {
         try
         {
+            var deviceId = DeviceKeyHelper.GetUniquePhysicalKey(true);
+            
             if (!await _telemetryActivityStorage.ShouldAddDeviceInfoAsync())
             {
-                return;
+                context.Cancel();
+                return new Dictionary<string, object>
+                {
+                    { ActivityPropertyNames.DeviceId, deviceId },
+                };
             }
+            
+            var result = new Dictionary<string, object>
+            {
+                [ActivityPropertyNames.DeviceId] = deviceId,
+                [ActivityPropertyNames.DeviceLanguage] = CultureInfo.CurrentUICulture.Name,
+                [ActivityPropertyNames.OperatingSystem] = GetOperatingSystem(),
+                [ActivityPropertyNames.CountryIsoCode] = GetCountry(),
+                [ActivityPropertyNames.OperatingSystemArchitecture] =RuntimeInformation.OSArchitecture.ToString()
+            };
 
-            EnrichWithDeviceInfo(activity);
-            await EnrichWithSoftwareInfoAsync(activity);
-            activity[ActivityPropertyNames.HasDeviceInfo] = true;
-            await _telemetryActivityStorage.MarkDeviceInfoAsAddedAsync();
+            await EnrichWithSoftwareInfoAsync(result);
+            result[ActivityPropertyNames.HasDeviceInfo] = true;
+            return result;
+            
         }
         catch
         {
+            context.Terminate();
+            return null;
             //ignored
         }
     }
 
-    private void EnrichWithDeviceInfo(ActivityEvent activity)
-    {
-        if (TryGetDeviceId(out var deviceId))
-        {
-            activity[ActivityPropertyNames.DeviceId] = deviceId;
-        }
-
-        activity[ActivityPropertyNames.DeviceLanguage] = CultureInfo.CurrentUICulture.Name;
-        activity[ActivityPropertyNames.OperatingSystem] = GetOperatingSystem();
-        activity[ActivityPropertyNames.CountryIsoCode] = GetCountry();
-    }
-
-    private async Task EnrichWithSoftwareInfoAsync(ActivityEvent activity)
+    private async Task EnrichWithSoftwareInfoAsync(Dictionary<string,object> activity)
     {
         var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
         activity[ActivityPropertyNames.InstalledSoftwares] = softwareList;
-    }
-
-    private static bool TryGetDeviceId(out Guid deviceId)
-    {
-        try
-        {
-            if (File.Exists(TelemetryPaths.ComputerId))
-            {
-                var deviceIdText = File.ReadAllText(TelemetryPaths.ComputerId);
-                deviceId = deviceIdText.To<Guid>();
-                return true;
-            }
-        }
-        catch
-        {
-            // ignored
-        }
-
-        deviceId = Guid.Empty;
-        return false;
     }
 
     private static OperationSystem GetOperatingSystem()
@@ -107,6 +97,7 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISin
         return OperationSystem.Unknown;
     }
 
+    
   
     private static string GetCountry()
     {

@@ -1,74 +1,108 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
 using Volo.Abp.Telemetry.Constants.Enums;
+using Volo.Abp.Telemetry.Helpers;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
 [ExposeServices(typeof(ITelemetryActivityEventEnricher))]
-public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher, ISingletonDependency
+public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher, IScopedDependency
 {
-    private readonly IEnumerable<ITelemetryApplicationInfoContributor> _telemetryApplicationInfoContributors;
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
 
     public TelemetryApplicationInfoEnricher(
-        IEnumerable<ITelemetryApplicationInfoContributor> telemetryApplicationInfoContributors,
         ITelemetryActivityStorage telemetryActivityStorage)
     {
-        _telemetryApplicationInfoContributors = telemetryApplicationInfoContributors;
         _telemetryActivityStorage = telemetryActivityStorage;
     }
 
-    public async Task EnrichAsync(ActivityEvent activity)
+    public bool IsFirstRun => true;
+    public Type DependsOn => typeof(TelemetrySessionInfoEnricher);
+    
+    public Task<bool> CanExecuteAsync(ActivityContext context)
+    {
+        return Task.FromResult(context.SessionType == SessionType.ApplicationRuntime);
+    }
+
+    public async Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context)
     {
         try
         {
-            if (!IsValidActivity(activity))
+            var entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly is null)
             {
-                return;
+                context.Terminate();
+                return null;
             }
 
-            if (!TryGetProjectId(activity, out var projectId) && !await _telemetryActivityStorage.ShouldAddProjectInfoAsync(projectId))
+            var projectMetaData = AbpProjectMetadataReader.ReadProjectMetadata(entryAssembly);
+            if (projectMetaData?.ProjectId == null || projectMetaData.AbpSlnPath.IsNullOrEmpty())
             {
-                return;
+                context.Terminate();
+                return null;
             }
 
-            foreach (var contributor in _telemetryApplicationInfoContributors)
+            if (!await _telemetryActivityStorage.ShouldAddProjectInfoAsync(projectMetaData.ProjectId.Value))
             {
-                await contributor.ContributeAsync(activity);
+                context.Cancel();
+                return null;
             }
 
-            activity.Remove(ActivityPropertyNames.Assembly);
-            activity[ActivityPropertyNames.HasProjectInfo] = true;
-            await _telemetryActivityStorage.MarkApplicationInfoAsAddedAsync(projectId);
+            context.ExtraProperties[ActivityPropertyNames.SolutionPath] = projectMetaData.AbpSlnPath;
+            
+            var solutionId = ReadSolutionIdFromSolutionPath(projectMetaData.AbpSlnPath);
+            
+            if (!solutionId.HasValue)
+            {
+                context.Terminate();
+                return null;
+            }
+            
+            var result = new Dictionary<string, object>
+            {
+                { ActivityPropertyNames.SolutionId, solutionId },
+                { ActivityPropertyNames.ProjectId, projectMetaData.ProjectId.Value },
+                { ActivityPropertyNames.ProjectType, projectMetaData.Role ?? string.Empty },
+            };
+
+            result[ActivityPropertyNames.HasProjectInfo] = true;
+            return result;
+            
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static Guid? ReadSolutionIdFromSolutionPath(string solutionPath)
+    {
+        try
+        {
+            if (solutionPath.IsNullOrEmpty())
+            {
+                return null;
+            }
+            using var fs = new FileStream(solutionPath!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var doc = JsonDocument.Parse(fs);
+            if (doc.RootElement.TryGetProperty("id", out var id) &&
+                Guid.TryParse(id.GetString(), out var solutionId))
+            {
+                return solutionId;
+            }
         }
         catch
         {
             // ignored
         }
-    }
 
-    private bool IsValidActivity(ActivityEvent activity)
-    {
-        return activity.ContainsKey(ActivityPropertyNames.Assembly)
-               && activity.TryGetValue(ActivityPropertyNames.SessionType, out var sessionTypeObj)
-               && Enum.TryParse<SessionType>(sessionTypeObj?.ToString(), out var parsed)
-               && parsed == SessionType.ApplicationRuntime;
-    }
-
-    private static bool TryGetProjectId(ActivityEvent activity, out Guid projectId)
-    {
-        if (!activity.TryGetValue(ActivityPropertyNames.ProjectId, out var projectIdObj) ||
-            projectIdObj is not string projectIdStr ||
-            !Guid.TryParse(projectIdStr, out projectId))
-        {
-            projectId = Guid.Empty;
-            return false;
-        }
-
-        return true;
+        return null;
     }
 }
