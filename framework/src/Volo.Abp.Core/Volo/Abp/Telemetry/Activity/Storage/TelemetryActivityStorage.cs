@@ -29,8 +29,13 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public TelemetryActivityStorage()
     {
         var isTestMode = IsTestModeEnabled();
-        _infoExpirationPeriod = isTestMode ? TimeSpan.FromSeconds(15) : TimeSpan.FromDays(7);
-        _activitySendPeriod = isTestMode ? TimeSpan.FromSeconds(5) : TimeSpan.FromDays(1);
+        _infoExpirationPeriod = isTestMode
+            ? TimeSpan.FromSeconds(15)
+            : TimeSpan.FromDays(7);
+
+        _activitySendPeriod = isTestMode 
+            ? TimeSpan.FromSeconds(5) 
+            : TimeSpan.FromDays(1);
     }
 
     public async Task BufferActivityAsync(ActivityEvent activityEvent)
@@ -46,7 +51,8 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
             if (activityEvent.ContainsKey(ActivityPropertyNames.HasSolutionInfo))
             {
-                state.Solutions[Guid.Parse(activityEvent[ActivityPropertyNames.SolutionId].ToString()!)] = DateTimeOffset.UtcNow;
+                var solutionId = Guid.Parse(activityEvent[ActivityPropertyNames.SolutionId].ToString()!);
+                state.Solutions[solutionId] = DateTimeOffset.UtcNow;
             }
             
             if (activityEvent.ContainsKey(ActivityPropertyNames.HasProjectInfo))

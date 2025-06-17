@@ -110,7 +110,7 @@ public class TelemetrySolutionInfoEnricher : ITelemetryActivityEventEnricher, IS
                 var version = import.Value.GetProperty("version").GetString();
 
                 var creationTime = import.Value.TryGetProperty("creationTime", out var ct)
-                    ? DateTimeOffset.Parse(ct.GetString()!)
+                    ? DateTimeOffset.Parse(ct.GetString()!) // TODO: tryParse?
                     : (DateTimeOffset?)null;
 
                 if (modules.Any(x =>

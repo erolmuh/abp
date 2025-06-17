@@ -16,7 +16,7 @@ public class ActivityContext
     public ActivityEvent Current { get; }
     public Dictionary<string, object> ExtraProperties { get; } = new();
     public bool IsTerminated { get; private set; }
-    public bool IsCancelled { get; private set; }
+    public bool IsCancelled { get; private set; } //TODO: Rename: CancelChildren
 
     public CancellationToken CancellationToken { get; set; }
 

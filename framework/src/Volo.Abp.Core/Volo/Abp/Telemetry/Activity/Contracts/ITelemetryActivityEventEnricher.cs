@@ -6,7 +6,7 @@ namespace Volo.Abp.Telemetry.Activity.Contracts;
 
 public interface ITelemetryActivityEventEnricher
 {
-    bool IsFirstRun { get; }
+    bool IsFirstRun { get; } //TODO: ExecutionOrder
     Type? DependsOn { get; } 
     Task<bool> CanExecuteAsync(ActivityContext context);
     Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context);

@@ -7,7 +7,7 @@ using Volo.Abp.Telemetry.Activity.Contracts;
 using Volo.Abp.Telemetry.Constants;
 using ActivityContext = Volo.Abp.Telemetry.Activity.ActivityContext;
 
-namespace Volo.Abp.Telemetry;
+namespace Volo.Abp.Telemetry; //TODO: Move Volo.Abp.Telemetry -> Volo.Abp.Internal.Telemetry 
 
 public class TelemetryService : ITelemetryService, IScopedDependency
 {

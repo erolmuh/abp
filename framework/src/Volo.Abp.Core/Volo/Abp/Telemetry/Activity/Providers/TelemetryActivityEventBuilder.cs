@@ -8,11 +8,12 @@ namespace Volo.Abp.Telemetry.Activity.Providers;
 
 public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, IScopedDependency
 {
-    private readonly IEnumerable<ITelemetryActivityEventEnricher> _activityDataEnrichers;
+    private readonly List<ITelemetryActivityEventEnricher> _activityDataEnrichers;
 
     public TelemetryActivityEventBuilder(IEnumerable<ITelemetryActivityEventEnricher> activityDataEnrichers)
     {
-        _activityDataEnrichers = activityDataEnrichers;
+        _activityDataEnrichers = activityDataEnrichers.ToList();
+        //_activityDataEnrichers = activityDataEnrichers.Where(o => o.GetType().Assembly.FullName.StartsWith("Volo")).ToList(); TODO: //???
     }
 
     public virtual async Task<ActivityEvent?> BuildAsync(ActivityContext context)
@@ -24,6 +25,7 @@ public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISc
         {
             return null;
         }
+        
         return context.Current;
     }
 
@@ -47,7 +49,7 @@ public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISc
                     continue;
                 }
 
-                var enricherResult = await enricher.EnrichAsync(context);
+                var enricherResult = await enricher.EnrichAsync(context); //TODO: Enrichers can directly add to the current
 
                 if (enricherResult != null)
                 {
