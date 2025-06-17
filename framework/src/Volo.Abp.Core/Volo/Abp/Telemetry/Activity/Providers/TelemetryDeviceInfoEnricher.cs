@@ -101,13 +101,7 @@ public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, ISco
   
     private static string GetCountry()
     {
-        var culture = CultureInfo.CurrentUICulture;
-        if (culture.IsNeutralCulture)
-        {
-            culture = CultureInfo.CreateSpecificCulture(culture.Name);
-        }
-
-        var region = new RegionInfo(culture.Name);
+        var region = new RegionInfo(CultureInfo.InstalledUICulture.Name);
         return region.TwoLetterISORegionName;
     }
 }
