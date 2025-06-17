@@ -17,7 +17,7 @@ public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISc
 
     public virtual async Task<ActivityEvent?> BuildAsync(ActivityContext context)
     {
-        var enricherNodes = BuildTree(_activityDataEnrichers);
+        var enricherNodes = BuildEnricherHierarch(_activityDataEnrichers);
         await ExecuteEnrichersAsync(enricherNodes, context);
         
         if (context.IsTerminated)
@@ -69,7 +69,7 @@ public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISc
         await ExecuteEnricherChainAsync(nodes);
     }
     
-    private static List<EnricherNode> BuildTree(IEnumerable<ITelemetryActivityEventEnricher> enrichers)
+    private static List<EnricherNode> BuildEnricherHierarch(IEnumerable<ITelemetryActivityEventEnricher> enrichers)
     {
         var enricherList = enrichers.ToList();
         var nodeMap = enricherList.ToDictionary(e => e.GetType(), e => new EnricherNode(e));
