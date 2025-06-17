@@ -8,7 +8,7 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Core;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class ChromeDetector : SoftwareDetector
+internal sealed class ChromeDetector : SoftwareDetector
 {
     public override string Name => "Chrome";
 

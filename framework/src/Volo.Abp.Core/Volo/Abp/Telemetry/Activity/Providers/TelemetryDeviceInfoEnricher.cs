@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
@@ -13,68 +11,42 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
 [ExposeServices(typeof(ITelemetryActivityEventEnricher))]
-public class TelemetryDeviceInfoEnricher : ITelemetryActivityEventEnricher, IScopedDependency
+internal sealed class TelemetryDeviceInfoEnricher : TelemetryActivityEventEnricher
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private readonly ISoftwareInfoProvider _softwareInfoProvider;
 
     public TelemetryDeviceInfoEnricher(ITelemetryActivityStorage telemetryActivityStorage,
-        ISoftwareInfoProvider softwareInfoProvider)
+        ISoftwareInfoProvider softwareInfoProvider, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _telemetryActivityStorage = telemetryActivityStorage;
         _softwareInfoProvider = softwareInfoProvider;
     }
-
-    public bool IsFirstRun => true;
-    public Type? DependsOn => null;
-    
-    public Task<bool> CanExecuteAsync(ActivityContext context)
-    {
-        return Task.FromResult(true);
-    }
-    
-
-    public async Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context)
+    protected async override Task ExecuteAsync(ActivityContext context)
     {
         try
         {
             var deviceId = DeviceKeyHelper.GetUniquePhysicalKey(true);
+            context.Current[ActivityPropertyNames.DeviceId] = deviceId;
             
-            if (!await _telemetryActivityStorage.ShouldAddDeviceInfoAsync())
+            if (!_telemetryActivityStorage.ShouldAddDeviceInfo())
             {
-                context.Cancel();
-                return new Dictionary<string, object>
-                {
-                    { ActivityPropertyNames.DeviceId, deviceId },
-                };
+                return;
             }
             
-            var result = new Dictionary<string, object>
-            {
-                [ActivityPropertyNames.DeviceId] = deviceId,
-                [ActivityPropertyNames.DeviceLanguage] = CultureInfo.CurrentUICulture.Name,
-                [ActivityPropertyNames.OperatingSystem] = GetOperatingSystem(),
-                [ActivityPropertyNames.CountryIsoCode] = GetCountry(),
-                [ActivityPropertyNames.OperatingSystemArchitecture] =RuntimeInformation.OSArchitecture.ToString()
-            };
-
-            await EnrichWithSoftwareInfoAsync(result);
-            result[ActivityPropertyNames.HasDeviceInfo] = true;
-            return result;
+            var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
             
+            context.Current[ActivityPropertyNames.InstalledSoftwares] = softwareList;
+            context.Current[ActivityPropertyNames.DeviceLanguage] = CultureInfo.CurrentUICulture.Name;
+            context.Current[ActivityPropertyNames.OperatingSystem] = GetOperatingSystem();
+            context.Current[ActivityPropertyNames.CountryIsoCode] = GetCountry();
+            context.Current[ActivityPropertyNames.HasDeviceInfo] = true;
+            context.Current[ActivityPropertyNames.OperatingSystemArchitecture] = RuntimeInformation.OSArchitecture.ToString();
         }
         catch
         {
-            context.Terminate();
-            return null;
             //ignored
         }
-    }
-
-    private async Task EnrichWithSoftwareInfoAsync(Dictionary<string,object> activity)
-    {
-        var softwareList = await _softwareInfoProvider.GetSoftwareInfoAsync();
-        activity[ActivityPropertyNames.InstalledSoftwares] = softwareList;
     }
 
     private static OperationSystem GetOperatingSystem()

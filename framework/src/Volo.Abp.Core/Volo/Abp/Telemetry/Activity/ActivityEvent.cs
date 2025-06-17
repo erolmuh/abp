@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Telemetry.Activity;
 
@@ -17,7 +18,20 @@ public class ActivityEvent : Dictionary<string, object>
         Time = DateTimeOffset.UtcNow;
         Id = Guid.NewGuid();
     }
-
+    
+    public bool HasSolutionInfo()
+    {
+        return this.ContainsKey(ActivityPropertyNames.HasSolutionInfo);
+    }
+    public bool HasDeviceInfo()
+    {
+        return this.ContainsKey(ActivityPropertyNames.HasDeviceInfo);
+    }
+    public bool HasProjectInfo()
+    {
+        return this.ContainsKey(ActivityPropertyNames.HasProjectInfo);
+    }
+    
     public string ActivityName {
         get => TryGetValue(nameof(ActivityName), out var value) ? (string)value : string.Empty;
         set => this[nameof(ActivityName)] = value;

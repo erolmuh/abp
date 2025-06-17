@@ -6,7 +6,7 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Core;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class DotnetSdkDetector : SoftwareDetector
+internal sealed class DotnetSdkDetector : SoftwareDetector
 {
     public override string Name => "DotnetSdk";
 

@@ -9,7 +9,7 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Core;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class OperatingSystemDetector : SoftwareDetector
+internal sealed class OperatingSystemDetector : SoftwareDetector
 {
     public override string Name => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Windows" :
         RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "macOS" : "Linux";

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Volo.Abp.Telemetry.Constants;
 using Volo.Abp.Telemetry.Constants.Enums;
 
@@ -16,10 +15,6 @@ public class ActivityContext
     public ActivityEvent Current { get; }
     public Dictionary<string, object> ExtraProperties { get; } = new();
     public bool IsTerminated { get; private set; }
-    public bool IsCancelled { get; private set; }
-
-    public CancellationToken CancellationToken { get; set; }
-
 
     public static ActivityContext Create(string activityName, string? details = null,
         Action<Dictionary<string, object>>? additionalProperties = null)
@@ -88,15 +83,5 @@ public class ActivityContext
     public void Terminate()
     {
         IsTerminated = true;
-    }
-
-    public void Cancel()
-    {
-        IsCancelled = true;
-    }
-
-    public void ResetCancel()
-    {
-        IsCancelled = false;
     }
 }

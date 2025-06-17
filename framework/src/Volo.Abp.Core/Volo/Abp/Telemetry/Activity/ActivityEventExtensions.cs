@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 
 namespace Volo.Abp.Telemetry.Activity;
 
-public static class ActivityEventExtensions
+static internal class ActivityEventExtensions
 {
     public static ActivityEvent WithAdditionalProperty(this ActivityEvent activityEvent, string key, object value)
     {

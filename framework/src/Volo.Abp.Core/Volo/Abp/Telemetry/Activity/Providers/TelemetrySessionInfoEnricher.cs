@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
@@ -9,24 +8,20 @@ using Volo.Abp.Telemetry.Constants.Enums;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 [ExposeServices(typeof(ITelemetryActivityEventEnricher))]
-public class TelemetrySessionInfoEnricher : ITelemetryActivityEventEnricher , IScopedDependency
+public class TelemetrySessionInfoEnricher : TelemetryActivityEventEnricher 
 {
-    public bool IsFirstRun => true;
-    public Type? DependsOn => null;
-    public Task<bool> CanExecuteAsync(ActivityContext context)
+    public TelemetrySessionInfoEnricher(IServiceProvider serviceProvider) : base(serviceProvider)
     {
-        return Task.FromResult(true);
     }
 
-    public Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context)
-    {
-        var result = new Dictionary<string, object>
-        {
-            { ActivityPropertyNames.SessionType, SessionType.ApplicationRuntime },
-            { ActivityPropertyNames.SessionId, Guid.NewGuid().ToString() },
-            { ActivityPropertyNames.IsFirstSession, !File.Exists(TelemetryPaths.ActivityStorage) }
-        };
+    public override int ExecutionOrder => 10;
 
-        return Task.FromResult<Dictionary<string, object>?>(result);
+    protected override Task ExecuteAsync(ActivityContext context)
+    {
+        context.Current[ActivityPropertyNames.SessionType] = SessionType.ApplicationRuntime;
+        context.Current[ActivityPropertyNames.SessionId] = Guid.NewGuid().ToString();
+        context.Current[ActivityPropertyNames.IsFirstSession] = !File.Exists(TelemetryPaths.ActivityStorage);
+
+        return Task.CompletedTask;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
@@ -12,31 +11,32 @@ using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Domain.Telemetry;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher))]
-public class TelemetryDomainInfoEnricher : ITelemetryActivityEventEnricher, IScopedDependency
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher))]
+public class TelemetryDomainInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher
 {
     private readonly ITypeFinder _typeFinder;
 
-    public TelemetryDomainInfoEnricher(ITypeFinder typeFinder)
+    public TelemetryDomainInfoEnricher(ITypeFinder typeFinder, IServiceProvider serviceProvider)
+        : base(serviceProvider)
     {
         _typeFinder = typeFinder;
     }
-    public bool IsFirstRun => false;
-    public Type? DependsOn => typeof(TelemetryApplicationInfoEnricher);
+    public Type Parent => typeof(TelemetryApplicationInfoEnricher);
 
-    public Task<bool> CanExecuteAsync(ActivityContext context)
+    public override Task<bool> CanExecuteAsync(ActivityContext context)
     {
         return Task.FromResult(context.ProjectId.HasValue);
     }
 
-    public Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context)
+    protected override Task ExecuteAsync(ActivityContext context)
     {
         var entityCount = _typeFinder.Types.Count(t =>
             typeof(IEntity).IsAssignableFrom(t) && !t.IsAbstract &&
             !t.AssemblyQualifiedName!.StartsWith(TelemetryConsts.VoloNameSpaceFilter));
 
-
-        var result = new Dictionary<string, object>() { { ActivityPropertyNames.EntityCount, entityCount } };
-        return Task.FromResult<Dictionary<string, object>?>(result);
+        context.Current[ActivityPropertyNames.EntityCount] = entityCount;
+        
+        return Task.CompletedTask;
     }
+
 }

@@ -8,7 +8,7 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Core;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class MsEdgeDetector : SoftwareDetector
+internal sealed class MsEdgeDetector : SoftwareDetector
 {
     public override string Name => "MsEdge";
     public async override Task<SoftwareInfo?> DetectAsync()

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Volo.Abp.Telemetry.Constants;
@@ -9,7 +8,7 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Core;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class AbpStudioDetector : SoftwareDetector
+internal sealed class AbpStudioDetector : SoftwareDetector
 {
     public override string Name => "Abp Studio";
     private const string AbpStudioVersionExtensionName = "Volo.Abp.Studio.Extensions.StandardSolutionTemplates";

@@ -8,7 +8,7 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Core;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class FireFoxDetector : SoftwareDetector
+internal sealed class FireFoxDetector : SoftwareDetector
 {
     public override string Name => "Firefox";
     public async override Task<SoftwareInfo?> DetectAsync()

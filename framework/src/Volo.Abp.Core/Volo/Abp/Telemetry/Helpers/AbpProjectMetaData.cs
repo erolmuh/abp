@@ -2,7 +2,7 @@
 
 namespace Volo.Abp.Telemetry.Helpers;
 
-public class AbpProjectMetaData
+internal class AbpProjectMetaData
 {
     public Guid? ProjectId { get; set; }
     public string? Role { get; set; }

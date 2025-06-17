@@ -14,28 +14,30 @@ using Volo.Abp.Telemetry.Constants.Enums;
 
 namespace Volo.Abp.AspNetCore.Mvc;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher))]
-public class TelemetryApplicationMetricsEnricher : ITelemetryActivityEventEnricher, IScopedDependency
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher))]
+public sealed class TelemetryApplicationMetricsEnricher : TelemetryActivityEventEnricher,
+    IHasParentTelemetryActivityEventEnricher
 {
     private readonly ITypeFinder _typeFinder;
 
-    public TelemetryApplicationMetricsEnricher(ITypeFinder typeFinder)
+    public TelemetryApplicationMetricsEnricher(ITypeFinder typeFinder, IServiceProvider serviceProvider) : base(
+        serviceProvider)
     {
         _typeFinder = typeFinder;
     }
 
-    public bool IsFirstRun => false;
-    public Type? DependsOn => typeof(TelemetryApplicationInfoEnricher);
-    public Task<bool> CanExecuteAsync(ActivityContext context)
+    public Type Parent => typeof(TelemetryApplicationInfoEnricher);
+
+    public override Task<bool> CanExecuteAsync(ActivityContext context)
     {
         return Task.FromResult(context.SessionType == SessionType.ApplicationRuntime);
     }
 
-    public Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context)
+    protected override Task ExecuteAsync(ActivityContext context)
     {
         var appServiceCount = _typeFinder.Types.Count(t =>
             typeof(IApplicationService).IsAssignableFrom(t) &&
-            t is { IsAbstract: false, IsInterface: false } && 
+            t is { IsAbstract: false, IsInterface: false } &&
             !t.AssemblyQualifiedName!.StartsWith(TelemetryConsts.VoloNameSpaceFilter));
 
         var controllerCount = _typeFinder.Types.Count(t =>
@@ -43,11 +45,8 @@ public class TelemetryApplicationMetricsEnricher : ITelemetryActivityEventEnrich
             !t.IsAbstract);
 
 
-        var items = new Dictionary<string, object>()
-        {
-            {ActivityPropertyNames.AppServiceCount, appServiceCount},
-            {ActivityPropertyNames.ControllerCount, controllerCount}
-        };
-        return Task.FromResult<Dictionary<string, object>?>(items);
+        context.Current[ActivityPropertyNames.AppServiceCount] = appServiceCount;
+        context.Current[ActivityPropertyNames.ControllerCount] = controllerCount;
+        return Task.CompletedTask;
     }
 }

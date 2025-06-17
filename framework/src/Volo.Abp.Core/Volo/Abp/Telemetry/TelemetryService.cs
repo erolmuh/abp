@@ -11,15 +11,12 @@ namespace Volo.Abp.Telemetry;
 
 public class TelemetryService : ITelemetryService, IScopedDependency
 {
-    private readonly ITelemetryActivityStorage _telemetryActivityStorage;
     private readonly ITelemetryActivitySender _telemetryActivitySender;
     private readonly ITelemetryActivityEventBuilder _telemetryActivityEventBuilder;
 
-    public TelemetryService(ITelemetryActivityStorage telemetryActivityStorage,
-        ITelemetryActivitySender telemetryActivitySender,
+    public TelemetryService(ITelemetryActivitySender telemetryActivitySender,
         ITelemetryActivityEventBuilder telemetryActivityEventBuilder)
     {
-        _telemetryActivityStorage = telemetryActivityStorage;
         _telemetryActivitySender = telemetryActivitySender;
         _telemetryActivityEventBuilder = telemetryActivityEventBuilder;
     }
@@ -78,16 +75,12 @@ public class TelemetryService : ITelemetryService, IScopedDependency
             var activityEvent = await _telemetryActivityEventBuilder.BuildAsync(context);
             if (activityEvent is not null)
             {
-                await _telemetryActivityStorage.BufferActivityAsync(activityEvent);
-                if (await _telemetryActivityStorage.ShouldSendActivitiesAsync())
-                {
-                    await _telemetryActivitySender.SendAsync();
-                }
+                await _telemetryActivitySender.SendIfNeededAsync();
             }
         }
-        catch (Exception ex)
+        catch
         {
-           //ignored
+            //ignored
         }
     }
 }

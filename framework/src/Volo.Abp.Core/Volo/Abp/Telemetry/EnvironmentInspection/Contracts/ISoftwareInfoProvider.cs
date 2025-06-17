@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Contracts;
 
-public interface ISoftwareInfoProvider
+internal interface ISoftwareInfoProvider
 {
     Task<List<SoftwareInfo>> GetSoftwareInfoAsync();
 }

@@ -15,7 +15,7 @@ namespace Volo.Abp.Telemetry;
 public class TelemetryActivitySender : ITelemetryActivitySender, ISingletonDependency
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
-    
+
     private const int ActivitySendBatchSize = 50;
 
     public TelemetryActivitySender(ITelemetryActivityStorage telemetryActivityStorage)
@@ -27,24 +27,32 @@ public class TelemetryActivitySender : ITelemetryActivitySender, ISingletonDepen
     {
         try
         {
-            var activities = await _telemetryActivityStorage.GetBufferedActivitiesAsync();
+            var activities = _telemetryActivityStorage.GetActivities();
 
             using var httpClient = new HttpClient();
             AddJwtTokenIfAuthenticated(httpClient);
-            
+
             for (var i = 0; i < activities.Count; i += ActivitySendBatchSize)
             {
                 var activityBatch = activities.Skip(i).Take(ActivitySendBatchSize).ToList();
 
                 await httpClient.PostAsync($"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect",
                     new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
-
             }
-            await _telemetryActivityStorage.MarkActivitiesAsSentAsync();
+
+            _telemetryActivityStorage.MarkActivitiesAsSent();
         }
         catch
         {
             //ignored
+        }
+    }
+
+    public async Task SendIfNeededAsync()
+    {
+        if (_telemetryActivityStorage.ShouldSendActivities())
+        {
+            await SendAsync();
         }
     }
 

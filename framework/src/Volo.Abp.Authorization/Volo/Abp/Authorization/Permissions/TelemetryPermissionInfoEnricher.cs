@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Telemetry.Activity;
@@ -9,33 +8,27 @@ using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Authorization.Permissions;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher))]
-public class TelemetryPermissionInfoEnricher : ITelemetryActivityEventEnricher, IScopedDependency
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher))]
+public sealed class TelemetryPermissionInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher
 {
     private readonly IPermissionDefinitionManager _permissionDefinitionManager;
 
-    public TelemetryPermissionInfoEnricher(IPermissionDefinitionManager permissionDefinitionManager)
+    public TelemetryPermissionInfoEnricher(IPermissionDefinitionManager permissionDefinitionManager,
+        IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _permissionDefinitionManager = permissionDefinitionManager;
     }
 
-    public bool IsFirstRun => false;
-    public Type? DependsOn => typeof(TelemetryApplicationInfoEnricher);
-    
-    public Task<bool> CanExecuteAsync(ActivityContext context)
+    public Type Parent => typeof(TelemetryApplicationInfoEnricher);
+
+    public override Task<bool> CanExecuteAsync(ActivityContext context)
     {
         return Task.FromResult(context.ProjectId.HasValue);
     }
 
-    public async Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context)
+    protected async override Task ExecuteAsync(ActivityContext context)
     {
         var permissions = await _permissionDefinitionManager.GetPermissionsAsync();
-        
-        var result = new Dictionary<string, object>
-        {
-            { ActivityPropertyNames.PermissionCount, permissions.Count }
-        };
-
-        return result;
+        context.Current[ActivityPropertyNames.PermissionCount] = permissions.Count;
     }
 }

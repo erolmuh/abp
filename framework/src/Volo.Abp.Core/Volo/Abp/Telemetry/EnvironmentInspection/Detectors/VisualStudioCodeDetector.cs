@@ -10,7 +10,7 @@ using Volo.Abp.Telemetry.EnvironmentInspection.Core;
 
 namespace Volo.Abp.Telemetry.EnvironmentInspection.Detectors;
 
-internal class VisualStudioCodeDetector : SoftwareDetector
+internal sealed class VisualStudioCodeDetector : SoftwareDetector
 {
     public override string Name => "Visual Studio Code";
 

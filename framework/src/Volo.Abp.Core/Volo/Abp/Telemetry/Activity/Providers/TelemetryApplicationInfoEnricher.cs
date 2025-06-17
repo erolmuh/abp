@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
@@ -12,26 +11,26 @@ using Volo.Abp.Telemetry.Helpers;
 
 namespace Volo.Abp.Telemetry.Activity.Providers;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher))]
-public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher, IScopedDependency
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher))]
+public sealed class TelemetryApplicationInfoEnricher : TelemetryActivityEventEnricher,
+    IHasParentTelemetryActivityEventEnricher
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
 
     public TelemetryApplicationInfoEnricher(
-        ITelemetryActivityStorage telemetryActivityStorage)
+        ITelemetryActivityStorage telemetryActivityStorage, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _telemetryActivityStorage = telemetryActivityStorage;
     }
 
-    public bool IsFirstRun => true;
-    public Type DependsOn => typeof(TelemetrySessionInfoEnricher);
-    
-    public Task<bool> CanExecuteAsync(ActivityContext context)
+    public Type Parent => typeof(TelemetrySessionInfoEnricher);
+
+    public override Task<bool> CanExecuteAsync(ActivityContext context)
     {
         return Task.FromResult(context.SessionType == SessionType.ApplicationRuntime);
     }
 
-    public async Task<Dictionary<string, object>?> EnrichAsync(ActivityContext context)
+    protected override Task ExecuteAsync(ActivityContext context)
     {
         try
         {
@@ -39,48 +38,45 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher,
             if (entryAssembly is null)
             {
                 context.Terminate();
-                return null;
+                return Task.CompletedTask;
             }
 
             var projectMetaData = AbpProjectMetadataReader.ReadProjectMetadata(entryAssembly);
             if (projectMetaData?.ProjectId == null || projectMetaData.AbpSlnPath.IsNullOrEmpty())
             {
                 context.Terminate();
-                return null;
+                return Task.CompletedTask;
             }
 
-            if (!await _telemetryActivityStorage.ShouldAddProjectInfoAsync(projectMetaData.ProjectId.Value))
+            if (!_telemetryActivityStorage.ShouldAddProjectInfo(projectMetaData.ProjectId.Value))
             {
-                context.Cancel();
-                return null;
+                CancelChildren = true;
+                return Task.CompletedTask;
             }
 
-            context.ExtraProperties[ActivityPropertyNames.SolutionPath] = projectMetaData.AbpSlnPath;
-            
             var solutionId = ReadSolutionIdFromSolutionPath(projectMetaData.AbpSlnPath);
-            
+
             if (!solutionId.HasValue)
             {
+                CancelChildren = true;
                 context.Terminate();
-                return null;
+                return Task.CompletedTask;
             }
             
-            var result = new Dictionary<string, object>
-            {
-                { ActivityPropertyNames.SolutionId, solutionId },
-                { ActivityPropertyNames.ProjectId, projectMetaData.ProjectId.Value },
-                { ActivityPropertyNames.ProjectType, projectMetaData.Role ?? string.Empty },
-            };
-
-            result[ActivityPropertyNames.HasProjectInfo] = true;
-            return result;
-            
+            context.ExtraProperties[ActivityPropertyNames.SolutionPath] = projectMetaData.AbpSlnPath;
+            context.Current[ActivityPropertyNames.ProjectType] = projectMetaData.Role ?? string.Empty;
+            context.Current[ActivityPropertyNames.ProjectId] = projectMetaData.ProjectId.Value;
+            context.Current[ActivityPropertyNames.SolutionId] = solutionId;
+            context.Current[ActivityPropertyNames.HasProjectInfo] = true;
         }
         catch
         {
-            return null;
+            //ignored
         }
+
+        return Task.CompletedTask;
     }
+
 
     private static Guid? ReadSolutionIdFromSolutionPath(string solutionPath)
     {
@@ -90,10 +86,10 @@ public class TelemetryApplicationInfoEnricher : ITelemetryActivityEventEnricher,
             {
                 return null;
             }
+
             using var fs = new FileStream(solutionPath!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             using var doc = JsonDocument.Parse(fs);
-            if (doc.RootElement.TryGetProperty("id", out var id) &&
-                Guid.TryParse(id.GetString(), out var solutionId))
+            if (doc.RootElement.TryGetProperty("id", out var property) && property.TryGetGuid(out var solutionId))
             {
                 return solutionId;
             }
