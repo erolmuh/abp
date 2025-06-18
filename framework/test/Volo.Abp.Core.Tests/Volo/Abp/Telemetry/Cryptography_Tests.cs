@@ -1,6 +1,6 @@
 ﻿using System;
 using Shouldly;
-using Volo.Abp.Telemetry.Helpers;
+using Volo.Abp.Internal.Telemetry.Helpers;
 using Xunit;
 
 namespace Volo.Abp.Telemetry;

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Telemetry.Activity;
-using Volo.Abp.Telemetry.Constants;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Volo.Abp.Internal.Telemetry.Activity;
+using Volo.Abp.Internal.Telemetry.Activity.Contracts;
+using Volo.Abp.Internal.Telemetry.Activity.Providers;
+using Volo.Abp.Internal.Telemetry.Constants;
+using Volo.Abp.Internal.Telemetry.Constants.Enums;
 using Volo.Abp.Reflection;
-using Volo.Abp.Telemetry.Activity.Contracts;
-using Volo.Abp.Telemetry.Activity.Providers;
-using Volo.Abp.Telemetry.Constants.Enums;
 
 namespace Volo.Abp.AspNetCore.Mvc;
 

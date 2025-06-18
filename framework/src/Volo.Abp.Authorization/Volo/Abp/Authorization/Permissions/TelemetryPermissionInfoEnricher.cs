@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Telemetry.Activity;
-using Volo.Abp.Telemetry.Activity.Contracts;
-using Volo.Abp.Telemetry.Activity.Providers;
-using Volo.Abp.Telemetry.Constants;
+using Volo.Abp.Internal.Telemetry.Activity;
+using Volo.Abp.Internal.Telemetry.Activity.Contracts;
+using Volo.Abp.Internal.Telemetry.Activity.Providers;
+using Volo.Abp.Internal.Telemetry.Constants;
 
 namespace Volo.Abp.Authorization.Permissions;
 

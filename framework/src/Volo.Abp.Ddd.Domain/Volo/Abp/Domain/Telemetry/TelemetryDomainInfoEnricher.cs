@@ -3,11 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities;
+using Volo.Abp.Internal.Telemetry.Activity;
+using Volo.Abp.Internal.Telemetry.Activity.Contracts;
+using Volo.Abp.Internal.Telemetry.Activity.Providers;
+using Volo.Abp.Internal.Telemetry.Constants;
 using Volo.Abp.Reflection;
-using Volo.Abp.Telemetry.Activity;
-using Volo.Abp.Telemetry.Activity.Contracts;
-using Volo.Abp.Telemetry.Activity.Providers;
-using Volo.Abp.Telemetry.Constants;
 
 namespace Volo.Abp.Domain.Telemetry;
 

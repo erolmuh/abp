@@ -10,11 +10,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Internal;
+using Volo.Abp.Internal.Telemetry;
+using Volo.Abp.Internal.Telemetry.Constants;
 using Volo.Abp.Logging;
 using Volo.Abp.Modularity;
-using Volo.Abp.Telemetry;
-using Volo.Abp.Telemetry.Constants;
-using Volo.Abp.Telemetry.Helpers;
 
 namespace Volo.Abp;
 

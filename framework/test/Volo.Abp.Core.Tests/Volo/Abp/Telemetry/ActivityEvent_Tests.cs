@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Shouldly;
-using Volo.Abp.Telemetry.Activity;
+using Volo.Abp.Internal.Telemetry.Activity;
 using Xunit;
 
 namespace Volo.Abp.Telemetry;

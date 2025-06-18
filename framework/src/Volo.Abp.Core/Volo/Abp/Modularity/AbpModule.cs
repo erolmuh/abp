@@ -3,9 +3,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Volo.Abp.Telemetry;
-using Volo.Abp.Telemetry.Activity;
-using Volo.Abp.Telemetry.Helpers;
 
 namespace Volo.Abp.Modularity;
 
