@@ -722,6 +722,8 @@
     "QuestionCount": "Question Count",
     "MakeAnnouncement": "Make Announcement",
     "MakeAnnouncementInfo": "Check it if you want to make an announcement for this post",
+    "Permission:ViewCounts": "View counts",
+    "ReadCount": "Read Count",
     "Menu:TelemetryReports": "Telemetry Reports",
     "TelemetryReports:DailyStudioOpen": "Daily Studio Opens",
     "TelemetryReports:MonthlyStudioOpen": "Monthly Studio Opens",
