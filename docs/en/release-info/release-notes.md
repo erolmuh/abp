@@ -8,9 +8,9 @@ Also see the following notes about ABP releases:
 * [Change logs for ABP pro packages](https://abp.io/pro-releases)
 
 
-## 9.2 (2025-03-25)
+## 9.2 (2025-06-02)
 
-This is currently a RC (release-candidate) and you can see the detailed **[blog post / announcement](https://abp.io/community/articles/abp-platform-9.2-rc-has-been-released-jpq072nh)** for the v9.2 release.
+See the detailed **[blog post / announcement](https://abp.io/community/articles/announcing-abp-9-2-stable-release-061qmtzb)** for the v9.2 release.
 
 * Added `ApplicationName` Property to Isolate Background Jobs & Background Workers
 * Docs Module: Added "Alternative Words" to Filter Items
