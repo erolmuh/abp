@@ -13,12 +13,14 @@ public class TelemetryService : ITelemetryService, IScopedDependency
 {
     private readonly ITelemetryActivitySender _telemetryActivitySender;
     private readonly ITelemetryActivityEventBuilder _telemetryActivityEventBuilder;
+    private readonly ITelemetryActivityStorage _telemetryActivityStorage;
 
     public TelemetryService(ITelemetryActivitySender telemetryActivitySender,
-        ITelemetryActivityEventBuilder telemetryActivityEventBuilder)
+        ITelemetryActivityEventBuilder telemetryActivityEventBuilder, ITelemetryActivityStorage telemetryActivityStorage)
     {
         _telemetryActivitySender = telemetryActivitySender;
         _telemetryActivityEventBuilder = telemetryActivityEventBuilder;
+        _telemetryActivityStorage = telemetryActivityStorage;
     }
 
 
@@ -75,6 +77,7 @@ public class TelemetryService : ITelemetryService, IScopedDependency
             var activityEvent = await _telemetryActivityEventBuilder.BuildAsync(context);
             if (activityEvent is not null)
             {
+                _telemetryActivityStorage.SaveActivity(activityEvent);
                 await _telemetryActivitySender.SendIfNeededAsync();
             }
         }

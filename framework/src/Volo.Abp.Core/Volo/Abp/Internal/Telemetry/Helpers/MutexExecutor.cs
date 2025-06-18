@@ -6,64 +6,41 @@ namespace Volo.Abp.Internal.Telemetry.Helpers;
 
 static internal class MutexExecutor
 {
-    private const int MaxRetries = 5;
-    private const int Timeout = 3000;
-    private const string MutexName = "Global\\TelemetryActivityStorage";
+    private const string MutexName = "Global\\MyFileReadMutex";
+    private const int TimeoutMilliseconds = 3000;
 
-    public static TResult? Execute<TResult>(Func<TResult> action)
+    public static string? ReadFileSafely(string filePath)
     {
         using var mutex = new Mutex(false, MutexName);
-        return ExecuteWithRetries(mutex, action);
-    }
 
-    private static TResult? ExecuteWithRetries<TResult>(Mutex mutex, Func<TResult> action)
-    {
-        for (var attempt = 1; attempt <= MaxRetries; attempt++)
+        if (!mutex.WaitOne(TimeoutMilliseconds))
         {
-            if (TryExecuteAction(mutex, action) is { } result)
-            {
-                return result;
-            }
-
-            if (attempt == MaxRetries)
-            {
-                return default;
-            }
-        }
-
-        return default;
-    }
-
-    private static TResult? TryExecuteAction<TResult>(Mutex mutex, Func<TResult> action)
-    {
-        if (mutex.WaitOne(Timeout))
-        {
-            return default;
+            return null;
         }
 
         try
         {
-            return action();
+            if (!File.Exists(filePath))
+            {
+                return null;
+            }
+
+            return File.ReadAllText(filePath);
         }
-        catch (Exception ex) when (ex is AbandonedMutexException or IOException)
+        catch (IOException)
         {
-            return default;
+            return null;
         }
         finally
         {
-            ReleaseSafely(mutex);
-        }
-    }
-
-    private static void ReleaseSafely(Mutex mutex)
-    {
-        try
-        {
-            mutex.ReleaseMutex();
-        }
-        catch
-        {
-            // ignored intentionally
+            try
+            {
+                mutex.ReleaseMutex();
+            }
+            catch
+            {
+                // Already released or abandoned
+            }
         }
     }
 }

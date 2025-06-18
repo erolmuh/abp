@@ -120,21 +120,16 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
                 return new TelemetryActivityStorageState();
             }
 
-            return MutexExecutor.Execute(() =>
+            var fileContent = MutexExecutor.ReadFileSafely(TelemetryPaths.ActivityStorage);
+            
+            if (fileContent.IsNullOrEmpty())
             {
-                using var stream = new FileStream(TelemetryPaths.ActivityStorage, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
-                using var reader = new StreamReader(stream, Encoding.UTF8);
-                var encryptedJson = reader.ReadToEnd();
+                return new TelemetryActivityStorageState();
+            }
 
-                if (encryptedJson.IsNullOrEmpty())
-                {
-                    return new TelemetryActivityStorageState();
-                }
+            var json = Cryptography.Decrypt(fileContent);
 
-                var json = Cryptography.Decrypt(encryptedJson);
-
-                return JsonSerializer.Deserialize<TelemetryActivityStorageState>(json, JsonSerializerOptions);
-            }) ?? new TelemetryActivityStorageState();
+            return JsonSerializer.Deserialize<TelemetryActivityStorageState>(json, JsonSerializerOptions)!;
         }
         catch
         {
