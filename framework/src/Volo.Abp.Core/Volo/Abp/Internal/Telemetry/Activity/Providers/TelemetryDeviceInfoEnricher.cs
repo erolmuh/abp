@@ -26,7 +26,7 @@ internal sealed class TelemetryDeviceInfoEnricher : TelemetryActivityEventEnrich
     {
         try
         {
-            var deviceId = DeviceKeyHelper.GetUniquePhysicalKey(true);
+            var deviceId = DeviceManager.GetUniquePhysicalKey(true);
             context.Current[ActivityPropertyNames.DeviceId] = deviceId;
             
             if (!_telemetryActivityStorage.ShouldAddDeviceInfo())

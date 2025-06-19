@@ -1,6 +1,6 @@
 ﻿namespace Volo.Abp.Internal.Telemetry.Constants;
 
-public class DeviceKeyHelper
+static internal class DeviceManager
 {
     public static string GetUniquePhysicalKey(bool shouldHash)
     {
