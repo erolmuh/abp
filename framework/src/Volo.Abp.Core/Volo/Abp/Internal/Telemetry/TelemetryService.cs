@@ -70,7 +70,17 @@ public class TelemetryService : ITelemetryService, IScopedDependency
         await AddActivityAsync(context);
     }
 
-    private async Task AddActivityAsync(ActivityContext context)
+    private Task AddActivityAsync(ActivityContext context)
+    {
+        _ = Task.Run(async () =>
+        {
+            await BuildAndSendActivityAsync(context);
+        });
+
+        return Task.CompletedTask;
+    }
+    
+    private async Task BuildAndSendActivityAsync(ActivityContext context)
     {
         try
         {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Volo.Abp.Internal.Telemetry;
-
 public interface ITelemetryService
 {
     IAsyncDisposable TrackActivityAsync(string activityName, Action<Dictionary<string,object>>? additionalProperties = null);
