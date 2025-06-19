@@ -19,6 +19,8 @@ public abstract class TelemetryActivityEventEnricher : ITelemetryActivityEventEn
 
     public virtual int ExecutionOrder => 0;
     protected bool CancelChildren { get; set; }
+    protected virtual Type? ReplaceParent { get; set; }
+    
 
     public virtual Task<bool> CanExecuteAsync(ActivityContext context)
     {
@@ -52,7 +54,7 @@ public abstract class TelemetryActivityEventEnricher : ITelemetryActivityEventEn
     {
         return serviceProvider
             .GetRequiredService<IEnumerable<IHasParentTelemetryActivityEventEnricher>>()
-            .Where(child => child.Parent == this.GetType())
+            .Where(child => child.Parent == (ReplaceParent ?? this.GetType()))
             .Cast<ITelemetryActivityEventEnricher>()
             .ToList();
     }
