@@ -6,5 +6,5 @@ public class PageLayout : IPageLayout, IScopedDependency
 {
     public ContentLayout Content { get; } = new();
 
-    public bool RenderLayout { get; set; } = true;
+    public bool RenderLayoutElements { get; set; } = true;
 }

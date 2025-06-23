@@ -5,7 +5,7 @@ public interface IPageLayout
     ContentLayout Content { get; }
 
     /// <summary>
-    /// If <keyword>false</keyword>, the menu, toolbar and footer will not be rendered.
+    /// Whether the application layout (navigation menu, toolbar, etc.) should be rendered around the page content.
     /// </summary>
-    bool RenderLayout { get; set; }
+    bool RenderLayoutElements { get; set; }
 }
