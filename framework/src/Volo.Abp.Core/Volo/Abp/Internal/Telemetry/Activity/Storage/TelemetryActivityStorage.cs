@@ -14,11 +14,11 @@ namespace Volo.Abp.Internal.Telemetry.Activity.Storage;
 public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDependency
 {
     private readonly TelemetryPeriod _telemetryPeriod;
+    private const int MaxRetryCount = 3;
 
     private readonly static JsonSerializerOptions JsonSerializerOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
     private TelemetryActivityStorageState State { get; }
@@ -26,10 +26,11 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public TelemetryActivityStorage()
     {
         CreateDirectoryIfNotExist();
-        
+
         State = LoadStateFromFile();
-        
+
         _telemetryPeriod = new TelemetryPeriod();
+
     }
 
     public void SaveActivity(ActivityEvent activityEvent)
@@ -82,6 +83,12 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     public void MarkActivitiesAsSent()
     {
         State.ActivitySendTime = DateTimeOffset.UtcNow;
+        
+        foreach (var activity in State.Activities)
+        {
+            State.FailedActivities.Remove(activity.Id);
+        }
+        
         State.Activities.Clear();
         SaveState();
     }
@@ -110,6 +117,36 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
                DateTimeOffset.UtcNow - State.ActivitySendTime > _telemetryPeriod.ActivitySendPeriod;
     }
 
+    public void MarkActivitiesAsFailed(List<ActivityEvent> activities)
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        foreach (var activity in activities)
+        {
+            if (State.FailedActivities.TryGetValue(activity.Id, out var failedActivityInfo))
+            {
+                failedActivityInfo.RetryCount++;
+                failedActivityInfo.LastFailTime = now;
+
+                if (failedActivityInfo.RetryCount >= _telemetryPeriod.MaxActivityRetryCount || now - failedActivityInfo.FirstFailTime > _telemetryPeriod.MaxFailedActivityAge)
+                {
+                    State.Activities.RemoveAll(a => a.Id == activity.Id);
+                    State.FailedActivities.Remove(activity.Id);
+                }
+            }
+            else
+            {
+                State.FailedActivities[activity.Id] = new FailedActivityInfo
+                {
+                    FirstFailTime = now, 
+                    LastFailTime = now,
+                    RetryCount = 1
+                };
+            }
+        }
+
+        SaveState();
+    }
 
     private TelemetryActivityStorageState LoadStateFromFile()
     {
@@ -121,7 +158,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
             }
 
             var fileContent = MutexExecutor.ReadFileSafely(TelemetryPaths.ActivityStorage);
-            
+
             if (fileContent.IsNullOrEmpty())
             {
                 return new TelemetryActivityStorageState();

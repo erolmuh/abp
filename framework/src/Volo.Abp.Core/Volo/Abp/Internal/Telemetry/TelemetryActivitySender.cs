@@ -34,13 +34,28 @@ public class TelemetryActivitySender : ITelemetryActivitySender, ISingletonDepen
 
             for (var i = 0; i < activities.Count; i += ActivitySendBatchSize)
             {
-                var activityBatch = activities.Skip(i).Take(ActivitySendBatchSize).ToList();
+                try
+                {
+                    var activityBatch = activities.Skip(i).Take(ActivitySendBatchSize).ToList();
 
-                await httpClient.PostAsync($"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect",
-                    new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
+                    var response = await httpClient.PostAsync(
+                        $"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect",
+                        new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _telemetryActivityStorage.MarkActivitiesAsSent();
+                    }
+                    else
+                    {
+                        _telemetryActivityStorage.MarkActivitiesAsFailed(activities);
+                    }
+                }
+                catch
+                {
+                    _telemetryActivityStorage.MarkActivitiesAsFailed(activities);
+                }
             }
-
-            _telemetryActivityStorage.MarkActivitiesAsSent();
         }
         catch
         {

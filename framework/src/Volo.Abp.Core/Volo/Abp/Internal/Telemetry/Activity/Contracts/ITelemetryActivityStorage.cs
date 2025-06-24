@@ -13,4 +13,5 @@ public interface ITelemetryActivityStorage
     bool ShouldAddSolutionInformation(Guid solutionId);
     bool ShouldAddProjectInfo(Guid projectId);
     bool ShouldSendActivities();
+    void MarkActivitiesAsFailed(List<ActivityEvent> activities);
 }
