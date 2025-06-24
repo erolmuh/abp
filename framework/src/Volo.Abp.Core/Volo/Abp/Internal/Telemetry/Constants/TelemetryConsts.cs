@@ -2,5 +2,5 @@
 
 public class TelemetryConsts
 {
-    public const string VoloNameSpaceFilter = "Volo";
+    public const string VoloNameSpaceFilter = "Volo"; //TODO: Volo.
 }

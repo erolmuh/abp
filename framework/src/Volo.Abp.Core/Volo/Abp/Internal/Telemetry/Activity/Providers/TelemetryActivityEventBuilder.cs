@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.DynamicProxy;
 using Volo.Abp.Internal.Telemetry.Activity.Contracts;
 using Volo.Abp.Internal.Telemetry.Constants;
 
@@ -14,7 +15,7 @@ public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISc
     public TelemetryActivityEventBuilder(IEnumerable<ITelemetryActivityEventEnricher> activityDataEnrichers)
     {
         _activityEnrichers = activityDataEnrichers
-            .Where(x => x.GetType().Assembly.FullName!.StartsWith(TelemetryConsts.VoloNameSpaceFilter) && 
+            .Where(x => ProxyHelper.GetUnProxiedType(x).Assembly.FullName!.StartsWith(TelemetryConsts.VoloNameSpaceFilter) && 
                         x is not IHasParentTelemetryActivityEventEnricher)
             .OrderByDescending(x => x.ExecutionOrder)
             .ToList();
@@ -26,16 +27,16 @@ public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISc
         {
             try
             {
-                if (context.IsTerminated)
-                {
-                    return null;
-                }
-
                 await enricher.EnrichAsync(context);
             }
             catch
             {
                //ignored
+            }
+            
+            if (context.IsTerminated)
+            {
+                return null;
             }
         }
 

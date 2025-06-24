@@ -80,7 +80,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return State.SessionId.Value;
     }
 
-    public void MarkActivitiesAsSent()
+    public void DeleteAcitivities()
     {
         State.ActivitySendTime = DateTimeOffset.UtcNow;
         
@@ -117,7 +117,7 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
                DateTimeOffset.UtcNow - State.ActivitySendTime > _telemetryPeriod.ActivitySendPeriod;
     }
 
-    public void MarkActivitiesAsFailed(List<ActivityEvent> activities)
+    public void MarkActivitiesAsFailed(ActivityEvent[] activities)
     {
         var now = DateTimeOffset.UtcNow;
 

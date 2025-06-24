@@ -23,7 +23,7 @@ public sealed class TelemetryApplicationInfoEnricher : TelemetryActivityEventEnr
         _telemetryActivityStorage = telemetryActivityStorage;
     }
 
-    public Type Parent => typeof(TelemetrySessionInfoEnricher);
+    public Type ParentType => typeof(TelemetrySessionInfoEnricher);
 
     public override Task<bool> CanExecuteAsync(ActivityContext context)
     {

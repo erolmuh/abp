@@ -23,7 +23,7 @@ public class TelemetryActivitySender : ITelemetryActivitySender, ISingletonDepen
         _telemetryActivityStorage = telemetryActivityStorage;
     }
 
-    public async Task SendAsync()
+    public async Task SendAsync() //TODO: Private?
     {
         try
         {
@@ -34,26 +34,28 @@ public class TelemetryActivitySender : ITelemetryActivitySender, ISingletonDepen
 
             for (var i = 0; i < activities.Count; i += ActivitySendBatchSize)
             {
-                try
-                {
-                    var activityBatch = activities.Skip(i).Take(ActivitySendBatchSize).ToList();
+                var activityBatch = activities.Skip(i).Take(ActivitySendBatchSize).ToArray();
 
+                try //TODO: Discard try-catch to not retry if we get network-like exception right now
+                {
                     var response = await httpClient.PostAsync(
                         $"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect",
                         new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8, "application/json"));
 
                     if (response.IsSuccessStatusCode)
                     {
-                        _telemetryActivityStorage.MarkActivitiesAsSent();
+                        // TODO: Log Status Code and Message
+                        _telemetryActivityStorage.DeleteAcitivities(/*activityBatch*/); //TODO: Bug: Should only work for succeed activities
                     }
                     else
                     {
-                        _telemetryActivityStorage.MarkActivitiesAsFailed(activities);
+                        _telemetryActivityStorage.MarkActivitiesAsFailed(activityBatch);
                     }
                 }
                 catch
                 {
-                    _telemetryActivityStorage.MarkActivitiesAsFailed(activities);
+                    // TODO: Log
+                    _telemetryActivityStorage.MarkActivitiesAsFailed(activityBatch);
                 }
             }
         }
@@ -65,10 +67,12 @@ public class TelemetryActivitySender : ITelemetryActivitySender, ISingletonDepen
 
     public async Task SendIfNeededAsync()
     {
-        if (_telemetryActivityStorage.ShouldSendActivities())
+        if (!_telemetryActivityStorage.ShouldSendActivities())
         {
-            await SendAsync();
+            return;
         }
+
+        await SendAsync();
     }
 
 
@@ -80,9 +84,11 @@ public class TelemetryActivitySender : ITelemetryActivitySender, ISingletonDepen
         }
 
         var accessToken = File.ReadAllText(TelemetryPaths.AccessToken, Encoding.UTF8);
-        if (!accessToken.IsNullOrEmpty())
+        if (accessToken.IsNullOrEmpty())
         {
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            return;
         }
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
     }
 }

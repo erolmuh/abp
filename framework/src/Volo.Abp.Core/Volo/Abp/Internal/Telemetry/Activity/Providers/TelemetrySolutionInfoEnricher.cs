@@ -21,7 +21,7 @@ internal sealed class TelemetrySolutionInfoEnricher : TelemetryActivityEventEnri
         _telemetryActivityStorage = telemetryActivityStorage;
     }
 
-    public Type Parent => typeof(TelemetrySessionInfoEnricher);
+    public Type ParentType => typeof(TelemetrySessionInfoEnricher);
 
     public override Task<bool> CanExecuteAsync(ActivityContext context)
     {
@@ -73,7 +73,7 @@ internal sealed class TelemetrySolutionInfoEnricher : TelemetryActivityEventEnri
         context.Current[ActivityPropertyNames.Theme] = config.GetString("theme");
         context.Current[ActivityPropertyNames.ThemeStyle] = config.GetString("themeStyle");
         context.Current[ActivityPropertyNames.HasPublicWebsite] = config.GetBoolean("publicWebsite");
-        context.Current[ActivityPropertyNames.IsTiered] = config.GetBoolean("tiered");
+        context.Current[ActivityPropertyNames.IsTiered] = config.GetBoolean("tiered"); //TODO: null if not known?
         context.Current[ActivityPropertyNames.SocialLogins] = config.GetBoolean("socialLogin");
         context.Current[ActivityPropertyNames.DatabaseManagementSystem] = config.GetString("databaseManagementSystem");
         context.Current[ActivityPropertyNames.IsSeparateTenantSchema] = config.GetBoolean("separateTenantSchema");

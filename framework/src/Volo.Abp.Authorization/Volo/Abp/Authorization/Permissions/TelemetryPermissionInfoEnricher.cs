@@ -19,7 +19,7 @@ public sealed class TelemetryPermissionInfoEnricher : TelemetryActivityEventEnri
         _permissionDefinitionManager = permissionDefinitionManager;
     }
 
-    public Type Parent => typeof(TelemetryApplicationInfoEnricher);
+    public Type ParentType => typeof(TelemetryApplicationInfoEnricher);
 
     public override Task<bool> CanExecuteAsync(ActivityContext context)
     {

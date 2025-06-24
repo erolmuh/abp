@@ -21,7 +21,7 @@ public class TelemetryDomainInfoEnricher : TelemetryActivityEventEnricher, IHasP
     {
         _typeFinder = typeFinder;
     }
-    public Type Parent => typeof(TelemetryApplicationInfoEnricher);
+    public Type ParentType => typeof(TelemetryApplicationInfoEnricher);
 
     public override Task<bool> CanExecuteAsync(ActivityContext context)
     {

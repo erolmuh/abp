@@ -6,12 +6,12 @@ namespace Volo.Abp.Internal.Telemetry.Activity.Contracts;
 public interface ITelemetryActivityStorage
 {
     Guid InitializeOrGetSession();
-    void MarkActivitiesAsSent();
+    void DeleteAcitivities();
     void SaveActivity(ActivityEvent activityEvent);
     List<ActivityEvent> GetActivities();
     bool ShouldAddDeviceInfo();
     bool ShouldAddSolutionInformation(Guid solutionId);
     bool ShouldAddProjectInfo(Guid projectId);
     bool ShouldSendActivities();
-    void MarkActivitiesAsFailed(List<ActivityEvent> activities);
+    void MarkActivitiesAsFailed(ActivityEvent[] activities);
 }

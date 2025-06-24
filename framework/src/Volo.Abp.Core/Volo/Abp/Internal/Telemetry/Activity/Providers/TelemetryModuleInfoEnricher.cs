@@ -23,7 +23,7 @@ internal sealed class TelemetryModuleInfoEnricher : TelemetryActivityEventEnrich
         _assemblyFinder = assemblyFinder;
     }
 
-    public Type Parent => typeof(TelemetrySessionInfoEnricher);
+    public Type ParentType => typeof(TelemetrySessionInfoEnricher);
 
     public override Task<bool> CanExecuteAsync(ActivityContext context)
     {
