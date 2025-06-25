@@ -32,9 +32,13 @@ Since modularity is a key aspect of the ABP Framework, it provides an option to 
 
 > **Note:** This tutorial will guide you through creating two modules: `Catalog` and `Ordering`. We've just created the `Catalog` module in the _Modularity_ step. You could also create the `Ordering` module at this stage. However, we'll create the `Ordering` module later in this tutorial to better demonstrate ABP Studio's module management capabilities and to simulate a more realistic development workflow where modules are typically added incrementally as the application evolves.
 
-> **Please complete the [Get Started](../../get-started/single-layer-web-application.md) guide and run the web application before going further.**
+### About the Module Templates
+
+The *Standard Module* template is suggested for building modular monolith applications (a single application consists of multiple modules interacting each other) and it will be used in this tutorial, while the *DDD Module* is suggested for creating reusable application modules (a generic module is used in different applications) that supports different kind of architectures. To learn more about the DD Module template, see *[Application Module Template](../../solution-templates/application-module/index.md)* document.
 
 ## The Solution Structure
+
+> **Please complete the [Get Started](../../get-started/single-layer-web-application.md) guide and run the web application before going further.**
 
 The initial solution structure should be like the following in ABP Studio's *[Solution Explorer](../../studio/solution-explorer.md)*:
 
