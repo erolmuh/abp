@@ -10,15 +10,29 @@ abp-embedding {
 
 abp-embedding iframe {
     border: none !important;
+    border-width: 0 !important;
+    border-style: none !important;
+    border-color: transparent !important;
     outline: none !important;
+    outline-width: 0 !important;
+    outline-style: none !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: transparent;
+    background: transparent !important;
+    background-color: transparent !important;
     display: block;
     box-shadow: none !important;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    -moz-filter: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    text-shadow: none !important;
+    -webkit-text-shadow: none !important;
+    -moz-text-shadow: none !important;
 }
 
 /* Responsive behavior */
@@ -62,7 +76,7 @@ abp-embedding {
 }
 
 abp-embedding iframe {
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    background-color: var(--background-color);
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--box-shadow) !important;
+    background-color: var(--background-color) !important;
 } 
