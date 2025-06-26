@@ -10,11 +10,12 @@ namespace Volo.Abp.Internal.Telemetry.Activity.Providers;
 [ExposeServices(typeof(ITelemetryActivityEventEnricher))]
 public class TelemetrySessionInfoEnricher : TelemetryActivityEventEnricher 
 {
+    public override int ExecutionOrder { get; set; } = 10;
+    
     public TelemetrySessionInfoEnricher(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 
-    public override int ExecutionOrder { get; set; } = 10;
 
     protected override Task ExecuteAsync(ActivityContext context)
     {
