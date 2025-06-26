@@ -24,8 +24,7 @@ public class TelemetryActivitySender : ITelemetryActivitySender, IScopedDependen
     private const int MaxRetryAttempts = 3;
     private const int RetryDelayMilliseconds = 1000;
 
-    public TelemetryActivitySender(ITelemetryActivityStorage telemetryActivityStorage,
-        ILogger<TelemetryActivitySender> logger)
+    public TelemetryActivitySender(ITelemetryActivityStorage telemetryActivityStorage, ILogger<TelemetryActivitySender> logger)
     {
         _telemetryActivityStorage = telemetryActivityStorage;
         _logger = logger;
@@ -55,6 +54,7 @@ public class TelemetryActivitySender : ITelemetryActivitySender, IScopedDependen
             foreach (var batch in batches)
             {
                 var isSuccessful = await TrySendBatchWithRetriesAsync(httpClient, batch);
+                
                 if (!isSuccessful)
                 {
                     break;
@@ -76,10 +76,7 @@ public class TelemetryActivitySender : ITelemetryActivitySender, IScopedDependen
         {
             try
             {
-                var response = await httpClient.PostAsync(
-                    $"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect",
-                    new StringContent(JsonSerializer.Serialize(activities), Encoding.UTF8,
-                        "application/json"));
+                var response = await httpClient.PostAsync($"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect", new StringContent(JsonSerializer.Serialize(activities), Encoding.UTF8, "application/json"));
 
                 if (response.IsSuccessStatusCode)
                 {

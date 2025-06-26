@@ -8,7 +8,7 @@ using Volo.Abp.Internal.Telemetry.Constants;
 
 namespace Volo.Abp.Internal.Telemetry.Activity.Providers;
 
-public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, IScopedDependency
+public class TelemetryActivityEventBuilder : ITelemetryActivityEventBuilder, ISingletonDependency
 {
     private readonly List<ITelemetryActivityEventEnricher> _activityEnrichers;
 
