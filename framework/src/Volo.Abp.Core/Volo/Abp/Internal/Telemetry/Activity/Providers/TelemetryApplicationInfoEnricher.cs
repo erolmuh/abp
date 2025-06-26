@@ -84,7 +84,10 @@ public sealed class TelemetryApplicationInfoEnricher : TelemetryActivityEventEnr
             }
 
             using var fs = new FileStream(solutionPath!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var doc = JsonDocument.Parse(fs);
+            using var doc = JsonDocument.Parse(fs, new JsonDocumentOptions
+            {
+                AllowTrailingCommas = true
+            });
             if (doc.RootElement.TryGetProperty("id", out var property) && property.TryGetGuid(out var solutionId))
             {
                 return solutionId;

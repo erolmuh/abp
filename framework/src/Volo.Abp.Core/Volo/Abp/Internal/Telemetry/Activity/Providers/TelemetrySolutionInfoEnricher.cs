@@ -34,7 +34,10 @@ internal sealed class TelemetrySolutionInfoEnricher : TelemetryActivityEventEnri
         try
         {
             var jsonContent = File.ReadAllText(context.SolutionPath!);
-            using var doc = JsonDocument.Parse(jsonContent);
+            using var doc = JsonDocument.Parse(jsonContent, new JsonDocumentOptions
+            {
+                AllowTrailingCommas = true
+            });
 
             var root = doc.RootElement;
 
