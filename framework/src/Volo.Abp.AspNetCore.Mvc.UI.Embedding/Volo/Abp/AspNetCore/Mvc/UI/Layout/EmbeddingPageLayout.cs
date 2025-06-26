@@ -4,9 +4,10 @@ using Volo.Abp.DependencyInjection;
 namespace Volo.Abp.AspNetCore.Mvc.UI.Layout;
 
 [Dependency(ReplaceServices = true)]
-[ExposeServices(typeof(IPageLayout))]
+[ExposeServices(typeof(IPageLayout), typeof(EmbeddingPageLayout))]
 public class EmbeddingPageLayout : PageLayout, IScopedDependency
 {
+    public bool IsEmbedded { get; protected set; }
     protected IPageEmbeddingService PageEmbeddingService { get; }
     protected IHttpContextAccessor HttpContextAccessor { get; }
     
@@ -17,8 +18,6 @@ public class EmbeddingPageLayout : PageLayout, IScopedDependency
         PageEmbeddingService = pageEmbeddingService;
         HttpContextAccessor = httpContextAccessor;
     }
-
-    public ContentLayout Content { get; } = new();
 
     public override bool RenderLayoutElements 
     { 
@@ -33,6 +32,7 @@ public class EmbeddingPageLayout : PageLayout, IScopedDependency
             var httpContext = HttpContextAccessor.HttpContext;
             if (httpContext != null && PageEmbeddingService.IsEmbeddingRequest(httpContext))
             {
+                IsEmbedded = true;
                 return false;
             }
 
