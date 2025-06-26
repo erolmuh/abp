@@ -10,8 +10,8 @@ using Volo.Abp.Reflection;
 
 namespace Volo.Abp.Internal.Telemetry.Activity.Providers;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher<TelemetrySessionInfoEnricher>))]
-internal sealed class TelemetryModuleInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher<TelemetrySessionInfoEnricher>
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher<TelemetryApplicationInfoEnricher>))]
+internal sealed class TelemetryModuleInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher<TelemetryApplicationInfoEnricher>
 {
     private readonly IModuleContainer _moduleContainer;
     private readonly IAssemblyFinder _assemblyFinder;
