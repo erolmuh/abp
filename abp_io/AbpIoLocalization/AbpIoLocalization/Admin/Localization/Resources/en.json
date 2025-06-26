@@ -723,6 +723,7 @@
     "MakeAnnouncement": "Make Announcement",
     "MakeAnnouncementInfo": "Check it if you want to make an announcement for this post",
     "Permission:ViewCounts": "View counts",
-    "ReadCount": "Read Count"
+    "ReadCount": "Read Count",
+    "Permission:ViewChangeHistory" : "View Change History"
   }
 }
