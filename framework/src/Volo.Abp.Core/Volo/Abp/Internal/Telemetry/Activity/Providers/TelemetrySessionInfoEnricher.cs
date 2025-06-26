@@ -16,7 +16,6 @@ public class TelemetrySessionInfoEnricher : TelemetryActivityEventEnricher
     {
     }
 
-
     protected override Task ExecuteAsync(ActivityContext context)
     {
         context.Current[ActivityPropertyNames.SessionType] = SessionType.ApplicationRuntime;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Volo.Abp.Internal.Telemetry.Activity.Storage;
 
-public class TelemetryActivityStorageState
+internal class TelemetryActivityStorageState
 {
     public DateTimeOffset? ActivitySendTime { get; set; }
     public DateTimeOffset? LastDeviceInfoAddTime { get; set; }

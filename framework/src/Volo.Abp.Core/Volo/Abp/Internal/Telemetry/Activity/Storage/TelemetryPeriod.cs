@@ -2,11 +2,11 @@
 
 namespace Volo.Abp.Internal.Telemetry.Activity.Storage;
 
-public class TelemetryPeriod
+static internal class TelemetryPeriod
 {
     private const string TestModeEnvironmentVariable = "ABP_TELEMETRY_TEST_MODE";
 
-    public TelemetryPeriod()
+    static TelemetryPeriod()
     {
         var isTestMode = IsTestModeEnabled();
 
@@ -19,11 +19,11 @@ public class TelemetryPeriod
             : TimeSpan.FromDays(1);
     }
 
-    public TimeSpan ActivitySendPeriod { get; }
-    public TimeSpan InformationSendPeriod { get; }
+    public static TimeSpan ActivitySendPeriod { get; }
+    public static TimeSpan InformationSendPeriod { get; }
 
-    public int MaxActivityRetryCount => 3;
-    public TimeSpan MaxFailedActivityAge => TimeSpan.FromDays(30);
+    public static int MaxActivityRetryCount { get; set; } = 3;
+    public static TimeSpan MaxFailedActivityAge { get; set; } = TimeSpan.FromDays(30);
 
     private static bool IsTestModeEnabled()
     {
