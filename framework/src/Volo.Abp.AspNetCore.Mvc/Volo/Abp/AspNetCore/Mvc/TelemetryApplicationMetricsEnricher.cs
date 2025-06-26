@@ -36,7 +36,8 @@ public sealed class TelemetryApplicationMetricsEnricher : TelemetryActivityEvent
 
         var controllerCount = _typeFinder.Types.Count(t =>
             typeof(ControllerBase).IsAssignableFrom(t) &&
-            !t.IsAbstract);
+            !t.IsAbstract &&
+            !t.AssemblyQualifiedName!.StartsWith(TelemetryConsts.VoloNameSpaceFilter));
 
 
         context.Current[ActivityPropertyNames.AppServiceCount] = appServiceCount;
