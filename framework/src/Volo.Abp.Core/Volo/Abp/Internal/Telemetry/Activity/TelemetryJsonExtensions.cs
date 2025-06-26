@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Volo.Abp.Internal.Telemetry.Activity;
 
-static internal class TelemetryJsonElementExtensions
+static internal class TelemetryJsonExtensions
 {
     static internal string? GetStringOrNull(JsonElement element, string propertyName)
     {
