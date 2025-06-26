@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Internal.Telemetry.Activity;
@@ -27,6 +28,18 @@ public sealed class TelemetryPermissionInfoEnricher : TelemetryActivityEventEnri
     protected async override Task ExecuteAsync(ActivityContext context)
     {
         var permissions = await _permissionDefinitionManager.GetPermissionsAsync();
-        context.Current[ActivityPropertyNames.PermissionCount] = permissions.Count;
+
+        var userDefinedPermissionsCount = permissions.Count(IsUserDefinedPermission);
+        
+        context.Current[ActivityPropertyNames.PermissionCount] = userDefinedPermissionsCount;
     }
+    
+    private static bool IsUserDefinedPermission(PermissionDefinition permission)
+    {
+        return permission.Properties.TryGetValue(PermissionDefinitionContext.KnownPropertyNames.CurrentProviderName, out var providerName) &&
+               providerName is string &&
+               !providerName.ToString()!.StartsWith(TelemetryConsts.VoloNameSpaceFilter);
+    }
+
+
 }
