@@ -79,4 +79,27 @@ abp-embedding iframe {
     border-radius: var(--border-radius) !important;
     box-shadow: var(--box-shadow) !important;
     background-color: var(--background-color) !important;
+}
+
+/* Auto-height specific styles */
+abp-embedding[auto-height] {
+    height: auto !important;
+    min-height: 100px;
+    transition: height 0.3s ease;
+}
+
+abp-embedding[auto-height] iframe {
+    transition: height 0.3s ease;
+    min-height: 100px !important;
+    height: auto !important;
+}
+
+/* Prevent height jumping during initial load */
+abp-embedding[auto-height][loading] {
+    min-height: 200px;
+}
+
+/* Force proper sizing during height updates */
+abp-embedding[auto-height].height-updating iframe {
+    transition: none !important;
 } 

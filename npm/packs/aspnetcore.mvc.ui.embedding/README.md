@@ -5,6 +5,7 @@ A framework-agnostic web component for embedding iframe content with data passin
 ## Features
 
 - ✅ **Framework Agnostic**: Works with plain HTML, Vue, Angular, React, and any other framework
+- ✅ **Auto-Height**: Automatically resize iframe to match content height
 - ✅ **Data Passing**: Send data to iframe content using postMessage API
 - ✅ **Event Handling**: Listen for iframe load and message events
 - ✅ **URL Synchronization**: Keep parent and iframe URLs in sync with browser history support
@@ -38,6 +39,9 @@ npm install @abp/aspnetcore.mvc.ui.embedding
 
     <!-- With URL synchronization -->
     <abp-embedding src="https://example.com" width="100%" height="600px" url-sync="true"></abp-embedding>
+
+    <!-- With auto-height -->
+    <abp-embedding src="https://example.com" width="100%" auto-height="true"></abp-embedding>
 
     <script src="node_modules/@abp/aspnetcore.mvc.ui.embedding/src/abp-embedding.js"></script>
 </body>
@@ -81,6 +85,18 @@ embedding.addEventListener('url-synced', (event) => {
 
 // Navigate programmatically (if URL sync is enabled)
 embedding.syncUrl('/dashboard');
+
+// Enable auto-height
+abp.embedding.enableAutoHeight(embedding, {
+    minHeight: 200,
+    maxHeight: 1000,
+    watchForChanges: true
+});
+
+// Listen for height updates
+embedding.addEventListener('height-updated', (event) => {
+    console.log('Height updated:', event.detail);
+});
 ```
 
 ### Vue.js Usage
@@ -191,6 +207,85 @@ function EmbeddingComponent() {
             height="600px"
         />
     );
+}
+```
+
+## Auto-Height Feature
+
+The auto-height feature automatically adjusts the iframe height to match its content, preventing double scrollbars and providing a seamless user experience.
+
+### Basic Usage
+
+```html
+<!-- Enable auto-height with attribute -->
+<abp-embedding src="your-app.html" auto-height="true" width="100%"></abp-embedding>
+```
+
+### Programmatic Usage
+
+```javascript
+// Enable auto-height with options
+const embedding = document.querySelector('abp-embedding');
+abp.embedding.enableAutoHeight(embedding, {
+    minHeight: 100,        // Minimum height in pixels
+    maxHeight: 1000,       // Maximum height in pixels  
+    watchForChanges: true  // Monitor content changes
+});
+
+// Disable auto-height
+abp.embedding.disableAutoHeight(embedding);
+
+// Manually request height update
+embedding.requestHeightUpdate();
+```
+
+### Iframe Content Setup
+
+Include this script in your iframe content to enable height communication:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Iframe Content</title>
+</head>
+<body>
+    <!-- Your content here -->
+    
+    <script src="path/to/abp-embedding-iframe.js"></script>
+</body>
+</html>
+```
+
+The iframe script automatically:
+- Waits for page to fully load (including images)
+- Measures content height using multiple methods
+- Sends height updates to parent via postMessage
+- Monitors for content changes (if enabled)
+- Handles configuration from parent
+
+### Auto-Height Events
+
+```javascript
+// Listen for height updates
+embedding.addEventListener('height-updated', (event) => {
+    const { originalHeight, appliedHeight, wasConstrained } = event.detail;
+    console.log(`Height: ${originalHeight}px → ${appliedHeight}px`);
+    
+    if (wasConstrained) {
+        console.log('Height was constrained by min/max limits');
+    }
+});
+```
+
+### Configuration Options
+
+```javascript
+{
+    minHeight: 100,        // Minimum iframe height (default: 100)
+    maxHeight: 10000,      // Maximum iframe height (default: 90% of viewport)
+    watchForChanges: true, // Monitor DOM changes (default: true)
+    debounceDelay: 250     // Debounce delay for change detection (default: 250ms)
 }
 ```
 
@@ -344,6 +439,7 @@ Here's how to handle the data in your iframe content:
 | `sandbox` | string | - | Sandbox restrictions for the iframe |
 | `loading` | string | - | Loading behavior (`lazy`, `eager`) |
 | `url-sync` | boolean | `false` | Enable URL synchronization with browser history |
+| `auto-height` | boolean | `false` | Enable automatic height adjustment to content |
 
 ## Events
 
@@ -352,6 +448,7 @@ Here's how to handle the data in your iframe content:
 | `iframe-loaded` | Fired when iframe finishes loading | `{ iframe: HTMLIFrameElement }` |
 | `iframe-message` | Fired when iframe sends a message | `{ data: any, origin: string, source: Window }` |
 | `url-synced` | Fired when URL synchronization occurs | `{ type: string, oldPath?: string, newPath?: string, path?: string, url?: string }` |
+| `height-updated` | Fired when iframe height is updated | `{ originalHeight: number, appliedHeight: number, wasConstrained: boolean }` |
 
 ## Methods
 
@@ -361,6 +458,9 @@ Here's how to handle the data in your iframe content:
 | `getIframe()` | - | Get the iframe element |
 | `isLoaded()` | - | Check if iframe is loaded |
 | `syncUrl(path)` | `path: string` | Navigate to path and sync URLs (requires `url-sync="true"`) |
+| `enableAutoHeight(options?)` | `options: object` | Enable auto-height with configuration |
+| `disableAutoHeight()` | - | Disable auto-height functionality |
+| `requestHeightUpdate()` | - | Manually request height update from iframe |
 
 ## CSS Custom Properties
 

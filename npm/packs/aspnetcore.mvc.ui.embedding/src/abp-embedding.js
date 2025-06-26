@@ -137,6 +137,30 @@
                 this.syncInitialUrl();
             }
 
+            // Request height update if auto-height is enabled
+            if (this.hasAttribute('auto-height') || this.autoHeightConfig) {
+                // Send auto-height config to iframe even if just using attribute
+                if (this.hasAttribute('auto-height') && !this.autoHeightConfig) {
+                    // Create basic config for attribute-based auto-height
+                    this.autoHeightConfig = {
+                        minHeight: 100,
+                        maxHeight: window.innerHeight * 0.9,
+                        watchForChanges: true,
+                        initialDelay: 250,
+                        retryDelays: [100, 300, 500, 1000]
+                    };
+                    
+                    // Send config to iframe
+                    this.sendData({
+                        type: 'auto-height-config',
+                        config: this.autoHeightConfig
+                    });
+                }
+                
+                // Multiple attempts to ensure we get the height after content is fully rendered
+                this.scheduleInitialHeightUpdate();
+            }
+
             // Dispatch custom event
             this.dispatchEvent(new CustomEvent('iframe-loaded', {
                 detail: { iframe: this.iframe },
@@ -147,6 +171,18 @@
         handleIframeMessage(event) {
             // Verify the message is from our iframe
             if (this.iframe && event.source === this.iframe.contentWindow) {
+                // Handle iframe ready signal for auto-height
+                if (event.data && event.data.type === 'iframe-ready-for-auto-height') {
+                    this.handleIframeReadyForAutoHeight(event.data);
+                    return;
+                }
+
+                // Handle auto-height messages
+                if (event.data && event.data.type === 'height-update') {
+                    this.updateIframeHeight(event.data.height);
+                    return;
+                }
+
                 // Handle URL sync messages
                 if (this.urlSyncEnabled && event.data && event.data.type === 'url-change') {
                     this.handleIframeUrlChange(event.data.path);
@@ -338,6 +374,163 @@
                 window.history.pushState({ iframePath: newPath }, '', newPath);
             }
         }
+
+        /**
+         * Update iframe height based on content
+         * @param {number} height 
+         */
+        updateIframeHeight(height) {
+            if (!this.iframe) {
+                console.warn('ABP Embedding: No iframe found for height update');
+                return;
+            }
+            
+            if (!height || height <= 0) {
+                console.warn('ABP Embedding: Invalid height received:', height);
+                return;
+            }
+
+            const config = this.autoHeightConfig || {};
+            const minHeight = config.minHeight || 100;
+            const maxHeight = config.maxHeight || window.innerHeight * 0.9;
+            
+            // Ensure height is within reasonable bounds
+            const newHeight = Math.max(minHeight, Math.min(height, maxHeight));
+            
+            console.debug('ABP Embedding: Updating height from', height, 'to', newHeight);
+            
+            // Add class to disable transitions during update
+            this.classList.add('height-updating');
+            
+            // Update iframe height with multiple methods to ensure it takes
+            this.iframe.style.setProperty('height', newHeight + 'px', 'important');
+            this.iframe.style.setProperty('min-height', newHeight + 'px', 'important');
+            
+            // Update the component's height if not responsive
+            if (!this.classList.contains('responsive')) {
+                this.style.setProperty('height', newHeight + 'px', 'important');
+            }
+            
+            // Force layout recalculation
+            this.iframe.offsetHeight;
+            
+            // Remove updating class to re-enable transitions
+            setTimeout(() => {
+                this.classList.remove('height-updating');
+            }, 10);
+
+            // Dispatch custom event
+            this.dispatchEvent(new CustomEvent('height-updated', {
+                detail: { 
+                    originalHeight: height,
+                    appliedHeight: newHeight,
+                    wasConstrained: height !== newHeight
+                },
+                bubbles: true
+            }));
+        }
+
+        /**
+         * Request height update from iframe content
+         */
+        requestHeightUpdate() {
+            if (this.isIframeLoaded && this.iframe) {
+                this.iframe.contentWindow.postMessage({
+                    type: 'request-height-update'
+                }, '*');
+            }
+        }
+
+        /**
+         * Schedule initial height update with multiple attempts
+         */
+        scheduleInitialHeightUpdate() {
+            const config = this.autoHeightConfig || {};
+            const attempts = config.retryDelays || [100, 300, 500, 1000];
+            
+            // Mark that we're waiting for iframe to be ready
+            this.waitingForIframeReady = true;
+            
+            attempts.forEach(delay => {
+                setTimeout(() => {
+                    if (this.isIframeLoaded && (this.hasAttribute('auto-height') || this.autoHeightConfig)) {
+                        console.debug('ABP Embedding: Requesting height update after', delay, 'ms');
+                        this.requestHeightUpdate();
+                    }
+                }, delay);
+            });
+
+            // Also set a timeout to stop waiting after reasonable time
+            setTimeout(() => {
+                this.waitingForIframeReady = false;
+            }, 5000);
+        }
+
+        handleIframeReadyForAutoHeight(data) {
+            console.debug('ABP Embedding: Iframe ready for auto-height', data);
+            
+            this.waitingForIframeReady = false;
+            
+            // Use the initial height from the ready signal
+            if (data.initialHeight && data.initialHeight > 0) {
+                this.updateIframeHeight(data.initialHeight);
+            }
+            
+            // Also enable auto-height if it's set via attribute but not programmatically enabled yet
+            if (this.hasAttribute('auto-height') && !this.autoHeightConfig) {
+                this.enableAutoHeight();
+            }
+        }
+
+        /**
+         * Enable auto-height functionality
+         * @param {Object} options - Configuration options
+         */
+        enableAutoHeight(options = {}) {
+            const config = {
+                minHeight: options.minHeight || 100,
+                maxHeight: options.maxHeight || window.innerHeight * 0.9,
+                watchForChanges: options.watchForChanges !== false, // Default true
+                initialDelay: options.initialDelay || 250, // Delay before first measurement
+                retryDelays: options.retryDelays || [100, 300, 500, 1000], // Multiple retry attempts
+                ...options
+            };
+
+            // Store config
+            this.autoHeightConfig = config;
+
+            // Add auto-height attribute for CSS targeting
+            this.setAttribute('auto-height', 'true');
+
+            // Request initial height update
+            if (this.isIframeLoaded) {
+                this.scheduleInitialHeightUpdate();
+            }
+
+            // Send configuration to iframe
+            this.sendData({
+                type: 'auto-height-config',
+                config: config
+            });
+        }
+
+        /**
+         * Disable auto-height functionality
+         */
+        disableAutoHeight() {
+            this.removeAttribute('auto-height');
+            delete this.autoHeightConfig;
+
+            // Reset to original height
+            const originalHeight = this.getAttribute('height') || '400px';
+            this.iframe.style.height = originalHeight;
+            this.style.height = originalHeight;
+
+            // Notify iframe to stop monitoring
+            this.sendData({
+                type: 'auto-height-disable'
+            });
+        }
     }
 
     // Register the custom element
@@ -363,6 +556,18 @@
     abp.embedding.sendData = function(element, data, targetOrigin) {
         if (element && typeof element.sendData === 'function') {
             element.sendData(data, targetOrigin);
+        }
+    };
+
+    abp.embedding.enableAutoHeight = function(element, options) {
+        if (element && typeof element.enableAutoHeight === 'function') {
+            element.enableAutoHeight(options);
+        }
+    };
+
+    abp.embedding.disableAutoHeight = function(element) {
+        if (element && typeof element.disableAutoHeight === 'function') {
+            element.disableAutoHeight();
         }
     };
 
