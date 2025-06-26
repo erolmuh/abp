@@ -57,22 +57,14 @@ public abstract class TelemetryActivityEventEnricher : ITelemetryActivityEventEn
 
     private ITelemetryActivityEventEnricher[] GetChildren(IServiceProvider serviceProvider)
     {
-        try
-        {
-            var targetType = ReplaceParentType ?? ProxyHelper.GetUnProxiedType(this);
-            var genericInterfaceType = typeof(IHasParentTelemetryActivityEventEnricher<>).MakeGenericType(targetType);
-            var enumerableType = typeof(IEnumerable<>).MakeGenericType(genericInterfaceType);
+        var targetType = ReplaceParentType ?? ProxyHelper.GetUnProxiedType(this);
+        var genericInterfaceType = typeof(IHasParentTelemetryActivityEventEnricher<>).MakeGenericType(targetType);
+        var enumerableType = typeof(IEnumerable<>).MakeGenericType(genericInterfaceType);
 
-            var childServices = (IEnumerable<object>)serviceProvider.GetRequiredService(enumerableType);
+        var childServices = (IEnumerable<object>)serviceProvider.GetRequiredService(enumerableType);
 
-            return childServices
-                .Cast<ITelemetryActivityEventEnricher>()
-                .ToArray();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+        return childServices
+            .Cast<ITelemetryActivityEventEnricher>()
+            .ToArray();
     }
 }
