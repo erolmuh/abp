@@ -8,8 +8,8 @@ using Volo.Abp.Internal.Telemetry.Constants;
 
 namespace Volo.Abp.Authorization.Permissions;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher))]
-public sealed class TelemetryPermissionInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher<TelemetryApplicationInfoEnricher>))]
+public sealed class TelemetryPermissionInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher<TelemetryApplicationInfoEnricher>
 {
     private readonly IPermissionDefinitionManager _permissionDefinitionManager;
 
@@ -19,9 +19,7 @@ public sealed class TelemetryPermissionInfoEnricher : TelemetryActivityEventEnri
         _permissionDefinitionManager = permissionDefinitionManager;
     }
 
-    public Type Parent => typeof(TelemetryApplicationInfoEnricher);
-
-    public override Task<bool> CanExecuteAsync(ActivityContext context)
+    protected override Task<bool> CanExecuteAsync(ActivityContext context)
     {
         return Task.FromResult(context.ProjectId.HasValue);
     }

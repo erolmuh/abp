@@ -14,7 +14,7 @@ public class TelemetrySessionInfoEnricher : TelemetryActivityEventEnricher
     {
     }
 
-    public override int ExecutionOrder => 10;
+    public override int ExecutionOrder { get; set; } = 10;
 
     protected override Task ExecuteAsync(ActivityContext context)
     {

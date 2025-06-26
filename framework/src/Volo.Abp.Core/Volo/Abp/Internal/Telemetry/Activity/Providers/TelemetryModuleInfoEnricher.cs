@@ -10,8 +10,8 @@ using Volo.Abp.Reflection;
 
 namespace Volo.Abp.Internal.Telemetry.Activity.Providers;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher))]
-internal sealed class TelemetryModuleInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher<TelemetrySessionInfoEnricher>))]
+internal sealed class TelemetryModuleInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher<TelemetrySessionInfoEnricher>
 {
     private readonly IModuleContainer _moduleContainer;
     private readonly IAssemblyFinder _assemblyFinder;
@@ -23,9 +23,7 @@ internal sealed class TelemetryModuleInfoEnricher : TelemetryActivityEventEnrich
         _assemblyFinder = assemblyFinder;
     }
 
-    public Type Parent => typeof(TelemetrySessionInfoEnricher);
-
-    public override Task<bool> CanExecuteAsync(ActivityContext context)
+    protected override Task<bool> CanExecuteAsync(ActivityContext context)
     {
         return Task.FromResult(context.SessionType == SessionType.ApplicationRuntime);
     }

@@ -16,7 +16,8 @@ public class TelemetryService : ITelemetryService, IScopedDependency
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
 
     public TelemetryService(ITelemetryActivitySender telemetryActivitySender,
-        ITelemetryActivityEventBuilder telemetryActivityEventBuilder, ITelemetryActivityStorage telemetryActivityStorage)
+        ITelemetryActivityEventBuilder telemetryActivityEventBuilder,
+        ITelemetryActivityStorage telemetryActivityStorage)
     {
         _telemetryActivitySender = telemetryActivitySender;
         _telemetryActivityEventBuilder = telemetryActivityEventBuilder;
@@ -35,7 +36,13 @@ public class TelemetryService : ITelemetryService, IScopedDependency
         {
             stopwatch.Stop();
             context.Current[ActivityPropertyNames.ActivityDuration] = stopwatch.ElapsedMilliseconds;
-            additionalProperties?.Invoke(context.Current);
+
+            if (additionalProperties != null)
+            {
+                context.Current.AdditionalProperties = new Dictionary<string, object>();
+                additionalProperties.Invoke(context.Current.AdditionalProperties);
+            }
+
             await AddActivityAsync(context);
         });
     }
@@ -79,17 +86,19 @@ public class TelemetryService : ITelemetryService, IScopedDependency
 
         return Task.CompletedTask;
     }
-    
+
     private async Task BuildAndSendActivityAsync(ActivityContext context)
     {
         try
         {
             var activityEvent = await _telemetryActivityEventBuilder.BuildAsync(context);
-            if (activityEvent is not null)
+            if (activityEvent is null)
             {
-                _telemetryActivityStorage.SaveActivity(activityEvent);
-                await _telemetryActivitySender.SendIfNeededAsync();
+                return;
             }
+
+            _telemetryActivityStorage.SaveActivity(activityEvent);
+            await _telemetryActivitySender.TrySendQueuedActivitiesAsync();
         }
         catch
         {

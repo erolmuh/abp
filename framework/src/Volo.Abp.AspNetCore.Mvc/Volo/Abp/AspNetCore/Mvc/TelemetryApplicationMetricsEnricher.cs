@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 using Volo.Abp.DependencyInjection;
@@ -14,21 +13,16 @@ using Volo.Abp.Reflection;
 
 namespace Volo.Abp.AspNetCore.Mvc;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher))]
-public sealed class TelemetryApplicationMetricsEnricher : TelemetryActivityEventEnricher,
-    IHasParentTelemetryActivityEventEnricher
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher<TelemetryApplicationInfoEnricher>))]
+public sealed class TelemetryApplicationMetricsEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher<TelemetryApplicationInfoEnricher>
 {
     private readonly ITypeFinder _typeFinder;
-
-    public TelemetryApplicationMetricsEnricher(ITypeFinder typeFinder, IServiceProvider serviceProvider) : base(
-        serviceProvider)
+    public TelemetryApplicationMetricsEnricher(ITypeFinder typeFinder, IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _typeFinder = typeFinder;
     }
 
-    public Type Parent => typeof(TelemetryApplicationInfoEnricher);
-
-    public override Task<bool> CanExecuteAsync(ActivityContext context)
+    protected override Task<bool> CanExecuteAsync(ActivityContext context)
     {
         return Task.FromResult(context.SessionType == SessionType.ApplicationRuntime);
     }

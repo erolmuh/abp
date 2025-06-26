@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -14,11 +15,11 @@ namespace Volo.Abp.Internal.Telemetry.Activity.Storage;
 public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDependency
 {
     private readonly TelemetryPeriod _telemetryPeriod;
-    private const int MaxRetryCount = 3;
 
     private readonly static JsonSerializerOptions JsonSerializerOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase, 
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
     private TelemetryActivityStorageState State { get; }
@@ -49,13 +50,13 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
         if (activityEvent.HasSolutionInfo())
         {
-            var solutionId = (Guid)activityEvent[ActivityPropertyNames.SolutionId];
+            var solutionId = activityEvent.Get<Guid>(ActivityPropertyNames.SolutionId);
             State.Solutions[solutionId] = DateTimeOffset.UtcNow;
         }
 
         if (activityEvent.HasProjectInfo())
         {
-            var projectId = (Guid)activityEvent[ActivityPropertyNames.ProjectId];
+            var projectId = activityEvent.Get<Guid>(ActivityPropertyNames.ProjectId);
             State.Projects[projectId] = DateTimeOffset.UtcNow;
         }
 
@@ -80,44 +81,16 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         return State.SessionId.Value;
     }
 
-    public void MarkActivitiesAsSent()
+    public void DeleteActivities(ActivityEvent[] activities)
     {
-        State.ActivitySendTime = DateTimeOffset.UtcNow;
+        var activityIds = activities.Select(x => x.Id).ToArray();
         
-        foreach (var activity in State.Activities)
-        {
-            State.FailedActivities.Remove(activity.Id);
-        }
+        State.Activities.RemoveAll(x => activityIds.Contains(x.Id));
         
-        State.Activities.Clear();
         SaveState();
     }
-
-    public bool ShouldAddDeviceInfo()
-    {
-        return State.LastDeviceInfoAddTime is null ||
-               DateTimeOffset.UtcNow - State.LastDeviceInfoAddTime > _telemetryPeriod.InformationSendPeriod;
-    }
-
-    public bool ShouldAddSolutionInformation(Guid solutionId)
-    {
-        return !State.Solutions.TryGetValue(solutionId, out var lastSend) ||
-               DateTimeOffset.UtcNow - lastSend > _telemetryPeriod.InformationSendPeriod;
-    }
-
-    public bool ShouldAddProjectInfo(Guid projectId)
-    {
-        return !State.Projects.TryGetValue(projectId, out var lastSend) ||
-               DateTimeOffset.UtcNow - lastSend > _telemetryPeriod.InformationSendPeriod;
-    }
-
-    public bool ShouldSendActivities()
-    {
-        return State.ActivitySendTime is null ||
-               DateTimeOffset.UtcNow - State.ActivitySendTime > _telemetryPeriod.ActivitySendPeriod;
-    }
-
-    public void MarkActivitiesAsFailed(List<ActivityEvent> activities)
+    
+    public void MarkActivitiesAsFailed(ActivityEvent[] activities)
     {
         var now = DateTimeOffset.UtcNow;
 
@@ -147,8 +120,46 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
         SaveState();
     }
+    
+    public bool ShouldAddDeviceInfo()
+    {
+        return State.LastDeviceInfoAddTime is null ||
+               DateTimeOffset.UtcNow - State.LastDeviceInfoAddTime > _telemetryPeriod.InformationSendPeriod;
+    }
+    
+    public bool ShouldAddSolutionInformation(Guid solutionId)
+    {
+        return !State.Solutions.TryGetValue(solutionId, out var lastSend) ||
+               DateTimeOffset.UtcNow - lastSend > _telemetryPeriod.InformationSendPeriod;
+    }
 
-    private TelemetryActivityStorageState LoadStateFromFile()
+    public bool ShouldAddProjectInfo(Guid projectId)
+    {
+        return !State.Projects.TryGetValue(projectId, out var lastSend) ||
+               DateTimeOffset.UtcNow - lastSend > _telemetryPeriod.InformationSendPeriod;
+    }
+
+    public bool ShouldSendActivities()
+    {
+        return State.ActivitySendTime is null ||
+               DateTimeOffset.UtcNow - State.ActivitySendTime > _telemetryPeriod.ActivitySendPeriod;
+    }
+    
+    private void SaveState()
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(State, JsonSerializerOptions);
+            var encryptedJson = Cryptography.Encrypt(json);
+            File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
+        }
+        catch
+        {
+            // Ignored 
+        }
+    }
+
+    private static TelemetryActivityStorageState LoadStateFromFile()
     {
         try
         {
@@ -171,20 +182,6 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
         catch
         {
             return new TelemetryActivityStorageState();
-        }
-    }
-
-    private void SaveState()
-    {
-        try
-        {
-            var json = JsonSerializer.Serialize(State, JsonSerializerOptions);
-            var encryptedJson = Cryptography.Encrypt(json);
-            File.WriteAllText(TelemetryPaths.ActivityStorage, encryptedJson, Encoding.UTF8);
-        }
-        catch
-        {
-            // Ignored 
         }
     }
 

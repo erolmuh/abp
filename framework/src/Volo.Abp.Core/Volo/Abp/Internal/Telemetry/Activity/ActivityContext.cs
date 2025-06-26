@@ -20,6 +20,7 @@ public class ActivityContext
         Action<Dictionary<string, object>>? additionalProperties = null)
     {
         var activity = new ActivityEvent(activityName, details);
+        
         if (additionalProperties is not null)
         {
             activity.AdditionalProperties = new Dictionary<string, object>();
@@ -36,7 +37,7 @@ public class ActivityContext
                 return null;
             }
 
-            if (Guid.TryParse(projectId.ToString(), out var projectIdGuid))
+            if (Guid.TryParse(projectId!.ToString(), out var projectIdGuid))
             {
                 return projectIdGuid;
             }

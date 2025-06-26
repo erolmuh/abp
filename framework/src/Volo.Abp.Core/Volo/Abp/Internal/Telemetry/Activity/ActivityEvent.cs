@@ -6,7 +6,7 @@ using Volo.Abp.Internal.Telemetry.Constants;
 
 namespace Volo.Abp.Internal.Telemetry.Activity;
 
-public class ActivityEvent : Dictionary<string, object>
+public class ActivityEvent : Dictionary<string, object?>
 {
     public ActivityEvent()
     {

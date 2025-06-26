@@ -4,6 +4,5 @@ namespace Volo.Abp.Internal.Telemetry;
 
 public interface ITelemetryActivitySender
 {
-    Task SendAsync();
-    Task SendIfNeededAsync();
+    Task TrySendQueuedActivitiesAsync();
 }

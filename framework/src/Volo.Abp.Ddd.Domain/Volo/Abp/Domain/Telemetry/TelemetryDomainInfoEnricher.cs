@@ -11,8 +11,8 @@ using Volo.Abp.Reflection;
 
 namespace Volo.Abp.Domain.Telemetry;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher))]
-public class TelemetryDomainInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher<TelemetryApplicationInfoEnricher>))]
+public class TelemetryDomainInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher<TelemetryApplicationInfoEnricher>
 {
     private readonly ITypeFinder _typeFinder;
 
@@ -21,9 +21,8 @@ public class TelemetryDomainInfoEnricher : TelemetryActivityEventEnricher, IHasP
     {
         _typeFinder = typeFinder;
     }
-    public Type Parent => typeof(TelemetryApplicationInfoEnricher);
 
-    public override Task<bool> CanExecuteAsync(ActivityContext context)
+    protected override Task<bool> CanExecuteAsync(ActivityContext context)
     {
         return Task.FromResult(context.ProjectId.HasValue);
     }

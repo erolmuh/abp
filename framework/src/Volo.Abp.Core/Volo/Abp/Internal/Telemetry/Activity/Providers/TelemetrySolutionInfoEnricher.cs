@@ -9,8 +9,8 @@ using Volo.Abp.Internal.Telemetry.Constants;
 
 namespace Volo.Abp.Internal.Telemetry.Activity.Providers;
 
-[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher))]
-internal sealed class TelemetrySolutionInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher
+[ExposeServices(typeof(ITelemetryActivityEventEnricher), typeof(IHasParentTelemetryActivityEventEnricher<TelemetrySessionInfoEnricher>))]
+internal sealed class TelemetrySolutionInfoEnricher : TelemetryActivityEventEnricher, IHasParentTelemetryActivityEventEnricher<TelemetrySessionInfoEnricher>
 {
     private readonly ITelemetryActivityStorage _telemetryActivityStorage;
 
@@ -21,9 +21,7 @@ internal sealed class TelemetrySolutionInfoEnricher : TelemetryActivityEventEnri
         _telemetryActivityStorage = telemetryActivityStorage;
     }
 
-    public Type Parent => typeof(TelemetrySessionInfoEnricher);
-
-    public override Task<bool> CanExecuteAsync(ActivityContext context)
+    protected override Task<bool> CanExecuteAsync(ActivityContext context)
     {
         if (context.SolutionId.HasValue && !context.SolutionPath.IsNullOrEmpty())
         {
@@ -62,31 +60,30 @@ internal sealed class TelemetrySolutionInfoEnricher : TelemetryActivityEventEnri
         return Task.CompletedTask;
     }
 
-
     private static void AddSolutionCreationConfiguration(ActivityContext context, JsonElement config)
     {
-        context.Current[ActivityPropertyNames.Template] = config.GetString("template");
-        context.Current[ActivityPropertyNames.CreatedAbpStudioVersion] = config.GetString("createdAbpStudioVersion");
-        context.Current[ActivityPropertyNames.MultiTenancy] = config.GetBoolean("multiTenancy");
-        context.Current[ActivityPropertyNames.UiFramework] = config.GetString("uiFramework");
-        context.Current[ActivityPropertyNames.DatabaseProvider] = config.GetString("databaseProvider");
-        context.Current[ActivityPropertyNames.Theme] = config.GetString("theme");
-        context.Current[ActivityPropertyNames.ThemeStyle] = config.GetString("themeStyle");
-        context.Current[ActivityPropertyNames.HasPublicWebsite] = config.GetBoolean("publicWebsite");
-        context.Current[ActivityPropertyNames.IsTiered] = config.GetBoolean("tiered");
-        context.Current[ActivityPropertyNames.SocialLogins] = config.GetBoolean("socialLogin");
-        context.Current[ActivityPropertyNames.DatabaseManagementSystem] = config.GetString("databaseManagementSystem");
-        context.Current[ActivityPropertyNames.IsSeparateTenantSchema] = config.GetBoolean("separateTenantSchema");
-        context.Current[ActivityPropertyNames.MobileFramework] = config.GetString("mobileFramework");
-        context.Current[ActivityPropertyNames.IncludeTests] = config.GetBoolean("includeTests");
-        context.Current[ActivityPropertyNames.DynamicLocalization] = config.GetBoolean("dynamicLocalization");
-        context.Current[ActivityPropertyNames.KubernetesConfiguration] = config.GetBoolean("kubernetesConfiguration");
-        context.Current[ActivityPropertyNames.GrafanaDashboard] = config.GetBoolean("grafanaDashboard");
+        context.Current[ActivityPropertyNames.Template] = TelemetryJsonElementExtensions.GetStringOrNull(config, "template");
+        context.Current[ActivityPropertyNames.CreatedAbpStudioVersion] = TelemetryJsonElementExtensions.GetStringOrNull(config,"createdAbpStudioVersion");
+        context.Current[ActivityPropertyNames.MultiTenancy] =  TelemetryJsonElementExtensions.GetBooleanOrNull(config,"multiTenancy");
+        context.Current[ActivityPropertyNames.UiFramework] = TelemetryJsonElementExtensions.GetStringOrNull(config,"uiFramework");
+        context.Current[ActivityPropertyNames.DatabaseProvider] = TelemetryJsonElementExtensions.GetStringOrNull(config,"databaseProvider");
+        context.Current[ActivityPropertyNames.Theme] = TelemetryJsonElementExtensions.GetStringOrNull(config,"theme");
+        context.Current[ActivityPropertyNames.ThemeStyle] = TelemetryJsonElementExtensions.GetStringOrNull(config,"themeStyle"); 
+        context.Current[ActivityPropertyNames.HasPublicWebsite] = TelemetryJsonElementExtensions.GetBooleanOrNull(config,"publicWebsite");
+        context.Current[ActivityPropertyNames.IsTiered] = TelemetryJsonElementExtensions.GetBooleanOrNull(config,"tiered");
+        context.Current[ActivityPropertyNames.SocialLogins] = TelemetryJsonElementExtensions.GetBooleanOrNull(config,"socialLogin");
+        context.Current[ActivityPropertyNames.DatabaseManagementSystem] = TelemetryJsonElementExtensions.GetStringOrNull(config,"databaseManagementSystem");
+        context.Current[ActivityPropertyNames.IsSeparateTenantSchema] = TelemetryJsonElementExtensions.GetBooleanOrNull(config,"separateTenantSchema");
+        context.Current[ActivityPropertyNames.MobileFramework] = TelemetryJsonElementExtensions.GetStringOrNull(config,"mobileFramework"); 
+        context.Current[ActivityPropertyNames.IncludeTests] = TelemetryJsonElementExtensions.GetBooleanOrNull(config,"includeTests"); 
+        context.Current[ActivityPropertyNames.DynamicLocalization] = TelemetryJsonElementExtensions.GetBooleanOrNull(config,"dynamicLocalization");
+        context.Current[ActivityPropertyNames.KubernetesConfiguration] = TelemetryJsonElementExtensions.GetBooleanOrNull(config,"kubernetesConfiguration");
+        context.Current[ActivityPropertyNames.GrafanaDashboard] =  TelemetryJsonElementExtensions.GetBooleanOrNull(config,"grafanaDashboard");
     }
 
     private static void AddModuleInfo(ActivityContext context, JsonElement modulesElement)
     {
-        var modules = new List<Dictionary<string, object>>();
+        var modules = new List<Dictionary<string, object?>>();
 
         foreach (var module in modulesElement.EnumerateObject())
         {
@@ -106,11 +103,11 @@ internal sealed class TelemetrySolutionInfoEnricher : TelemetryActivityEventEnri
 
             foreach (var import in imports.EnumerateObject())
             {
-                modules.Add(new Dictionary<string, object>
+                modules.Add(new Dictionary<string, object?>
                 {
                     { ActivityPropertyNames.ModuleName, import.Name },
-                    { ActivityPropertyNames.ModuleVersion, import.Value.GetString("version") },
-                    { ActivityPropertyNames.ModuleInstallationTime, import.Value.TryGetDateTimeOffset("creationTime", out var creationTime) ? creationTime :  DateTimeOffset.MinValue }
+                    { ActivityPropertyNames.ModuleVersion, TelemetryJsonElementExtensions.GetStringOrNull(import.Value,"version") },
+                    { ActivityPropertyNames.ModuleInstallationTime, TelemetryJsonElementExtensions.GetDateTimeOffsetOrNull(import.Value, "creationTime") }
                 });
             }
         }
@@ -120,7 +117,7 @@ internal sealed class TelemetrySolutionInfoEnricher : TelemetryActivityEventEnri
 
     private static string? GetModuleFilePath(string solutionPath, JsonProperty module)
     {
-        var path = module.Value.GetString("path");
+        var path = TelemetryJsonElementExtensions.GetStringOrNull(module.Value,"path");
         if (path.IsNullOrEmpty())
         {
             return null;
