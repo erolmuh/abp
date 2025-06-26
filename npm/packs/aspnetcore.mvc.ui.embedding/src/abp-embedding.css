@@ -4,7 +4,6 @@ abp-embedding {
     display: block;
     position: relative;
     width: 100%;
-    height: 400px; /* Default height */
     overflow: hidden;
 }
 
@@ -33,17 +32,16 @@ abp-embedding iframe {
     text-shadow: none !important;
     -webkit-text-shadow: none !important;
     -moz-text-shadow: none !important;
+    width: 100%;
 }
 
 /* Responsive behavior */
 abp-embedding.responsive {
     aspect-ratio: 16 / 9;
-    height: auto;
 }
 
 abp-embedding.responsive iframe {
     width: 100%;
-    height: 100%;
 }
 
 /* Loading state */
@@ -81,25 +79,16 @@ abp-embedding iframe {
     background-color: var(--background-color) !important;
 }
 
-/* Auto-height specific styles */
+/* Auto-height specific styles - only non-height related rules */
 abp-embedding[auto-height] {
-    height: auto !important;
-    min-height: 100px;
-    transition: height 0.3s ease;
+    /* Let JavaScript handle all height management */
 }
 
 abp-embedding[auto-height] iframe {
-    transition: height 0.3s ease;
-    min-height: 100px !important;
-    height: auto !important;
+    /* Let JavaScript handle all height management */
 }
 
-/* Prevent height jumping during initial load */
-abp-embedding[auto-height][loading] {
-    min-height: 200px;
-}
-
-/* Force proper sizing during height updates */
+/* Disable transitions during height updates to prevent conflicts */
 abp-embedding[auto-height].height-updating iframe {
     transition: none !important;
 } 
