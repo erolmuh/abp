@@ -63,7 +63,7 @@ static internal class AbpProjectMetadataReader
         else
         {
             metadata.ProjectId = Guid.NewGuid();
-            WriteProjectIdToPackageFile(root, packagePath, projectId);
+            WriteProjectIdToPackageFile(root, packagePath, metadata.ProjectId.Value);
         }
 
         if (root.TryGetProperty("role", out var roleElement) && 
