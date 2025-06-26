@@ -21,57 +21,14 @@ public class TelemetryActivitySender : ITelemetryActivitySender, IScopedDependen
     private readonly ILogger<TelemetryActivitySender> _logger;
 
     private const int ActivitySendBatchSize = 50;
+    private const int MaxRetryAttempts = 3;
+    private const int RetryDelayMilliseconds = 1000;
 
-    public TelemetryActivitySender(ITelemetryActivityStorage telemetryActivityStorage, ILogger<TelemetryActivitySender> logger)
+    public TelemetryActivitySender(ITelemetryActivityStorage telemetryActivityStorage,
+        ILogger<TelemetryActivitySender> logger)
     {
         _telemetryActivityStorage = telemetryActivityStorage;
         _logger = logger;
-    }
-
-    private async Task SendAsync()
-    {
-        try
-        {
-            var activities = _telemetryActivityStorage.GetActivities();
-            var activityBatches = ChunkActivities(activities);
-            
-            using var httpClient = new HttpClient();
-            AddJwtTokenIfAuthenticated(httpClient);
-
-            foreach (var activityBatch in activityBatches)
-            {
-                try
-                {
-                    var response = await httpClient.PostAsync(
-                        $"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect",
-                        new StringContent(JsonSerializer.Serialize(activityBatch), Encoding.UTF8,
-                            "application/json"));
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        _telemetryActivityStorage.DeleteActivities(activityBatch);
-                    }
-                    else
-                    {
-                        _logger.LogWithLevel(LogLevel.Trace,
-                            $"Failed to send telemetry activities. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                        
-                        _telemetryActivityStorage.MarkActivitiesAsFailed(activityBatch);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWithLevel(LogLevel.Trace,
-                        $"Error while sending telemetry activities: {ex.Message}");
-
-                    return;
-                }
-            }
-        }
-        catch
-        {
-            //ignored
-        }
     }
 
     public async Task TrySendQueuedActivitiesAsync()
@@ -81,10 +38,76 @@ public class TelemetryActivitySender : ITelemetryActivitySender, IScopedDependen
             return;
         }
 
-        await SendAsync();
+        await SendActivitiesAsync();
     }
 
-    private static IEnumerable<ActivityEvent[]> ChunkActivities(List<ActivityEvent> activities)
+
+    private async Task SendActivitiesAsync()
+    {
+        try
+        {
+            var activities = _telemetryActivityStorage.GetActivities();
+            var batches = CreateActivityBatches(activities);
+
+            using var httpClient = new HttpClient();
+            ConfigureHttpClientAuthentication(httpClient);
+
+            foreach (var batch in batches)
+            {
+                var isSuccessful = await TrySendBatchWithRetriesAsync(httpClient, batch);
+                if (!isSuccessful)
+                {
+                    break;
+                }
+            }
+        }
+        catch
+        {
+            //ignored
+        }
+    }
+
+
+    private async Task<bool> TrySendBatchWithRetriesAsync(HttpClient httpClient, ActivityEvent[] activities)
+    {
+        var currentAttempt = 0;
+
+        while (currentAttempt < MaxRetryAttempts)
+        {
+            try
+            {
+                var response = await httpClient.PostAsync(
+                    $"{AbpPlatformUrls.AbpTelemetryApiUrl}api/telemetry/collect",
+                    new StringContent(JsonSerializer.Serialize(activities), Encoding.UTF8,
+                        "application/json"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _telemetryActivityStorage.DeleteActivities(activities);
+                }
+                else
+                {
+                    _logger.LogWithLevel(LogLevel.Trace,
+                        $"Failed to send telemetry activities. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+                    _telemetryActivityStorage.MarkActivitiesAsFailed(activities);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWithLevel(LogLevel.Trace, $"Error sending telemetry activities: {ex.Message}");
+                currentAttempt++;
+                await Task.Delay(currentAttempt * RetryDelayMilliseconds);
+            }
+        }
+
+        _logger.LogWithLevel(LogLevel.Trace, "Max retries reached. Failed to send telemetry activities.");
+
+        return false;
+    }
+
+    private static IEnumerable<ActivityEvent[]> CreateActivityBatches(List<ActivityEvent> activities)
     {
         return activities
             .Select((x, i) => new { Index = i, Value = x })
@@ -92,7 +115,7 @@ public class TelemetryActivitySender : ITelemetryActivitySender, IScopedDependen
             .Select(x => x.Select(v => v.Value).ToArray());
     }
 
-    private static void AddJwtTokenIfAuthenticated(HttpClient httpClient)
+    private static void ConfigureHttpClientAuthentication(HttpClient httpClient)
     {
         if (!File.Exists(TelemetryPaths.AccessToken))
         {
