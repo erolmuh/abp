@@ -132,13 +132,23 @@
             }
         }
 
+        ensureInitialHistoryEntry() {
+            if (!this.isHistoryManager) return;
+            
+            // Only push initial state if there's no fragment currently
+            if (!window.location.hash || !window.location.hash.startsWith('#page=')) {
+                // Replace current state to represent the initial iframe state
+                history.replaceState({ isInitial: true }, '', window.location.href);
+            }
+        }
+
         updateUrlFragment(relativePath) {
             if (!this.isHistoryManager || !relativePath) return;
             
             const newHash = '#page=' + relativePath;
             if (window.location.hash !== newHash) {
                 // Update URL without page refresh
-                history.pushState({}, '', window.location.pathname + window.location.search + newHash);
+                history.pushState({ relativePath: relativePath }, '', window.location.pathname + window.location.search + newHash);
             }
         }
 
@@ -149,9 +159,13 @@
             if (fragment && this.initialSrc) {
                 const absoluteUrl = this.buildAbsoluteUrl(fragment);
                 this.iframe.src = absoluteUrl;
-            } else if (!fragment && this.initialSrc) {
+            } else if (!fragment) {
                 // No fragment, navigate back to initial URL
-                this.iframe.src = this.initialSrc;
+                if (this.initialUrl) {
+                    this.iframe.src = this.initialUrl;
+                } else if (this.initialSrc) {
+                    this.iframe.src = this.initialSrc;
+                }
             }
         }
 
@@ -244,12 +258,30 @@
         handleIframeLoad() {
             this.isIframeLoaded = true;
 
+            // Dispatch custom event
+            this.dispatchEvent(new CustomEvent('iframe-loaded', {
+                detail: { iframe: this.iframe },
+                bubbles: true
+            }));
+        }
+
+        handleIframeMessage(event) {
+            // Simple message filtering - only accept messages from our iframe
+            if (this.iframe && event.source === this.iframe.contentWindow && event.data) {
+                if (event.data.type === 'height-update') {
+                    this.updateIframeHeight(event.data.height);
+                } else if (event.data.type === 'url-change') {
+                    this.handleUrlChange(event.data.url);
+                }
+            }
+        }
+
+        handleUrlChange(currentUrl) {
             try {
-                const currentUrl = this.iframe.contentWindow.location.href;
-                
                 if (!this.initialUrl) {
-                    // First load - store the initial URL
+                    // First load - store the initial URL and ensure history entry exists
                     this.initialUrl = currentUrl;
+                    this.ensureInitialHistoryEntry();
                 } else if (this.isHistoryManager && currentUrl !== this.initialUrl) {
                     // Navigation detected - check if it's same domain
                     if (currentUrl.startsWith(this.initialUrl) || 
@@ -263,25 +295,7 @@
                     }
                 }
             } catch (e) {
-                // Handle potential cross-origin errors gracefully
-                console.warn('ABP Embedding: Could not access iframe URL due to cross-origin restrictions', e);
-            }
-
-            // Dispatch custom event
-            this.dispatchEvent(new CustomEvent('iframe-loaded', {
-                detail: { iframe: this.iframe },
-                bubbles: true
-            }));
-        }
-
-        handleIframeMessage(event) {
-            // Simple message filtering - only accept height updates from our iframe
-            if (this.iframe && 
-                event.source === this.iframe.contentWindow && 
-                event.data && 
-                event.data.type === 'height-update') {
-                
-                this.updateIframeHeight(event.data.height);
+                console.warn('ABP Embedding: Failed to handle URL change', e);
             }
         }
 

@@ -21,17 +21,27 @@
             this.observer = null;
             this.debounceTimer = null;
             this.lastReportedHeight = 0;
+            this.lastReportedUrl = null;
 
             // Bind methods to ensure correct 'this' context
             this.measureHeight = this.measureHeight.bind(this);
             this.reportHeight = this.reportHeight.bind(this);
             this.debouncedReportHeight = this.debouncedReportHeight.bind(this);
             this.onContentChange = this.onContentChange.bind(this);
+            this.reportUrlChange = this.reportUrlChange.bind(this);
+            this.handlePopState = this.handlePopState.bind(this);
+            this.handleHashChange = this.handleHashChange.bind(this);
         }
 
         init() {
             // Auto-enable for iframe context
             this.enable();
+
+            // Report initial URL
+            this.reportUrlChange();
+
+            // Setup URL change monitoring
+            this.setupUrlMonitoring();
 
             // Wait for DOM to be ready
             if (document.readyState === 'loading') {
@@ -108,6 +118,10 @@
             }
             
             window.removeEventListener('resize', this.debouncedReportHeight);
+            
+            // Remove URL monitoring listeners
+            window.removeEventListener('popstate', this.handlePopState);
+            window.removeEventListener('hashchange', this.handleHashChange);
         }
 
         setupMonitoring() {
@@ -227,6 +241,83 @@
                 this.reportHeight();
                 this.debounceTimer = null;
             }, this.config.debounceDelay);
+        }
+
+        setupUrlMonitoring() {
+            // Monitor popstate events (back/forward navigation)
+            window.addEventListener('popstate', this.handlePopState);
+            
+            // Monitor hashchange events
+            window.addEventListener('hashchange', this.handleHashChange);
+            
+            // Override history methods to catch programmatic navigation
+            this.overrideHistoryMethods();
+            
+            // Monitor for navigation through other means
+            this.setupNavigationMonitoring();
+        }
+
+        overrideHistoryMethods() {
+            const originalPushState = history.pushState;
+            const originalReplaceState = history.replaceState;
+            
+            history.pushState = (...args) => {
+                const result = originalPushState.apply(history, args);
+                setTimeout(() => this.reportUrlChange(), 0);
+                return result;
+            };
+            
+            history.replaceState = (...args) => {
+                const result = originalReplaceState.apply(history, args);
+                setTimeout(() => this.reportUrlChange(), 0);
+                return result;
+            };
+        }
+
+        setupNavigationMonitoring() {
+            // Monitor for clicks on links
+            document.addEventListener('click', (event) => {
+                const link = event.target.closest('a');
+                if (link && link.href) {
+                    // Delay to allow navigation to complete
+                    setTimeout(() => this.reportUrlChange(), 100);
+                }
+            });
+            
+            // Monitor for form submissions
+            document.addEventListener('submit', () => {
+                setTimeout(() => this.reportUrlChange(), 100);
+            });
+        }
+
+        handlePopState(event) {
+            this.reportUrlChange();
+        }
+
+        handleHashChange(event) {
+            this.reportUrlChange();
+        }
+
+        reportUrlChange() {
+            try {
+                const currentUrl = window.location.href;
+                
+                // Only report if URL actually changed
+                if (currentUrl !== this.lastReportedUrl) {
+                    this.lastReportedUrl = currentUrl;
+                    
+                    // Send URL change to parent
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage({
+                            type: 'url-change',
+                            url: currentUrl,
+                            timestamp: Date.now()
+                        }, '*');
+                    }
+                }
+            } catch (e) {
+                console.warn('ABP Embedding Iframe: Failed to report URL change', e);
+            }
         }
     }
 

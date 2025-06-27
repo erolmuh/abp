@@ -33,6 +33,7 @@ abp-embedding iframe {
     -webkit-text-shadow: none !important;
     -moz-text-shadow: none !important;
     width: 100%;
+    min-height: 50vh; /* Minimum height for better UX */
 }
 
 /* Responsive behavior */
