@@ -73,4 +73,5 @@ public static class ActivityPropertyNames
     public const string ErrorMessage = "ErrorMessage";
     public const string FailingActivity = "FailingActivity";
     public const string OperatingSystemArchitecture = "OperatingSystemArchitecture";
+    public const string AdditionalProperties = "AdditionalProperties";
 }
