@@ -30,19 +30,12 @@ public class TelemetryService : ITelemetryService, IScopedDependency
     {
         Check.NotNullOrEmpty(activityName, nameof(activityName));
         var stopwatch = Stopwatch.StartNew();
-        var context = ActivityContext.Create(activityName);
+        var context = ActivityContext.Create(activityName, additionalProperties: additionalProperties);
 
         return new AsyncDisposeFunc(async () =>
         {
             stopwatch.Stop();
             context.Current[ActivityPropertyNames.ActivityDuration] = stopwatch.ElapsedMilliseconds;
-
-            if (additionalProperties != null)
-            {
-                context.Current.AdditionalProperties = new Dictionary<string, object>();
-                additionalProperties.Invoke(context.Current.AdditionalProperties);
-            }
-
             await AddActivityAsync(context);
         });
     }
