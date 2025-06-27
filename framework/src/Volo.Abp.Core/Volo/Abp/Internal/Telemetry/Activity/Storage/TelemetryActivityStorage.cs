@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -32,7 +33,9 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
     {
         State.Activities.Add(activityEvent);
 
-        if (activityEvent.ActivityName == ActivityNameConsts.AbpStudioClose)
+        var activityName = activityEvent.Get<string>(ActivityPropertyNames.ActivityName);
+        
+        if (activityName == ActivityNameConsts.AbpStudioClose)
         {
             State.SessionId = null;
         }
@@ -77,9 +80,9 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
     public void DeleteActivities(ActivityEvent[] activities)
     {
-        var activityIds = new HashSet<Guid>(activities.Select(x => x.Id));
+        var activityIds = new HashSet<Guid>(activities.Select(x => x.Get<Guid>(ActivityPropertyNames.Id)));
         
-        State.Activities.RemoveAll(x => activityIds.Contains(x.Id));
+        State.Activities.RemoveAll(x => activityIds.Contains(x.Get<Guid>(ActivityPropertyNames.Id)));
         
         SaveState();
     }
@@ -90,7 +93,9 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
 
         foreach (var activity in activities)
         {
-            if (State.FailedActivities.TryGetValue(activity.Id, out var failedActivityInfo))
+            var activityId = activity.Get<Guid>(ActivityPropertyNames.Id);
+            
+            if (State.FailedActivities.TryGetValue(activityId, out var failedActivityInfo))
             {
                 failedActivityInfo.RetryCount++;
                 failedActivityInfo.LastFailTime = now;
@@ -100,12 +105,12 @@ public class TelemetryActivityStorage : ITelemetryActivityStorage, ISingletonDep
                     continue;
                 }
 
-                State.Activities.RemoveAll(a => a.Id == activity.Id);
-                State.FailedActivities.Remove(activity.Id);
+                State.Activities.RemoveAll(x=> x.Get<Guid>(ActivityPropertyNames.Id) == activityId);
+                State.FailedActivities.Remove(activityId);
             }
             else
             {
-                State.FailedActivities[activity.Id] = new FailedActivityInfo
+                State.FailedActivities[activityId] = new FailedActivityInfo
                 {
                     FirstFailTime = now, 
                     LastFailTime = now,

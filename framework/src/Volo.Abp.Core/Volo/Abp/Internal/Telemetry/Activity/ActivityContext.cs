@@ -7,15 +7,27 @@ namespace Volo.Abp.Internal.Telemetry.Activity;
 
 public class ActivityContext
 {
+    public ActivityEvent Current { get; }
+    public Dictionary<string, object> ExtraProperties { get; } = new();
+    public bool IsTerminated { get; private set; }
+    
+    public Guid? ProjectId => Current.Get<Guid?>(ActivityPropertyNames.ProjectId);
+
+    public Guid? SolutionId => Current.Get<Guid?>(ActivityPropertyNames.SolutionId);
+
+    public SessionType? SessionType => Current.Get<SessionType?>(ActivityPropertyNames.SessionType);
+
+    public string? DeviceId => Current.Get<string?>(ActivityPropertyNames.DeviceId);
+    
+    public string? SolutionPath => ExtraProperties.TryGetValue(ActivityPropertyNames.SolutionPath, out var solutionPath)
+        ? solutionPath?.ToString()
+        : null;
+
     private ActivityContext(ActivityEvent current)
     {
         Current = current;
     }
-
-    public ActivityEvent Current { get; }
-    public Dictionary<string, object> ExtraProperties { get; } = new();
-    public bool IsTerminated { get; private set; }
-
+    
     public static ActivityContext Create(string activityName, string? details = null,
         Action<Dictionary<string, object>>? additionalProperties = null)
     {
@@ -23,64 +35,14 @@ public class ActivityContext
         
         if (additionalProperties is not null)
         {
-            activity.AdditionalProperties = new Dictionary<string, object>();
-            additionalProperties.Invoke(activity.AdditionalProperties);
+            var additionalPropertiesDict = new Dictionary<string, object>();
+            activity[ActivityPropertyNames.AdditionalProperties] = additionalPropertiesDict;
+            additionalProperties.Invoke(additionalPropertiesDict);
         }
 
         return new ActivityContext(activity);
     }
-
-    public Guid? ProjectId {
-        get {
-            if (!Current.TryGetValue(ActivityPropertyNames.ProjectId, out var projectId))
-            {
-                return null;
-            }
-
-            if (Guid.TryParse(projectId!.ToString(), out var projectIdGuid))
-            {
-                return projectIdGuid;
-            }
-
-            return null;
-        }
-    }
-
-    public Guid? SolutionId {
-        get {
-            if (!Current.TryGetValue(ActivityPropertyNames.SolutionId, out var solutionId))
-            {
-                return null;
-            }
-
-            if (Guid.TryParse(solutionId!.ToString(), out var solutionIdGuid))
-            {
-                return solutionIdGuid;
-            }
-
-            return null;
-        }
-    }
-
-    public SessionType? SessionType {
-        get {
-            if (Current.TryGetValue(ActivityPropertyNames.SessionType, out var sessionTypeObj) &&
-                Enum.TryParse<SessionType>(sessionTypeObj?.ToString(), out var sessionType))
-            {
-                return sessionType;
-            }
-
-            return null;
-        }
-    }
-
-    public string? SolutionPath => ExtraProperties.TryGetValue(ActivityPropertyNames.SolutionPath, out var solutionPath)
-        ? solutionPath?.ToString()
-        : null;
-
-
-    public string? DeviceId => Current.TryGetValue(ActivityPropertyNames.DeviceId, out var deviceId) ? deviceId?.ToString() : null;
-
+    
     public void Terminate()
     {
         IsTerminated = true;

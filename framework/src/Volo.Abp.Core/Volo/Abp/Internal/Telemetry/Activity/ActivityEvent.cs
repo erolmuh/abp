@@ -8,17 +8,19 @@ namespace Volo.Abp.Internal.Telemetry.Activity;
 
 public class ActivityEvent : Dictionary<string, object?>
 {
-    public ActivityEvent()
+    private ActivityEvent()
     {
+      
     }
 
-    public ActivityEvent(string activityName, string? details = null)
+    public ActivityEvent(string activityName, string? details = null) : this()
     {
         Check.NotNullOrWhiteSpace(activityName, nameof(activityName));
-        ActivityName = activityName;
-        ActivityDetails = details;
-        Time = DateTimeOffset.UtcNow;
-        Id = Guid.NewGuid();
+        
+        this[ActivityPropertyNames.ActivityName] = activityName;
+        this[ActivityPropertyNames.ActivityDetails] = details;
+        this[ActivityPropertyNames.Id] = Guid.NewGuid();
+        this[ActivityPropertyNames.Time] = DateTimeOffset.UtcNow;
     }
 
     public bool HasSolutionInfo()
@@ -36,57 +38,12 @@ public class ActivityEvent : Dictionary<string, object?>
         return this.ContainsKey(ActivityPropertyNames.HasProjectInfo);
     }
 
-    public string ActivityName {
-        get => Get<string>(nameof(ActivityName));
-        set => this[nameof(ActivityName)] = value;
-    }
-
-    public string? ActivityDetails {
-        get => Get<string?>(nameof(ActivityDetails));
-        internal set {
-            if (value is not null)
-            {
-                this[nameof(ActivityDetails)] = value;
-            }
-        }
-    }
-
-    public Dictionary<string, object>? AdditionalProperties {
-        get => Get<Dictionary<string, object>?>(nameof(AdditionalProperties));
-        set {
-            if (value is not null)
-            {
-                this[nameof(AdditionalProperties)] = value;
-            }
-        }
-    }
-
-    public long? ActivityDuration {
-        get => Get<long?>(nameof(Time));
-        internal set {
-            if (value is not null)
-            {
-                this[nameof(ActivityDuration)] = value;
-            }
-        }
-    }
-
-    public DateTimeOffset Time {
-        get => Get<DateTimeOffset>(nameof(Time));
-        set => this[nameof(Time)] = value;
-    }
-
-    public Guid Id {
-        get => TryGetValue<Guid>(nameof(Id), out var value) ? value : Guid.Empty;
-        set => this[nameof(Id)] = value;
-    }
-
-    public virtual T Get<T>(string key)
+    public T Get<T>(string key)
     {
         return TryConvert<T>(key, out var value) ? value : default!;
     }
 
-    public virtual bool TryGetValue<T>(string key, out T value)
+    public bool TryGetValue<T>(string key, out T value)
     {
         return TryConvert(key, out value);
     }
