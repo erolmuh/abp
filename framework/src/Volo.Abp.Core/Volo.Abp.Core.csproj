@@ -16,7 +16,6 @@
     <RootNamespace />
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" />
     <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="Microsoft.Extensions.Localization" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
