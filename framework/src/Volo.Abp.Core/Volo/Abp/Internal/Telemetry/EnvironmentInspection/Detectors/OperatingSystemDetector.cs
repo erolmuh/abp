@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.Win32;
 using Volo.Abp.Internal.Telemetry.Constants.Enums;
 using Volo.Abp.Internal.Telemetry.EnvironmentInspection.Contracts;
 using Volo.Abp.Internal.Telemetry.EnvironmentInspection.Core;
@@ -18,8 +17,7 @@ internal sealed class OperatingSystemDetector : SoftwareDetector
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            return new SoftwareInfo(Name, Environment.OSVersion.Version.ToString(), GetWindowsUiTheme(),
-                SoftwareType.OperatingSystem);
+            return new SoftwareInfo(Name, Environment.OSVersion.Version.ToString(), null, SoftwareType.OperatingSystem);
         }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -74,29 +72,6 @@ internal sealed class OperatingSystemDetector : SoftwareDetector
         catch
         {
             return "Light";
-        }
-    }
-
-    private string? GetWindowsUiTheme()
-    {
-        try
-        {
-            const string key = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
-            const string value = "AppsUseLightTheme";
-
-            using var registryKey = Registry.CurrentUser.OpenSubKey(key);
-            var result = registryKey?.GetValue(value);
-
-            return result switch
-            {
-                0 => "Dark",
-                1 => "Light",
-                _ => null
-            };
-        }
-        catch (Exception e)
-        {
-            return null;
         }
     }
 }
