@@ -8,9 +8,10 @@ namespace Volo.Abp.Internal.Telemetry.Activity;
 
 public class ActivityEvent : Dictionary<string, object?>
 {
-    private ActivityEvent()
+    public ActivityEvent()
     {
-      
+       this[ActivityPropertyNames.Id] = Guid.NewGuid();
+       this[ActivityPropertyNames.Time] = DateTimeOffset.UtcNow;
     }
 
     public ActivityEvent(string activityName, string? details = null) : this()
@@ -19,8 +20,6 @@ public class ActivityEvent : Dictionary<string, object?>
         
         this[ActivityPropertyNames.ActivityName] = activityName;
         this[ActivityPropertyNames.ActivityDetails] = details;
-        this[ActivityPropertyNames.Id] = Guid.NewGuid();
-        this[ActivityPropertyNames.Time] = DateTimeOffset.UtcNow;
     }
 
     public bool HasSolutionInfo()
