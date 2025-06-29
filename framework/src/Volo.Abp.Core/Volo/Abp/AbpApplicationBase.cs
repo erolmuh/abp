@@ -20,7 +20,8 @@ namespace Volo.Abp;
 
 public abstract class AbpApplicationBase : IAbpApplication
 {
-    [NotNull] public Type StartupModuleType { get; }
+    [NotNull] 
+    public Type StartupModuleType { get; }
 
     public IServiceProvider ServiceProvider { get; private set; } = default!;
 
@@ -55,7 +56,10 @@ public abstract class AbpApplicationBase : IAbpApplication
         services.AddSingleton<IAbpApplication>(this);
         services.AddSingleton<IApplicationInfoAccessor>(this);
         services.AddSingleton<IModuleContainer>(this);
-        services.AddSingleton<IAbpHostEnvironment>(new AbpHostEnvironment() { EnvironmentName = options.Environment });
+        services.AddSingleton<IAbpHostEnvironment>(new AbpHostEnvironment()
+        {
+            EnvironmentName = options.Environment
+        });
 
         services.AddCoreServices();
         services.AddCoreAbpServices(this, options);
@@ -176,9 +180,7 @@ public abstract class AbpApplicationBase : IAbpApplication
             }
             catch (Exception ex)
             {
-                throw new AbpInitializationException(
-                    $"An error occurred during {nameof(IPreConfigureServices.PreConfigureServicesAsync)} phase of the module {module.Type.AssemblyQualifiedName}. See the inner exception for details.",
-                    ex);
+                throw new AbpInitializationException($"An error occurred during {nameof(IPreConfigureServices.PreConfigureServicesAsync)} phase of the module {module.Type.AssemblyQualifiedName}. See the inner exception for details.", ex);
             }
         }
 
@@ -208,9 +210,7 @@ public abstract class AbpApplicationBase : IAbpApplication
             }
             catch (Exception ex)
             {
-                throw new AbpInitializationException(
-                    $"An error occurred during {nameof(IAbpModule.ConfigureServicesAsync)} phase of the module {module.Type.AssemblyQualifiedName}. See the inner exception for details.",
-                    ex);
+                throw new AbpInitializationException($"An error occurred during {nameof(IAbpModule.ConfigureServicesAsync)} phase of the module {module.Type.AssemblyQualifiedName}. See the inner exception for details.", ex);
             }
         }
 
@@ -223,9 +223,7 @@ public abstract class AbpApplicationBase : IAbpApplication
             }
             catch (Exception ex)
             {
-                throw new AbpInitializationException(
-                    $"An error occurred during {nameof(IPostConfigureServices.PostConfigureServicesAsync)} phase of the module {module.Type.AssemblyQualifiedName}. See the inner exception for details.",
-                    ex);
+                throw new AbpInitializationException($"An error occurred during {nameof(IPostConfigureServices.PostConfigureServicesAsync)} phase of the module {module.Type.AssemblyQualifiedName}. See the inner exception for details.", ex);
             }
         }
 
