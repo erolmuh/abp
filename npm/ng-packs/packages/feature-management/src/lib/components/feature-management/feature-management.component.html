@@ -16,15 +16,15 @@
             <ul
               ngbNav
               #nav="ngbNav"
-              [(activeId)]="selectedGroupDisplayName"
+              [(activeId)]="selectedGroupName"
               class="nav-pills"
               orientation="vertical"
             >
               @for (group of groups; track group.name) {
-                <li [ngbNavItem]="group.displayName">
+                <li [ngbNavItem]="group.name">
                   <a ngbNavLink>{{ group.displayName }}</a>
                   <ng-template ngbNavContent>
-                    <h4>{{ selectedGroupDisplayName }}</h4>
+                    <h4>{{ selectedGroupName }}</h4>
                     <hr class="mt-2 mb-3" />
 
                     @for (feature of features[group.name]; track feature.id || i; let i = $index) {
