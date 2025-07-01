@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Shouldly;
 using Volo.Abp.Internal.Telemetry.Activity;
+using Volo.Abp.Internal.Telemetry.Constants;
 using Xunit;
 
 namespace Volo.Abp.Telemetry;
@@ -19,10 +20,10 @@ public class ActivityEvent_Tests
         var activityEvent = new ActivityEvent(activityName, details);
 
         // Assert
-        activityEvent.ActivityName.ShouldBe(activityName);
-        activityEvent.ActivityDetails.ShouldBe(details);
-        activityEvent.Id.ShouldNotBe(Guid.Empty);
-        activityEvent.Time.ShouldNotBe(default);
+        activityEvent[ActivityPropertyNames.ActivityName].ShouldBe(activityName);
+        activityEvent[ActivityPropertyNames.ActivityDetails].ShouldBe(details);
+        activityEvent[ActivityPropertyNames.Id].ShouldNotBe(Guid.Empty);
+        activityEvent[ActivityPropertyNames.Time].ShouldNotBe(default);
     }
 
     [Theory]
@@ -48,13 +49,15 @@ public class ActivityEvent_Tests
         };
 
         // Act
-        activityEvent.AdditionalProperties = additionalProps;
+        activityEvent[ActivityPropertyNames.AdditionalProperties] = additionalProps;
 
         // Assert
-        activityEvent.AdditionalProperties.ShouldNotBeNull();
-        activityEvent.AdditionalProperties.Count.ShouldBe(2);
-        activityEvent.AdditionalProperties["key1"].ShouldBe("value1");
-        activityEvent.AdditionalProperties["key2"].ShouldBe(42);
+        
+        var activityAdditionalProps = activityEvent[ActivityPropertyNames.AdditionalProperties] as Dictionary<string, object>;
+        activityAdditionalProps.ShouldNotBeNull();
+        activityAdditionalProps.Count.ShouldBe(2);
+        activityAdditionalProps["key1"].ShouldBe("value1");
+        activityAdditionalProps["key2"].ShouldBe(42);
     }
 
     [Fact]
@@ -64,9 +67,7 @@ public class ActivityEvent_Tests
         var activityEvent = new ActivityEvent("TestActivity");
 
         // Assert
-        activityEvent.ActivityDetails.ShouldBeNull();
-        activityEvent.ActivityDuration.ShouldBeNull();
-        activityEvent.AdditionalProperties.ShouldBeNull();
+        activityEvent[ActivityPropertyNames.ActivityDetails].ShouldBeNull();
     }
 
     [Fact]
