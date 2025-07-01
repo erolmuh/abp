@@ -66,7 +66,7 @@ export class FeatureManagementComponent
   @Input({ required: false })
   providerTitle: string;
 
-  selectedGroupDisplayName: string;
+  selectedGroupName: string;
 
   groups: Pick<FeatureGroupDto, 'name' | 'displayName'>[] = [];
 
@@ -115,7 +115,7 @@ export class FeatureManagementComponent
     this.service.get(this.providerName, this.providerKey).subscribe(res => {
       if (!res.groups?.length) return;
       this.groups = res.groups.map(({ name, displayName }) => ({ name, displayName }));
-      this.selectedGroupDisplayName = this.groups[0].displayName;
+      this.selectedGroupName = this.groups[0].name;
       this.features = res.groups.reduce(
         (acc, val) => ({
           ...acc,
@@ -233,7 +233,7 @@ export class FeatureManagementComponent
   }
 
   private getCurrentGroup() {
-    return this.features[this.selectedGroupDisplayName] ?? [];
+    return this.features[this.selectedGroupName] ?? [];
   }
 
   private setFeatureValue(feature: FeatureDto, val: boolean) {
