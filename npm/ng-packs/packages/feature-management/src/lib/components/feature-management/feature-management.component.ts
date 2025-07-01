@@ -183,6 +183,7 @@ export class FeatureManagementComponent
     } else {
       this.uncheckToggleDescendants(feature);
     }
+    this.toggleParentIfNeeded(feature);
   }
 
   private uncheckToggleDescendants(feature: FeatureDto) {
@@ -201,6 +202,21 @@ export class FeatureManagementComponent
     this.findAllDescendantsOfByType(feature, ValueTypes.ToggleStringValueType).forEach(node =>
       this.setFeatureValue(node, true),
     );
+  }
+
+  private toggleParentIfNeeded(feature: FeatureDto) {
+    if (feature.valueType.name !== ValueTypes.ToggleStringValueType) {
+      return;
+    }
+
+    const parent = this.findParentByType(feature, ValueTypes.ToggleStringValueType);
+    if (!parent) {
+      return;
+    }
+
+    const siblings = this.findChildrenByType(parent, ValueTypes.ToggleStringValueType);
+    const allChecked = siblings.every(sibling => String(sibling.value) === 'true');
+    this.setFeatureValue(parent, allChecked);
   }
 
   private findAllAncestorsOfByType(feature: FeatureDto, type: ValueTypes) {
