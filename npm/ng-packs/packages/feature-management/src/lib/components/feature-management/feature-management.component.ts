@@ -179,6 +179,7 @@ export class FeatureManagementComponent
   onCheckboxClick(val: boolean, feature: FeatureDto) {
     if (val) {
       this.checkToggleAncestors(feature);
+      this.checkToggleDescendants(feature);
     } else {
       this.uncheckToggleDescendants(feature);
     }
@@ -192,6 +193,12 @@ export class FeatureManagementComponent
 
   private checkToggleAncestors(feature: FeatureDto) {
     this.findAllAncestorsOfByType(feature, ValueTypes.ToggleStringValueType).forEach(node =>
+      this.setFeatureValue(node, true),
+    );
+  }
+
+  private checkToggleDescendants(feature: FeatureDto) {
+    this.findAllDescendantsOfByType(feature, ValueTypes.ToggleStringValueType).forEach(node =>
       this.setFeatureValue(node, true),
     );
   }
