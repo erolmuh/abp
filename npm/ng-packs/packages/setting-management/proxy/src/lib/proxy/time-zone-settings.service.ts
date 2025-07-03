@@ -1,13 +1,13 @@
 import type { NameValue } from './volo/abp/models';
 import { RestService, Rest } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TimeZoneSettingsService {
   apiName = 'SettingManagement';
-  
+  private readonly restService = inject(RestService);
 
   get = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, string>({
@@ -15,7 +15,7 @@ export class TimeZoneSettingsService {
       responseType: 'text',
       url: '/api/setting-management/timezone',
     },
-    { apiName: this.apiName,...config });
+    { apiName: this.apiName, ...config });
   
 
   getTimezones = (config?: Partial<Rest.Config>) =>
@@ -23,7 +23,7 @@ export class TimeZoneSettingsService {
       method: 'GET',
       url: '/api/setting-management/timezone/timezones',
     },
-    { apiName: this.apiName,...config });
+    { apiName: this.apiName, ...config });
   
 
   update = (timezone: string, config?: Partial<Rest.Config>) =>
@@ -32,7 +32,5 @@ export class TimeZoneSettingsService {
       url: '/api/setting-management/timezone',
       params: { timezone },
     },
-    { apiName: this.apiName,...config });
-
-  constructor(private restService: RestService) {}
+    { apiName: this.apiName, ...config });
 }

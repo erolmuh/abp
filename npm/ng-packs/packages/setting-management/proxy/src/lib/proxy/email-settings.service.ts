@@ -1,20 +1,20 @@
 import type { EmailSettingsDto, SendTestEmailInput, UpdateEmailSettingsDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EmailSettingsService {
   apiName = 'SettingManagement';
-  
+  private readonly restService = inject(RestService);
 
   get = (config?: Partial<Rest.Config>) =>
     this.restService.request<any, EmailSettingsDto>({
       method: 'GET',
       url: '/api/setting-management/emailing',
     },
-    { apiName: this.apiName,...config });
+    { apiName: this.apiName, ...config });
   
 
   sendTestEmail = (input: SendTestEmailInput, config?: Partial<Rest.Config>) =>
@@ -23,7 +23,7 @@ export class EmailSettingsService {
       url: '/api/setting-management/emailing/send-test-email',
       body: input,
     },
-    { apiName: this.apiName,...config });
+    { apiName: this.apiName, ...config });
   
 
   update = (input: UpdateEmailSettingsDto, config?: Partial<Rest.Config>) =>
@@ -32,7 +32,5 @@ export class EmailSettingsService {
       url: '/api/setting-management/emailing',
       body: input,
     },
-    { apiName: this.apiName,...config });
-
-  constructor(private restService: RestService) {}
+    { apiName: this.apiName, ...config });
 }
