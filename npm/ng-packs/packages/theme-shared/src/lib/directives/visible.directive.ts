@@ -1,4 +1,4 @@
-import { OnInit, Directive, OnDestroy, Input, ViewContainerRef, TemplateRef, inject } from '@angular/core';
+import { OnInit, Directive, OnDestroy, Input, ViewContainerRef, TemplateRef } from '@angular/core';
 import { EMPTY, from, Observable, of, Subscription } from 'rxjs';
 
 @Directive({
@@ -17,10 +17,10 @@ export class AbpVisibleDirective implements OnDestroy, OnInit {
 
   private condition$: Observable<boolean> = of(false);
 
-  // Dependency injection using inject()
-  private viewContainerRef = inject(ViewContainerRef);
-  private templateRef = inject(TemplateRef<unknown>());
-
+  constructor(
+    private viewContainerRef: ViewContainerRef,
+    private templateRef: TemplateRef<unknown>,
+  ) {}
   ngOnInit(): void {
     this.updateVisibility();
   }
