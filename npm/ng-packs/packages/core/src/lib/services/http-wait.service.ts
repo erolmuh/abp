@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpRequest } from '@angular/common/http';
 import { InternalStore } from '../utils/internal-store-utils';
 import { getPathName } from '../utils/http-utils';
@@ -18,17 +18,14 @@ export interface HttpRequestInfo {
   providedIn: 'root',
 })
 export class HttpWaitService {
+  private delay: number = inject(LOADER_DELAY, { optional: true }) ?? 500;
+
   protected store = new InternalStore<HttpWaitState>({
     requests: [],
     filteredRequests: [],
   });
 
-  private delay: number;
   private destroy$ = new Subject<void>();
-
-  constructor(injector: Injector) {
-    this.delay = injector.get(LOADER_DELAY, 500);
-  }
 
   getLoading() {
     return !!this.applyFilter(this.store.state.requests).length;

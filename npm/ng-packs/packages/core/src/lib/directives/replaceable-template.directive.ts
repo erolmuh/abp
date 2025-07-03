@@ -8,6 +8,7 @@ import {
   TemplateRef,
   Type,
   ViewContainerRef,
+  inject,
 } from '@angular/core';
 import compare from 'just-compare';
 import { Subscription } from 'rxjs';
@@ -22,6 +23,12 @@ import { SubscriptionService } from '../services/subscription.service';
   providers: [SubscriptionService],
 })
 export class ReplaceableTemplateDirective implements OnInit, OnChanges {
+  private injector = inject(Injector);
+  private templateRef = inject(TemplateRef<any>);
+  private vcRef = inject(ViewContainerRef);
+  private replaceableComponents = inject(ReplaceableComponentsService);
+  private subscription = inject(SubscriptionService);
+
   @Input('abpReplaceableTemplate')
   data!: ReplaceableComponents.ReplaceableTemplateDirectiveInput<any, any>;
 
@@ -40,13 +47,7 @@ export class ReplaceableTemplateDirective implements OnInit, OnChanges {
 
   initialized = false;
 
-  constructor(
-    private injector: Injector,
-    private templateRef: TemplateRef<any>,
-    private vcRef: ViewContainerRef,
-    private replaceableComponents: ReplaceableComponentsService,
-    private subscription: SubscriptionService,
-  ) {
+  constructor() {
     this.context = {
       initTemplate: (ref: any) => {
         this.resetDefaultComponent();
