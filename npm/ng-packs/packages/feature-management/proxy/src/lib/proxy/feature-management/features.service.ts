@@ -1,12 +1,13 @@
 import type { GetFeatureListResultDto, UpdateFeaturesDto } from './models';
 import { RestService } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FeaturesService {
   apiName = 'AbpFeatureManagement';
+  private readonly restService = inject(RestService);
 
   delete = (providerName: string, providerKey: string) =>
     this.restService.request<any, void>(
@@ -38,6 +39,4 @@ export class FeaturesService {
       },
       { apiName: this.apiName },
     );
-
-  constructor(private restService: RestService) {}
 }

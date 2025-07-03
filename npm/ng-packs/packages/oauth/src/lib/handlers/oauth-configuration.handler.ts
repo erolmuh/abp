@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, inject } from '@angular/core';
 import { AuthConfig, OAuthService } from "angular-oauth2-oidc";
 import compare from 'just-compare';
 import { filter, map } from 'rxjs/operators';
@@ -8,11 +8,11 @@ import { ABP, EnvironmentService, CORE_OPTIONS } from '@abp/ng.core';
   providedIn: 'root',
 })
 export class OAuthConfigurationHandler {
-  constructor(
-    private oAuthService: OAuthService,
-    private environmentService: EnvironmentService,
-    @Inject(CORE_OPTIONS) private options: ABP.Root,
-  ) {
+  private readonly oAuthService = inject(OAuthService);
+  private readonly environmentService = inject(EnvironmentService);
+  private readonly options = inject(CORE_OPTIONS);
+
+  constructor() {
     this.listenToSetEnvironment();
   }
 
