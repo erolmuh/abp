@@ -6,12 +6,16 @@ import {
   HostBinding,
   Input,
   NgModule,
+  inject,
 } from '@angular/core';
 
 @Directive({
   selector: '[abpEllipsis]',
 })
 export class EllipsisDirective implements AfterViewInit {
+  private readonly cdRef = inject(ChangeDetectorRef);
+  private readonly elRef = inject(ElementRef);
+
   @Input('abpEllipsis')
   width?: string;
 
@@ -36,11 +40,6 @@ export class EllipsisDirective implements AfterViewInit {
   get maxWidth() {
     return this.enabled && this.width ? this.width || '170px' : undefined;
   }
-
-  constructor(
-    private cdRef: ChangeDetectorRef,
-    private elRef: ElementRef,
-  ) {}
 
   ngAfterViewInit() {
     this.title = this.title || (this.elRef.nativeElement as HTMLElement).innerText;
