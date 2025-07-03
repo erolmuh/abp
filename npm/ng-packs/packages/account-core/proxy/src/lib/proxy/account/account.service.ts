@@ -1,6 +1,6 @@
 import type { RegisterDto, ResetPasswordDto, SendPasswordResetCodeDto } from './models';
 import { RestService } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import type { IdentityUserDto } from '../identity/models';
 
 @Injectable({
@@ -8,6 +8,8 @@ import type { IdentityUserDto } from '../identity/models';
 })
 export class AccountService {
   apiName = 'AbpAccount';
+
+  private restService = inject(RestService);
 
   register = (input: RegisterDto) =>
     this.restService.request<any, IdentityUserDto>({
@@ -33,5 +35,5 @@ export class AccountService {
     },
     { apiName: this.apiName });
 
-  constructor(private restService: RestService) {}
+  constructor() {}
 }

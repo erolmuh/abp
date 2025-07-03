@@ -1,12 +1,14 @@
 import type { ChangePasswordInput, ProfileDto, UpdateProfileDto } from './models';
 import { RestService } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProfileService {
   apiName = 'AbpAccount';
+
+  private restService = inject(RestService);
 
   changePassword = (input: ChangePasswordInput) =>
     this.restService.request<any, void>({
@@ -31,5 +33,5 @@ export class ProfileService {
     },
     { apiName: this.apiName });
 
-  constructor(private restService: RestService) {}
+  constructor() {}
 }
