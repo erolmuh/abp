@@ -12,6 +12,7 @@ import {
   OnChanges,
   SimpleChanges,
   SimpleChange,
+  inject,
 } from '@angular/core';
 import { Observable, Subscription, of } from 'rxjs';
 
@@ -28,6 +29,11 @@ export const PAGE_RENDER_STRATEGY = new InjectionToken<PageRenderStrategy>('PAGE
   selector: '[abpPagePart]',
 })
 export class PagePartDirective implements OnInit, OnDestroy, OnChanges {
+  private templateRef = inject(TemplateRef<any>);
+  private viewContainer = inject(ViewContainerRef);
+  private renderLogic = inject(PAGE_RENDER_STRATEGY, { optional: true });
+  private injector = inject(Injector);
+
   hasRendered = false;
   type!: string;
   subscription!: Subscription;
@@ -47,13 +53,6 @@ export class PagePartDirective implements OnInit, OnDestroy, OnChanges {
       this.hasRendered = false;
     }
   };
-
-  constructor(
-    private templateRef: TemplateRef<any>,
-    private viewContainer: ViewContainerRef,
-    @Optional() @Inject(PAGE_RENDER_STRATEGY) private renderLogic: PageRenderStrategy,
-    private injector: Injector,
-  ) {}
 
   ngOnChanges({ context }: SimpleChanges): void {
     if (this.renderLogic?.onContextUpdate) {
