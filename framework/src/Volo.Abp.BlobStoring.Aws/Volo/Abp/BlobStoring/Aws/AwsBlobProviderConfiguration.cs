@@ -57,9 +57,18 @@ public class AwsBlobProviderConfiguration
         set => _containerConfiguration.SetConfiguration(AwsBlobProviderConfigurationNames.Policy, value);
     }
 
-    public string Region {
-        get => _containerConfiguration.GetConfiguration<string>(AwsBlobProviderConfigurationNames.Region);
-        set => _containerConfiguration.SetConfiguration(AwsBlobProviderConfigurationNames.Region, Check.NotNull(value, nameof(value)));
+    public string? Region {
+        get => _containerConfiguration.GetConfigurationOrDefault<string>(AwsBlobProviderConfigurationNames.Region);
+        set => _containerConfiguration.SetConfiguration(AwsBlobProviderConfigurationNames.Region, value);
+    }
+
+    /// <summary>
+    /// Custom service URL for S3-compatible APIs (e.g., MinIO, DigitalOcean Spaces).
+    /// If not specified, the default AWS S3 service URL will be used based on the region.
+    /// </summary>
+    public string? ServiceURL {
+        get => _containerConfiguration.GetConfigurationOrDefault<string>(AwsBlobProviderConfigurationNames.ServiceURL);
+        set => _containerConfiguration.SetConfiguration(AwsBlobProviderConfigurationNames.ServiceURL, value);
     }
 
     /// <summary>

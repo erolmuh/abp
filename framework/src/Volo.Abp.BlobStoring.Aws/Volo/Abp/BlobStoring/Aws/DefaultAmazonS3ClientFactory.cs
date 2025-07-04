@@ -30,31 +30,58 @@ public class DefaultAmazonS3ClientFactory : IAmazonS3ClientFactory, ITransientDe
     public virtual async Task<AmazonS3Client> GetAmazonS3Client(
         AwsBlobProviderConfiguration configuration)
     {
-        var region = RegionEndpoint.GetBySystemName(configuration.Region);
+        var region = !configuration.Region.IsNullOrWhiteSpace() 
+            ? RegionEndpoint.GetBySystemName(configuration.Region)
+            : null;
+        var clientConfig = CreateS3ClientConfig(configuration, region);
 
         if (configuration.UseCredentials)
         {
             var awsCredentials = GetAwsCredentials(configuration);
             return awsCredentials == null
-                ? new AmazonS3Client(region)
-                : new AmazonS3Client(awsCredentials, region);
+                ? new AmazonS3Client(clientConfig)
+                : new AmazonS3Client(awsCredentials, clientConfig);
         }
 
         if (configuration.UseTemporaryCredentials)
         {
-            return new AmazonS3Client(await GetTemporaryCredentialsAsync(configuration), region);
+            return new AmazonS3Client(await GetTemporaryCredentialsAsync(configuration), clientConfig);
         }
 
         if (configuration.UseTemporaryFederatedCredentials)
         {
             return new AmazonS3Client(await GetTemporaryFederatedCredentialsAsync(configuration),
-                region);
+                clientConfig);
         }
 
         Check.NotNullOrWhiteSpace(configuration.AccessKeyId, nameof(configuration.AccessKeyId));
         Check.NotNullOrWhiteSpace(configuration.SecretAccessKey, nameof(configuration.SecretAccessKey));
 
-        return new AmazonS3Client(configuration.AccessKeyId, configuration.SecretAccessKey, region);
+        return new AmazonS3Client(configuration.AccessKeyId, configuration.SecretAccessKey, clientConfig);
+    }
+
+    protected virtual AmazonS3Config CreateS3ClientConfig(AwsBlobProviderConfiguration configuration, RegionEndpoint? region)
+    {
+        var clientConfig = new AmazonS3Config();
+
+        // Set region only if it's provided (for AWS S3)
+        if (region != null)
+        {
+            clientConfig.RegionEndpoint = region;
+        }
+
+        if (!configuration.ServiceURL.IsNullOrWhiteSpace())
+        {
+            clientConfig.ServiceURL = configuration.ServiceURL;
+            clientConfig.ForcePathStyle = true; // Required for most S3-compatible services
+            
+            // Set checksum properties for S3-compatible services (e.g., Cloudflare R2)
+            // These settings help with compatibility issues in non-AWS S3 services
+            clientConfig.RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED;
+            clientConfig.ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED;
+        }
+
+        return clientConfig;
     }
 
     protected virtual AWSCredentials? GetAwsCredentials(

@@ -69,23 +69,39 @@ public class AbpBlobStoringAwsTestModule : AbpModule
 
     private async Task DeleteBucketAsync(ApplicationShutdownContext context)
     {
-        var amazonS3Client = await context.ServiceProvider.GetRequiredService<IAmazonS3ClientFactory>()
-            .GetAmazonS3Client(_configuration);
-
-        if (await AmazonS3Util.DoesS3BucketExistV2Async(amazonS3Client, _randomContainerName))
+        // Skip bucket deletion if configuration is not properly set (e.g., in unit tests)
+        if (_configuration == null || 
+            string.IsNullOrWhiteSpace(_configuration.AccessKeyId) || 
+            string.IsNullOrWhiteSpace(_configuration.SecretAccessKey) ||
+            (string.IsNullOrWhiteSpace(_configuration.Region) && string.IsNullOrWhiteSpace(_configuration.ServiceURL)))
         {
-            var blobs = await amazonS3Client.ListObjectsAsync(_randomContainerName);
+            return;
+        }
 
-            if (blobs.S3Objects.Any())
+        try
+        {
+            var amazonS3Client = await context.ServiceProvider.GetRequiredService<IAmazonS3ClientFactory>()
+                .GetAmazonS3Client(_configuration);
+
+            if (await AmazonS3Util.DoesS3BucketExistV2Async(amazonS3Client, _randomContainerName))
             {
-                await amazonS3Client.DeleteObjectsAsync(new DeleteObjectsRequest
-                {
-                    BucketName = _randomContainerName,
-                    Objects = blobs.S3Objects.Select(o => new KeyVersion { Key = o.Key }).ToList()
-                });
-            }
+                var blobs = await amazonS3Client.ListObjectsAsync(_randomContainerName);
 
-            await amazonS3Client.DeleteBucketAsync(_randomContainerName);
+                if (blobs.S3Objects.Any())
+                {
+                    await amazonS3Client.DeleteObjectsAsync(new DeleteObjectsRequest
+                    {
+                        BucketName = _randomContainerName,
+                        Objects = blobs.S3Objects.Select(o => new KeyVersion { Key = o.Key }).ToList()
+                    });
+                }
+
+                await amazonS3Client.DeleteBucketAsync(_randomContainerName);
+            }
+        }
+        catch
+        {
+            // Ignore errors during test cleanup
         }
     }
 }
