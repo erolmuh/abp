@@ -1,12 +1,14 @@
 import type { RegisterDto, ResetPasswordDto, SendPasswordResetCodeDto } from './models';
 import { RestService } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import type { IdentityUserDto } from '../identity/models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AccountService {
+  private restService = inject(RestService);
+
   apiName = 'AbpAccount';
 
   register = (input: RegisterDto) =>
@@ -33,5 +35,8 @@ export class AccountService {
     },
     { apiName: this.apiName });
 
-  constructor(private restService: RestService) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 }

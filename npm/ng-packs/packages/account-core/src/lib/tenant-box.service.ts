@@ -5,11 +5,16 @@ import {
   SessionStateService,
 } from '@abp/ng.core';
 import { ToasterService } from '@abp/ng.theme.shared';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
 @Injectable()
 export class TenantBoxService {
+  private toasterService = inject(ToasterService);
+  private tenantService = inject(AbpTenantService);
+  private sessionState = inject(SessionStateService);
+  private configState = inject(ConfigStateService);
+
   currentTenant$ = this.sessionState.getTenant$();
 
   name?: string;
@@ -18,12 +23,10 @@ export class TenantBoxService {
 
   modalBusy!: boolean;
 
-  constructor(
-    private toasterService: ToasterService,
-    private tenantService: AbpTenantService,
-    private sessionState: SessionStateService,
-    private configState: ConfigStateService,
-  ) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 
   onSwitch() {
     const tenant = this.sessionState.getTenant();
