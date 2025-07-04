@@ -59,6 +59,7 @@
     "@angular/compiler": "~20.0.0",
     "@angular/compiler-cli": "~20.0.0",
     "@angular/core": "~20.0.0",
+    "@angular/elements": "~20.0.0",
     "@angular/forms": "~20.0.0",
     "@angular/language-service": "~20.0.0",
     "@angular/localize": "~20.0.0",
