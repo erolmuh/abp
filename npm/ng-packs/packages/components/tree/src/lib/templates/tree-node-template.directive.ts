@@ -1,8 +1,13 @@
-import { Directive, TemplateRef } from '@angular/core';
+import { Directive, TemplateRef, inject } from '@angular/core';
 
 @Directive({
   selector: '[abpTreeNodeTemplate],[abp-tree-node-template]',
 })
 export class TreeNodeTemplateDirective {
-  constructor(public template: TemplateRef<any>) {}
+  template = inject<TemplateRef<any>>(TemplateRef);
+
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 }
