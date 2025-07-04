@@ -75,7 +75,6 @@ Open your IDE, in `Data` folder under the `ModularCrm.Ordering` project, and edi
 
 ````csharp
 using Microsoft.EntityFrameworkCore;
-using ModularCrm.Ordering.Entities;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -92,7 +91,6 @@ Afterwards, create *Orders* `DbSet` for the `OrderingDbContext` class in the `Da
 
 ````csharp
 using Microsoft.EntityFrameworkCore;
-using ModularCrm.Ordering.Entities;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -103,9 +101,10 @@ public class OrderingDbContext : AbpDbContext<OrderingDbContext>, IOrderingDbCon
 {
     public DbSet<Order> Orders { get; set; }
 
-    public OrderingDbContext(DbContextOptions<OrderingDbContext> options) : base(options)
+    public OrderingDbContext(DbContextOptions<OrderingDbContext> options)
+        : base(options)
     {
-        
+
     }
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -123,7 +122,6 @@ It is best to configure the database table mapping for the `Order` entity in the
 
 ````csharp
 using Microsoft.EntityFrameworkCore;
-using ModularCrm.Ordering.Entities;
 using Volo.Abp;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 
@@ -184,7 +182,7 @@ public class ModularCrmDbContext :
 protected override void OnModelCreating(ModelBuilder builder)
 {
     ...
-    builder.ConfigureOrdering(); //NEW: CALL THE EXTENSION METHOD
+    builder.ConfigureOrdering();
 }
 ````
 
@@ -309,7 +307,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories;
 
-namespace ModularCrm.Ordering.Services;
+namespace ModularCrm.Ordering;
 
 public class OrderAppService : OrderingAppService, IOrderAppService
 {
