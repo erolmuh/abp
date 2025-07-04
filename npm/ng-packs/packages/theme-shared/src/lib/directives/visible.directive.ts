@@ -1,10 +1,13 @@
-import { OnInit, Directive, OnDestroy, Input, ViewContainerRef, TemplateRef } from '@angular/core';
+import { OnInit, Directive, OnDestroy, Input, ViewContainerRef, TemplateRef, inject } from '@angular/core';
 import { EMPTY, from, Observable, of, Subscription } from 'rxjs';
 
 @Directive({
   selector: '[abpVisible]',
 })
 export class AbpVisibleDirective implements OnDestroy, OnInit {
+  private viewContainerRef = inject(ViewContainerRef);
+  private templateRef = inject<TemplateRef<unknown>>(TemplateRef);
+
   conditionSubscription: Subscription | undefined;
   isVisible: boolean | undefined;
 
@@ -17,10 +20,10 @@ export class AbpVisibleDirective implements OnDestroy, OnInit {
 
   private condition$: Observable<boolean> = of(false);
 
-  constructor(
-    private viewContainerRef: ViewContainerRef,
-    private templateRef: TemplateRef<unknown>,
-  ) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
   ngOnInit(): void {
     this.updateVisibility();
   }

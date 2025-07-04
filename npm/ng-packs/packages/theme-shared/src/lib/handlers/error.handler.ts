@@ -17,6 +17,8 @@ import { RouterErrorHandlerService } from '../services/router-error-handler.serv
 
 @Injectable({ providedIn: 'root' })
 export class ErrorHandler {
+  protected injector = inject(Injector);
+
   protected readonly httpErrorReporter = inject(HttpErrorReporterService);
   protected readonly confirmationService = inject(ConfirmationService);
   protected readonly routerErrorHandlerService = inject(RouterErrorHandlerService);
@@ -24,7 +26,10 @@ export class ErrorHandler {
   protected readonly customErrorHandlers = inject(CUSTOM_ERROR_HANDLERS);
   protected readonly httpErrorHandler = inject(HTTP_ERROR_HANDLER, { optional: true });
 
-  constructor(protected injector: Injector) {
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {
     this.listenToRestError();
     this.listenToRouterError();
   }

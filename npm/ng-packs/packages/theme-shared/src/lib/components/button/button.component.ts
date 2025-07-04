@@ -1,14 +1,5 @@
 /* eslint-disable @angular-eslint/no-output-native */
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  Renderer2,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, Renderer2, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ABP } from '@abp/ng.core';
 
@@ -32,6 +23,8 @@ import { ABP } from '@abp/ng.core';
   imports: [CommonModule],
 })
 export class ButtonComponent implements OnInit {
+  private renderer = inject(Renderer2);
+
   @Input()
   buttonId = '';
 
@@ -75,7 +68,10 @@ export class ButtonComponent implements OnInit {
     return `${this.loading ? 'fa fa-spinner fa-spin' : this.iconClass || 'd-none'}`;
   }
 
-  constructor(private renderer: Renderer2) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 
   ngOnInit() {
     if (this.attributes) {
