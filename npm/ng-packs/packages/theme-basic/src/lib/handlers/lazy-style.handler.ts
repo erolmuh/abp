@@ -1,6 +1,6 @@
 import { LazyLoadService, LOADING_STRATEGY } from '@abp/ng.core';
 import { DocumentDirHandlerService, LocaleDirection } from '@abp/ng.theme.shared';
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { LAZY_STYLES } from '../tokens/lazy-styles.token';
 export const BOOTSTRAP = 'bootstrap-{{dir}}.min.css';
 
@@ -23,7 +23,12 @@ export class LazyStyleHandler {
     return this._dir;
   }
 
-  constructor(injector: Injector) {
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {
+    const injector = inject(Injector);
+
     this.setStyles(injector);
     this.setLazyLoad(injector);
     this.listenToDirectionChanges(injector);
