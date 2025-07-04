@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { ABP } from '../models/common';
 import { ApplicationConfigurationDto } from '../proxy/volo/abp/asp-net-core/mvc/application-configurations/models';
@@ -6,7 +6,12 @@ import { ConfigStateService } from './config-state.service';
 
 @Injectable({ providedIn: 'root' })
 export class PermissionService {
-  constructor(protected configState: ConfigStateService) {}
+  protected configState = inject(ConfigStateService);
+
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 
   getGrantedPolicy$(key: string) {
     return this.getStream().pipe(

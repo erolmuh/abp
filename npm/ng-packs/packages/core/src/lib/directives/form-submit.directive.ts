@@ -1,13 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Directive,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  Self,
-} from '@angular/core';
+import { ChangeDetectorRef, Directive, ElementRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { FormGroupDirective, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { fromEvent } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
@@ -22,6 +13,11 @@ type Controls = { [key: string]: UntypedFormControl } | UntypedFormGroup[];
   providers: [SubscriptionService],
 })
 export class FormSubmitDirective implements OnInit {
+  private formGroupDirective = inject(FormGroupDirective, { self: true });
+  private host = inject<ElementRef<HTMLFormElement>>(ElementRef);
+  private cdRef = inject(ChangeDetectorRef);
+  private subscription = inject(SubscriptionService);
+
   @Input()
   debounce = 200;
 
@@ -36,12 +32,10 @@ export class FormSubmitDirective implements OnInit {
 
   executedNgSubmit = false;
 
-  constructor(
-    @Self() private formGroupDirective: FormGroupDirective,
-    private host: ElementRef<HTMLFormElement>,
-    private cdRef: ChangeDetectorRef,
-    private subscription: SubscriptionService,
-  ) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 
   ngOnInit() {
     this.subscription.addOne(this.formGroupDirective.ngSubmit, () => {

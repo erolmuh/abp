@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, NgModule } from '@angular/core';
+import { Component, NgModule, inject as inject_1 } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { createRoutingFactory, SpectatorRouting } from '@ngneat/spectator/jest';
 import { DynamicLayoutComponent, RouterOutletComponent } from '../components';
@@ -44,7 +44,12 @@ class DummyLayoutModule {}
   template: '{{route.snapshot.data?.name}} works!',
 })
 class DummyComponent {
-  constructor(public route: ActivatedRoute) {}
+  route = inject_1(ActivatedRoute);
+
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 }
 
 const routes: ABP.Route[] = [

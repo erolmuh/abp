@@ -1,4 +1,4 @@
-import { Injectable, Injector, OnDestroy } from '@angular/core';
+import { Injectable, Injector, OnDestroy, inject } from '@angular/core';
 import { BehaviorSubject, Observable, Subscription, map } from 'rxjs';
 import { ABP } from '../models/common';
 import { OTHERS_GROUP } from '../tokens';
@@ -201,6 +201,8 @@ export abstract class AbstractNavTreeService<T extends ABP.Nav>
   extends AbstractTreeService<T>
   implements OnDestroy
 {
+  protected injector = inject(Injector);
+
   private subscription: Subscription;
   private permissionService: PermissionService;
   private compareFunc;
@@ -211,8 +213,13 @@ export abstract class AbstractNavTreeService<T extends ABP.Nav>
     return this.compareFunc(a, b);
   };
 
-  constructor(protected injector: Injector) {
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {
     super();
+    const injector = this.injector;
+
     const configState = this.injector.get(ConfigStateService);
     this.subscription = configState
       .createOnUpdateStream(state => state)

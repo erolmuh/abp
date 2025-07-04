@@ -1,12 +1,14 @@
 import { RestService } from '../../../../../../services';
 import { Rest } from '../../../../../../models';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import type { ApplicationApiDescriptionModel, ApplicationApiDescriptionModelRequestDto } from '../../../http/modeling/models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AbpApiDefinitionService {
+  private restService = inject(RestService);
+
   apiName = 'abp';
   
 
@@ -18,5 +20,8 @@ export class AbpApiDefinitionService {
     },
     { apiName: this.apiName,...config });
 
-  constructor(private restService: RestService) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 }
