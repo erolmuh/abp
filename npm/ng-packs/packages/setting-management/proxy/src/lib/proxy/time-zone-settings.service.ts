@@ -1,11 +1,13 @@
 import type { NameValue } from './volo/abp/models';
 import { RestService, Rest } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TimeZoneSettingsService {
+  private restService = inject(RestService);
+
   apiName = 'SettingManagement';
   
 
@@ -34,5 +36,8 @@ export class TimeZoneSettingsService {
     },
     { apiName: this.apiName,...config });
 
-  constructor(private restService: RestService) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 }

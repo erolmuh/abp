@@ -1,11 +1,13 @@
 import type { EmailSettingsDto, SendTestEmailInput, UpdateEmailSettingsDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EmailSettingsService {
+  private restService = inject(RestService);
+
   apiName = 'SettingManagement';
   
 
@@ -34,5 +36,8 @@ export class EmailSettingsService {
     },
     { apiName: this.apiName,...config });
 
-  constructor(private restService: RestService) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 }
