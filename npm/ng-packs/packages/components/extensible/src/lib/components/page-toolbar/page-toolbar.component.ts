@@ -50,7 +50,7 @@ export class PageToolbarComponent<R = any>
   constructor() {
     const injector = inject(Injector);
 
-    super(injector);
+    super();
   
     this.injector = injector;
   }

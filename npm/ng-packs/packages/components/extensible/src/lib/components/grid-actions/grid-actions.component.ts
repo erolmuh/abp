@@ -43,6 +43,6 @@ export class GridActionsComponent<R = any> extends AbstractActionsComponent<Enti
   constructor() {
     const injector = inject(Injector);
 
-    super(injector);
+    super();
   }
 }

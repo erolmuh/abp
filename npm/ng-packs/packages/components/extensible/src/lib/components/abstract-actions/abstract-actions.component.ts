@@ -16,9 +16,6 @@ export abstract class AbstractActionsComponent<
 
   @Input() record!: InferredData<L>['record'];
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args: unknown[]);
-
   protected constructor() {
     const injector = inject(Injector);
 
