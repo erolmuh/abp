@@ -1,42 +1,46 @@
 # Ellipsis
 
-Text inside an HTML element can be truncated easily with an ellipsis by using CSS. To make this even easier, you can use the `EllipsisDirective` which has been exposed by the `@abp/ng.theme.shared` package.
-
+Text inside an HTML element can be truncated easily with an ellipsis by using CSS. To make this even easier, you can use the `EllipsisDirective` which is provided by the `@abp/ng.theme.shared` package.
 
 ## Getting Started
 
-In order to use the `EllipsisDirective` in an HTML template, the **`ThemeSharedModule`** should be imported into your module like this:
+To use the `EllipsisDirective` in your component, you should now import it directly (as a standalone directive) like this:
 
 ```js
-// ...
-import { ThemeSharedModule } from '@abp/ng.theme.shared';
-
-@NgModule({
-  //...
-  imports: [..., ThemeSharedModule],
-})
-export class MyFeatureModule {}
+import { EllipsisDirective } from '@abp/ng.theme.shared';
 ```
 
-or **if you would not like to import** the `ThemeSharedModule`, you can import the **`EllipsisModule`** as shown below:
-
+You can add it directly to your `standalone` component's `imports` array:
 
 ```js
-// ...
-import { EllipsisModule } from '@abp/ng.theme.shared';
+import { Component } from '@angular/core';
+import { EllipsisDirective } from '@abp/ng.theme.shared';
 
-@NgModule({
-  //...
-  imports: [..., EllipsisModule],
+@Component({
+  selector: 'your-component',
+  standalone: true,
+  imports: [EllipsisDirective],
+  template: `
+    <p abpEllipsis>
+      Lorem ipsum dolor sit, amet consectetur adipisicing elit. Laboriosam commodi quae aspernatur,
+      corporis velit et suscipit id consequuntur amet minima expedita cum reiciendis dolorum
+      cupiditate? Voluptas eaque voluptatum odio deleniti quo vel illum nemo accusamus nulla ratione
+      impedit dolorum expedita necessitatibus fugiat ullam beatae, optio eum cupiditate ducimus
+      architecto.
+    </p>
+  `
 })
-export class MyFeatureModule {}
+export class YourComponent {}
 ```
+
+> **Note:**  
+> The previous way of importing `EllipsisModule` is now obsolete and should be removed from your codebase.
 
 ## Usage
 
-The `EllipsisDirective` is very easy to use. The directive's selector is **`abpEllipsis`**. By adding the `abpEllipsis` attribute to an HTML element, you can activate the `EllipsisDirective` for the HTML element.
+The `EllipsisDirective` is very easy to use. The directive selector is **`abpEllipsis`**. By adding the `abpEllipsis` attribute to an HTML element, you can activate the `EllipsisDirective` for that element.
 
-See an example usage:
+Example usage in your template:
 
 ```html
 <p abpEllipsis>
@@ -45,10 +49,10 @@ See an example usage:
     cupiditate? Voluptas eaque voluptatum odio deleniti quo vel illum nemo accusamus nulla ratione
     impedit dolorum expedita necessitatibus fugiat ullam beatae, optio eum cupiditate ducimus
     architecto.
-  </p>
+</p>
 ```
 
-The `abpEllipsis` attribute has been added to the `<p>` element that containing very long text inside to activate the `EllipsisDirective`.
+The `abpEllipsis` attribute is added to the `<p>` element to activate the `EllipsisDirective`.
 
 See the result:
 
@@ -62,7 +66,7 @@ The UI before using the directive looks like this:
 
 ### Specifying Max Width of an HTML Element
 
-An HTML element max width can be specified as shown below:
+You can specify the maximum width of an element using the directive like this:
 
 ```html
 <div [abpEllipsis]="'100px'">
