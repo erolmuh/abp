@@ -92,6 +92,8 @@ public abstract class AbpModule :
         return Task.CompletedTask;
     }
 
+ 
+
     public virtual void OnPostApplicationInitialization(ApplicationInitializationContext context)
     {
 
