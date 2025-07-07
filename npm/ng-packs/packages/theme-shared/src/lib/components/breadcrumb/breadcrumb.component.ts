@@ -6,7 +6,7 @@ import {
   SubscriptionService,
   TreeNode,
 } from '@abp/ng.core';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { map, startWith } from 'rxjs/operators';
 import { eThemeSharedRouteNames } from '../../enums/route-names';
@@ -20,15 +20,18 @@ import { BreadcrumbItemsComponent } from '../breadcrumb-items/breadcrumb-items.c
   imports: [BreadcrumbItemsComponent],
 })
 export class BreadcrumbComponent implements OnInit {
+  readonly cdRef = inject(ChangeDetectorRef);
+  private router = inject(Router);
+  private routes = inject(RoutesService);
+  private subscription = inject(SubscriptionService);
+  private routerEvents = inject(RouterEvents);
+
   segments: Partial<ABP.Route>[] = [];
 
-  constructor(
-    public readonly cdRef: ChangeDetectorRef,
-    private router: Router,
-    private routes: RoutesService,
-    private subscription: SubscriptionService,
-    private routerEvents: RouterEvents,
-  ) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 
   ngOnInit(): void {
     this.subscription.addOne(

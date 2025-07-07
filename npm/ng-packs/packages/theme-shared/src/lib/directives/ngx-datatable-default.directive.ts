@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { AfterViewInit, Directive, HostBinding, Inject, Input, OnDestroy } from '@angular/core';
+import { AfterViewInit, Directive, HostBinding, Input, OnDestroy, inject } from '@angular/core';
 import { ColumnMode, DatatableComponent, ScrollerComponent } from '@swimlane/ngx-datatable';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -10,6 +10,9 @@ import { debounceTime } from 'rxjs/operators';
   exportAs: 'ngxDatatableDefault',
 })
 export class NgxDatatableDefaultDirective implements AfterViewInit, OnDestroy {
+  private table = inject(DatatableComponent);
+  private document = inject<MockDocument>(DOCUMENT);
+
   private subscription = new Subscription();
   private resizeDiff = 0;
 
@@ -20,10 +23,10 @@ export class NgxDatatableDefaultDirective implements AfterViewInit, OnDestroy {
     return `ngx-datatable ${this.class}`;
   }
 
-  constructor(
-    private table: DatatableComponent,
-    @Inject(DOCUMENT) private document: MockDocument,
-  ) {
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {
     this.table.columnMode = ColumnMode.force;
     this.table.footerHeight = 50;
     this.table.headerHeight = 50;

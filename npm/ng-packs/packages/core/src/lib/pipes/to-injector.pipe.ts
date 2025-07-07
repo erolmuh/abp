@@ -1,4 +1,4 @@
-import { InjectionToken, Injector, Pipe, PipeTransform } from '@angular/core';
+import { InjectionToken, Injector, Pipe, PipeTransform, inject } from '@angular/core';
 
 export const INJECTOR_PIPE_DATA_TOKEN = new InjectionToken<PipeTransform>(
   'INJECTOR_PIPE_DATA_TOKEN',
@@ -8,7 +8,12 @@ export const INJECTOR_PIPE_DATA_TOKEN = new InjectionToken<PipeTransform>(
   name: 'toInjector',
 })
 export class ToInjectorPipe implements PipeTransform {
-  constructor(private injector: Injector) {}
+  private injector = inject(Injector);
+
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
   transform(
     value: any,
     token: InjectionToken<any> = INJECTOR_PIPE_DATA_TOKEN,

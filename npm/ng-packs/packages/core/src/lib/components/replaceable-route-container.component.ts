@@ -1,4 +1,4 @@
-import { Component, OnInit, Type } from '@angular/core';
+import { Component, OnInit, Type, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { ReplaceableComponents } from '../models/replaceable-components';
@@ -15,17 +15,20 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
 })
 export class ReplaceableRouteContainerComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private replaceableComponents = inject(ReplaceableComponentsService);
+  private subscription = inject(SubscriptionService);
+
   defaultComponent!: Type<any>;
 
   componentKey!: string;
 
   externalComponent?: Type<any>;
 
-  constructor(
-    private route: ActivatedRoute,
-    private replaceableComponents: ReplaceableComponentsService,
-    private subscription: SubscriptionService,
-  ) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 
   ngOnInit() {
     this.defaultComponent = this.route.snapshot.data.replaceableComponent.defaultComponent;

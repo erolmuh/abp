@@ -1,12 +1,14 @@
 import type { GetIdentityRolesInput, IdentityRoleCreateDto, IdentityRoleDto, IdentityRoleUpdateDto } from './models';
 import { RestService } from '@abp/ng.core';
 import type { ListResultDto, PagedResultDto } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class IdentityRoleService {
+  private restService = inject(RestService);
+
   apiName = 'AbpIdentity';
 
   create = (input: IdentityRoleCreateDto) =>
@@ -54,5 +56,8 @@ export class IdentityRoleService {
     },
     { apiName: this.apiName });
 
-  constructor(private restService: RestService) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 }

@@ -1,5 +1,5 @@
 import { ContentProjectionService, LocalizationParam, PROJECTION_STRATEGY } from '@abp/ng.core';
-import { ComponentRef, Injectable } from '@angular/core';
+import { ComponentRef, Injectable, inject } from '@angular/core';
 import { fromEvent, Observable, ReplaySubject, Subject } from 'rxjs';
 import { debounceTime, filter, takeUntil } from 'rxjs/operators';
 import { ConfirmationComponent } from '../components/confirmation/confirmation.component';
@@ -7,6 +7,8 @@ import { Confirmation } from '../models/confirmation';
 
 @Injectable({ providedIn: 'root' })
 export class ConfirmationService {
+  private contentProjectionService = inject(ContentProjectionService);
+
   status$!: Subject<Confirmation.Status>;
   confirmation$ = new ReplaySubject<Confirmation.DialogData | null>(1);
 
@@ -17,7 +19,10 @@ export class ConfirmationService {
     this.status$.next(status);
   };
 
-  constructor(private contentProjectionService: ContentProjectionService) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 
   private setContainer() {
     this.containerComponentRef = this.contentProjectionService.projectContent(

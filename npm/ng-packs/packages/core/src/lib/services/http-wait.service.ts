@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { HttpRequest } from '@angular/common/http';
 import { InternalStore } from '../utils/internal-store-utils';
 import { getPathName } from '../utils/http-utils';
@@ -26,7 +26,12 @@ export class HttpWaitService {
   private delay: number;
   private destroy$ = new Subject<void>();
 
-  constructor(injector: Injector) {
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {
+    const injector = inject(Injector);
+
     this.delay = injector.get(LOADER_DELAY, 500);
   }
 

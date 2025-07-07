@@ -1,17 +1,4 @@
-import {
-  ComponentFactoryResolver,
-  ComponentRef,
-  Directive,
-  ElementRef,
-  EmbeddedViewRef,
-  HostBinding,
-  Injector,
-  Input,
-  OnDestroy,
-  OnInit,
-  Renderer2,
-  ViewContainerRef,
-} from '@angular/core';
+import { ComponentFactoryResolver, ComponentRef, Directive, ElementRef, EmbeddedViewRef, HostBinding, Injector, Input, OnDestroy, OnInit, Renderer2, ViewContainerRef, inject } from '@angular/core';
 import { Subscription, timer } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { LoadingComponent } from '../components';
@@ -20,6 +7,12 @@ import { LoadingComponent } from '../components';
   selector: '[abpLoading]',
 })
 export class LoadingDirective implements OnInit, OnDestroy {
+  private elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private vcRef = inject(ViewContainerRef);
+  private cdRes = inject(ComponentFactoryResolver);
+  private injector = inject(Injector);
+  private renderer = inject(Renderer2);
+
   private _loading!: boolean;
 
   @HostBinding('style.position')
@@ -77,13 +70,10 @@ export class LoadingDirective implements OnInit, OnDestroy {
   rootNode: HTMLDivElement | null = null;
   timerSubscription: Subscription | null = null;
 
-  constructor(
-    private elRef: ElementRef<HTMLElement>,
-    private vcRef: ViewContainerRef,
-    private cdRes: ComponentFactoryResolver,
-    private injector: Injector,
-    private renderer: Renderer2,
-  ) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 
   ngOnInit() {
     if (!this.targetElement) {
