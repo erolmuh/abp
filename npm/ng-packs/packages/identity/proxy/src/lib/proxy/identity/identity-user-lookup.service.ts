@@ -1,7 +1,7 @@
 import type { UserLookupCountInputDto, UserLookupSearchInputDto } from './models';
 import { RestService } from '@abp/ng.core';
 import type { ListResultDto } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import type { UserData } from '../users/models';
 
 @Injectable({
@@ -9,6 +9,7 @@ import type { UserData } from '../users/models';
 })
 export class IdentityUserLookupService {
   apiName = 'AbpIdentity';
+  private readonly restService = inject(RestService);
 
   findById = (id: string) =>
     this.restService.request<any, UserData>({
@@ -39,6 +40,4 @@ export class IdentityUserLookupService {
       params: { filter: input.filter, sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName });
-
-  constructor(private restService: RestService) {}
 }

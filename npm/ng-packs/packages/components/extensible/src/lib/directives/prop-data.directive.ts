@@ -7,6 +7,7 @@ import {
   OnDestroy,
   TemplateRef,
   ViewContainerRef,
+  inject,
 } from '@angular/core';
 import { PropData, PropList } from '../models/props';
 
@@ -18,6 +19,10 @@ export class PropDataDirective<L extends PropList<any>>
   extends PropData<InferredData<L>>
   implements OnChanges, OnDestroy
 {
+  private tempRef = inject(TemplateRef<any>);
+  private vcRef = inject(ViewContainerRef);
+  private injector = inject(Injector);
+
   @Input('abpPropDataFromList') propList?: L;
 
   @Input('abpPropDataWithRecord') record!: InferredData<L>['record'];
@@ -26,14 +31,9 @@ export class PropDataDirective<L extends PropList<any>>
 
   readonly getInjected: InferredData<L>['getInjected'];
 
-  constructor(
-    private tempRef: TemplateRef<any>,
-    private vcRef: ViewContainerRef,
-    injector: Injector,
-  ) {
+  constructor() {
     super();
-
-    this.getInjected = injector.get.bind(injector);
+    this.getInjected = this.injector.get.bind(this.injector);
   }
 
   ngOnChanges() {

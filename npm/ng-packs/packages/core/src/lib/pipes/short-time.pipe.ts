@@ -1,5 +1,5 @@
 import { DatePipe, DATE_PIPE_DEFAULT_TIMEZONE } from '@angular/common';
-import { Inject, LOCALE_ID, Optional, Pipe, PipeTransform } from '@angular/core';
+import { LOCALE_ID, Pipe, PipeTransform, inject } from '@angular/core';
 import { ConfigStateService } from '../services';
 import { getShortTimeFormat } from '../utils/date-utils';
 
@@ -8,12 +8,13 @@ import { getShortTimeFormat } from '../utils/date-utils';
   pure: true,
 })
 export class ShortTimePipe extends DatePipe implements PipeTransform {
-  constructor(
-    private configStateService: ConfigStateService,
-    @Inject(LOCALE_ID) locale: string,
-    @Inject(DATE_PIPE_DEFAULT_TIMEZONE) @Optional() defaultTimezone?: string | null,
-  ) {
-    super(locale, defaultTimezone);
+  private configStateService = inject(ConfigStateService);
+
+  constructor() {
+    super(
+      inject(LOCALE_ID),
+      inject(DATE_PIPE_DEFAULT_TIMEZONE, { optional: true }),
+    );
   }
 
   transform(

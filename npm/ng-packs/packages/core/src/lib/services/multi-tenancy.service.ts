@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, inject } from '@angular/core';
 import { map, switchMap } from 'rxjs/operators';
 import { AbpTenantService } from '../proxy/pages/abp/multi-tenancy';
 import {
@@ -12,6 +12,12 @@ import { SessionStateService } from './session-state.service';
 
 @Injectable({ providedIn: 'root' })
 export class MultiTenancyService {
+  private restService = inject(RestService);
+  private sessionState = inject(SessionStateService);
+  private tenantService = inject(AbpTenantService);
+  private configStateService = inject(ConfigStateService);
+  public tenantKey = inject(TENANT_KEY);
+
   domainTenant: CurrentTenantDto | null = null;
 
   isTenantBoxVisible = true;
@@ -22,14 +28,6 @@ export class MultiTenancyService {
     this.sessionState.setTenant({ id: tenant.tenantId, name: tenant.name, isAvailable: true });
     return this.configStateService.refreshAppState().pipe(map(_ => tenant));
   };
-
-  constructor(
-    private restService: RestService,
-    private sessionState: SessionStateService,
-    private tenantService: AbpTenantService,
-    private configStateService: ConfigStateService,
-    @Inject(TENANT_KEY) public tenantKey: string,
-  ) { }
 
   setTenantByName(tenantName: string) {
     return this.tenantService

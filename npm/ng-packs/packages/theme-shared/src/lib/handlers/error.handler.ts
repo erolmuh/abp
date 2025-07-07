@@ -23,8 +23,9 @@ export class ErrorHandler {
   protected readonly httpErrorConfig = inject(HTTP_ERROR_CONFIG);
   protected readonly customErrorHandlers = inject(CUSTOM_ERROR_HANDLERS);
   protected readonly httpErrorHandler = inject(HTTP_ERROR_HANDLER, { optional: true });
+  protected readonly injector = inject(Injector);
 
-  constructor(protected injector: Injector) {
+  constructor() {
     this.listenToRestError();
     this.listenToRouterError();
   }

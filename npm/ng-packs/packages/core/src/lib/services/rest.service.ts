@@ -1,5 +1,5 @@
 import { HttpClient, HttpParameterCodec, HttpParams, HttpRequest } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, inject } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ExternalHttpClient } from '../clients/http.client';
@@ -14,13 +14,11 @@ import { HttpErrorReporterService } from './http-error-reporter.service';
   providedIn: 'root',
 })
 export class RestService {
-  constructor(
-    @Inject(CORE_OPTIONS) protected options: ABP.Root,
-    protected http: HttpClient,
-    protected externalHttp: ExternalHttpClient,
-    protected environment: EnvironmentService,
-    protected httpErrorReporter: HttpErrorReporterService,
-  ) { }
+  protected readonly options = inject(CORE_OPTIONS);
+  protected readonly http = inject(HttpClient);
+  protected readonly externalHttp = inject(ExternalHttpClient);
+  protected readonly environment = inject(EnvironmentService);
+  protected readonly httpErrorReporter = inject(HttpErrorReporterService);
 
   protected getApiFromStore(apiName: string | undefined): string {
     return this.environment.getApiUrl(apiName);

@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
@@ -6,6 +6,10 @@ import { ConfigStateService, MultiTenancyService } from '@abp/ng.core';
 
 @Injectable()
 export class AuthWrapperService {
+  public readonly multiTenancy = inject(MultiTenancyService);
+  private configState = inject(ConfigStateService);
+  private route = inject(ActivatedRoute);
+
   isMultiTenancyEnabled$ = this.configState.getDeep$('multiTenancy.isEnabled');
 
   get enableLocalLogin$(): Observable<boolean> {
@@ -15,7 +19,6 @@ export class AuthWrapperService {
   }
 
   tenantBoxKey = 'Account.TenantBoxComponent';
-  route: ActivatedRoute;
 
   get isTenantBoxVisibleForCurrentRoute() {
     return this.getMostInnerChild().data.tenantBoxVisible ?? true;
@@ -23,14 +26,6 @@ export class AuthWrapperService {
 
   get isTenantBoxVisible() {
     return this.isTenantBoxVisibleForCurrentRoute && this.multiTenancy.isTenantBoxVisible;
-  }
-
-  constructor(
-    public readonly multiTenancy: MultiTenancyService,
-    private configState: ConfigStateService,
-    injector: Injector,
-  ) {
-    this.route = injector.get(ActivatedRoute);
   }
 
   private getMostInnerChild() {

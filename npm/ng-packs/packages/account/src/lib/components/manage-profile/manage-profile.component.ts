@@ -1,7 +1,7 @@
 import { ProfileService } from '@abp/ng.account.core/proxy';
 import { fadeIn, LoadingDirective } from '@abp/ng.theme.shared';
 import { transition, trigger, useAnimation } from '@angular/animations';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { eAccountComponents } from '../../enums/components';
 import { ManageProfileStateService } from '../../services/manage-profile.state.service';
 import { CommonModule } from '@angular/common';
@@ -33,6 +33,9 @@ import { ChangePasswordComponent } from '../change-password/change-password.comp
   ],
 })
 export class ManageProfileComponent implements OnInit {
+  protected profileService = inject(ProfileService);
+  protected manageProfileState = inject(ManageProfileStateService);
+
   selectedTab = 0;
 
   changePasswordKey = eAccountComponents.ChangePassword;
@@ -43,10 +46,7 @@ export class ManageProfileComponent implements OnInit {
 
   hideChangePasswordTab?: boolean;
 
-  constructor(
-    protected profileService: ProfileService,
-    protected manageProfileState: ManageProfileStateService,
-  ) {}
+  constructor() {}
 
   ngOnInit() {
     this.profileService.get().subscribe(profile => {

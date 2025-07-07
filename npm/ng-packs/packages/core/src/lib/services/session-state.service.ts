@@ -14,15 +14,14 @@ import { AbpLocalStorageService } from './local-storage.service';
 export class SessionStateService {
   private readonly store = new InternalStore({} as Session.State);
   protected readonly document = inject(DOCUMENT);
+  private readonly configState = inject(ConfigStateService);
+  private readonly localStorageService = inject(AbpLocalStorageService);
 
   private updateLocalStorage = () => {
     this.localStorageService.setItem('abpSession', JSON.stringify(this.store.state));
   };
 
-  constructor(
-    private configState: ConfigStateService,
-    private localStorageService: AbpLocalStorageService,
-  ) {
+  constructor() {
     this.init();
     this.setInitialLanguage();
   }

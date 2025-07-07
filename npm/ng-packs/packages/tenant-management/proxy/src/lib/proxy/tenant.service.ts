@@ -1,13 +1,14 @@
 import type { GetTenantsInput, TenantCreateDto, TenantDto, TenantUpdateDto } from './models';
 import { RestService } from '@abp/ng.core';
 import type { PagedResultDto } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TenantService {
   apiName = 'AbpTenantManagement';
+  private readonly restService = inject(RestService);
 
   create = (input: TenantCreateDto) =>
     this.restService.request<any, TenantDto>({
@@ -69,6 +70,4 @@ export class TenantService {
       params: { defaultConnectionString },
     },
     { apiName: this.apiName });
-
-  constructor(private restService: RestService) {}
 }

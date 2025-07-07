@@ -1,12 +1,14 @@
 import { ConfigStateService, PermissionService } from '@abp/ng.core';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MockPermissionService extends PermissionService {
-  constructor(protected configState: ConfigStateService) {
-    super(configState);
+  protected readonly configState = inject(ConfigStateService);
+
+  constructor() {
+    super();
     this.grantAllPolicies();
   }
 

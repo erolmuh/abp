@@ -50,6 +50,9 @@ export class EmailSettingGroupComponent implements OnInit {
   protected readonly currentUserEmail = toSignal(
     this.configStateSevice.getDeep$(['currentUser', 'email']),
   );
+  protected readonly emailSettingsService = inject(EmailSettingsService);
+  protected readonly fb = inject(UntypedFormBuilder);
+  protected readonly toasterService = inject(ToasterService);
 
   form!: UntypedFormGroup;
   emailTestForm: UntypedFormGroup;
@@ -57,12 +60,6 @@ export class EmailSettingGroupComponent implements OnInit {
   emailingPolicy = SettingManagementPolicyNames.Emailing;
   isEmailTestModalOpen = false;
   modalSize: NgbModalOptions = { size: 'lg' };
-
-  constructor(
-    private emailSettingsService: EmailSettingsService,
-    private fb: UntypedFormBuilder,
-    private toasterService: ToasterService,
-  ) {}
 
   ngOnInit() {
     this.getData();

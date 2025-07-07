@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -8,6 +8,8 @@ import { reloadRoute } from '../utils/route-utils';
 
 @Injectable({ providedIn: 'root' })
 export class ReplaceableComponentsService {
+  private readonly ngZone = inject(NgZone);
+  private readonly router = inject(Router);
   private readonly store: InternalStore<ReplaceableComponents.ReplaceableComponent[]>;
 
   get replaceableComponents$(): Observable<ReplaceableComponents.ReplaceableComponent[]> {
@@ -22,7 +24,7 @@ export class ReplaceableComponentsService {
     return this.store.sliceUpdate(state => state);
   }
 
-  constructor(private ngZone: NgZone, private router: Router) {
+  constructor() {
     this.store = new InternalStore([] as ReplaceableComponents.ReplaceableComponent[]);
   }
 

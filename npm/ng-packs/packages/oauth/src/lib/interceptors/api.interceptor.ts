@@ -1,5 +1,5 @@
 import { HttpHandler, HttpHeaders, HttpRequest } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, inject } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { finalize } from 'rxjs/operators';
 import {
@@ -14,12 +14,10 @@ import {
   providedIn: 'root',
 })
 export class OAuthApiInterceptor implements IApiInterceptor {
-  constructor(
-    private oAuthService: OAuthService,
-    private sessionState: SessionStateService,
-    private httpWaitService: HttpWaitService,
-    @Inject(TENANT_KEY) private tenantKey: string,
-  ) {}
+  private readonly oAuthService = inject(OAuthService);
+  private readonly sessionState = inject(SessionStateService);
+  private readonly httpWaitService = inject(HttpWaitService);
+  private readonly tenantKey = inject(TENANT_KEY);
 
   intercept(request: HttpRequest<any>, next: HttpHandler) {
     this.httpWaitService.addRequest(request);
